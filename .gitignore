@@ -1,0 +1,63 @@
+# PHP
+*.log
+*.cache
+vendor/
+composer.lock
+
+# Database
+*.sql.backup
+*.sql.gz
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Ngrok
+ngrok/
+ngrok.exe
+*.zip
+
+# Uploads (if any)
+uploads/*
+!uploads/.gitkeep
+
+# Session files
+sessions/*
+!sessions/.gitkeep
+
+# Build files
+node_modules/
+dist/
+build/
+
+# Logs
+logs/
+*.log
+error_log
+
+# Database config (keep template only)
+# Backend/config/database.php
+
+# Sensitive files
+*secret*
+*password*
+credentials.json
