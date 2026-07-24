@@ -104,21 +104,20 @@ try {
         require_once $backendPath . 'security.php';
     }
     
-    // Initialize Database Connection
+    // Initialize Database Connection - NEVER let this fail
     if (function_exists('getDatabaseConnection')) {
         try {
             $GLOBALS['pdo'] = getDatabaseConnection();
         } catch (Exception $e) {
-            if (APP_DEBUG) {
-                error_log('Database connection error: ' . $e->getMessage());
-            }
+            @error_log('Database connection error: ' . $e->getMessage());
             $GLOBALS['pdo'] = null;
         }
+    } else {
+        $GLOBALS['pdo'] = null;
     }
 } catch (Exception $e) {
-    if (APP_DEBUG) {
-        error_log('Configuration error: ' . $e->getMessage());
-    }
+    @error_log('Configuration error: ' . $e->getMessage());
+    $GLOBALS['pdo'] = null;
 }
 
 // Helper function to get PDO instance
@@ -130,12 +129,16 @@ function getDB(): ?PDO {
  * Get site setting by key
  */
 function getSetting(string $key, string $default = ''): string {
-    $pdo = getDB();
-    if (!$pdo) return $default;
-    $stmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = ?");
-    $stmt->execute([$key]);
-    $result = $stmt->fetchColumn();
-    return $result !== false ? (string)$result : $default;
+    try {
+        $pdo = getDB();
+        if (!$pdo) return $default;
+        $stmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = ?");
+        $stmt->execute([$key]);
+        $result = $stmt->fetchColumn();
+        return $result !== false ? (string)$result : $default;
+    } catch (Exception $e) {
+        return $default;
+    }
 }
 
 /**
@@ -149,9 +152,13 @@ function updateSetting(string $key, string $value): bool {
 }
 
 // Apply live settings that affect runtime behavior.
-$configuredTimezone = getSetting('timezone', 'Africa/Nairobi');
-if ($configuredTimezone && in_array($configuredTimezone, timezone_identifiers_list(), true)) {
-    @date_default_timezone_set($configuredTimezone);
-} else {
+try {
+    $configuredTimezone = getSetting('timezone', 'Africa/Nairobi');
+    if ($configuredTimezone && in_array($configuredTimezone, timezone_identifiers_list(), true)) {
+        @date_default_timezone_set($configuredTimezone);
+    } else {
+        @date_default_timezone_set('Africa/Nairobi');
+    }
+} catch (Exception $e) {
     @date_default_timezone_set('Africa/Nairobi');
 }

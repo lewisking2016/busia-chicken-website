@@ -29,8 +29,8 @@ $pdo = null;
 /**
  * Get Database Connection
  */
-function getDatabaseConnection(): PDO {
-    global $pdo;
+function getDatabaseConnection(): ?PDO {
+    global $pdo, $pdoOptions;
     
     if ($pdo !== null) {
         return $pdo;
@@ -45,17 +45,23 @@ function getDatabaseConnection(): PDO {
         ]);
         return $pdo;
     } catch (PDOException $e) {
-        error_log("Database connection failed: " . $e->getMessage());
-        throw $e;
+        @error_log("Database connection failed: " . $e->getMessage());
+        return null;
+    } catch (Exception $e) {
+        @error_log("Database connection exception: " . $e->getMessage());
+        return null;
     }
 }
 
-// Try to initialize connection
+// Try to initialize connection - NEVER throw errors, always return null on failure
 try {
     $pdo = getDatabaseConnection();
 } catch (PDOException $e) {
     // Log error but don't die - let frontend handle it gracefully
-    error_log("Initial database connection failed: " . $e->getMessage());
+    @error_log("Initial database connection failed: " . $e->getMessage());
+    $pdo = null;
+} catch (Exception $e) {
+    @error_log("Database connection exception: " . $e->getMessage());
     $pdo = null;
 }
 
