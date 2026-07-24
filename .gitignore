@@ -1,8 +1,11 @@
 # PHP
 *.log
 *.cache
-vendor/
 composer.lock
+
+# Ignore PHP vendor (composer packages) but NOT Frontend/assets/vendor
+/vendor/
+Backend/vendor/
 
 # Database
 *.sql.backup
@@ -72,5 +75,6 @@ cf.err.txt
 cf.out.txt
 cloudflared.exe
 cloudflared2.exe
-*.md
-!README.md
+
+# Keep DEPLOYMENT_CHECKLIST.md but ignore other temp markdown
+Analyze*.md
