@@ -8,6 +8,9 @@ RewriteEngine On
 RewriteRule ^Backend/config/ - [F,L]
 RewriteRule ^Backend/includes/ - [F,L]
 
+# Admin access through busiaadmin (security through obscurity)
+RewriteRule ^busiaadmin/?$ /busiaadmin.php [L]
+
 # Redirect trailing slashes
 RewriteRule ^(.*)/$ /$1 [L,R=301]
 
