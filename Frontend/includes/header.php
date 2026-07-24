@@ -50,6 +50,9 @@ $is_customer_logged_in = !empty($_SESSION['user_id']) && ($_SESSION['role'] ?? '
 
     <!-- Premium Stylesheet -->
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/components.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/animations.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/responsive.css">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/Frontend/images/busia logo.png">

@@ -2,15 +2,16 @@
 /**
  * Database Connection & Configuration
  * PDO-based database management for Busia Chicken Farm
+ * PRODUCTION CONFIGURATION FOR CPANEL
  */
 declare(strict_types=1);
 
-// Database Configuration - Production Credentials
-define('DB_HOST', $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: 'localhost');
-define('DB_NAME', $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: 'mrhzdunf_busiachicken');
-define('DB_USER', $_ENV['DB_USER'] ?? getenv('DB_USER') ?: 'mrhzdunf_busia_user');
-define('DB_PASS', $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?: 'busia_user');
-define('DB_CHARSET', $_ENV['DB_CHARSET'] ?? getenv('DB_CHARSET') ?: 'utf8mb4');
+// Database Configuration
+const DB_HOST = 'localhost';
+const DB_NAME = 'mrhzdunf_busiachicken';
+const DB_USER = 'mrhzdunf_busia_user';
+const DB_PASS = 'busia_user';
+const DB_CHARSET = 'utf8mb4';
 
 // PDO Options
 $pdoOptions = [
@@ -19,9 +20,6 @@ $pdoOptions = [
     PDO::ATTR_EMULATE_PREPARES => false,
     PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
 ];
-
-// Connection String (DSN)
-$dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
 
 // Global PDO instance
 $pdo = null;
@@ -38,7 +36,7 @@ function getDatabaseConnection(): PDO {
     
     try {
         $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
-        $pdo = new PDO($dsn, DB_USER, DB_PASS, $pdoOptions ?? [
+        $pdo = new PDO($dsn, DB_USER, DB_PASS, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,

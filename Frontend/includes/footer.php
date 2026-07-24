@@ -166,6 +166,7 @@ $site_phone = function_exists('getSetting') ? getSetting('farm_phone', '+254 727
     </script>
 
     <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/js/main.js" defer></script>
+    <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/js/hero-slider.js" defer></script>
     <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/js/professional-animations.js" defer></script>
 </body>
 </html>
