@@ -61,3 +61,16 @@ error_log
 *secret*
 *password*
 credentials.json
+
+# Documentation and notes (local only)
+QUICK_START.txt
+CPANEL_*.txt
+CPANEL_*.php
+check_cpanel_directory.txt
+UPDATED_HTACCESS.txt
+cf.err.txt
+cf.out.txt
+cloudflared.exe
+cloudflared2.exe
+*.md
+!README.md
