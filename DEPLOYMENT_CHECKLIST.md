@@ -1,8 +1,8 @@
 # 🚀 Live Deployment Checklist - Busia Chicken Website
 
 ## Current Status
-- **Live URL**: https://new.kindcommoditiesltd.com
-- **cPanel Path**: `/home/qymwtpra/new.kindcommoditiesltd.com`
+- **Live URL**: https://new.decapoli.co.ke
+- **cPanel Path**: `/home/qymwtpra/new.kindcommoditiesltd.com` (folder name doesn't affect domain)
 - **Database**: `mrhzdunf_busiachicken`
 - **DB User**: `mrhzdunf_busia_user`
 - **DB Pass**: `busia_user`
@@ -12,29 +12,29 @@
 ### 1. Database Setup (CRITICAL - Do First)
 ```bash
 # Access the live site and run:
-https://new.kindcommoditiesltd.com/setup_production_database.php
+https://new.decapoli.co.ke/setup_production_database.php
 ```
 - This will create all tables and insert sample data
 - **IMPORTANT**: Delete this file after running for security
 
 ### 2. Verify Database Connection
 - File `/Backend/config/database.php` already has production credentials
-- Test by visiting: `https://new.kindcommoditiesltd.com/`
+- Test by visiting: `https://new.decapoli.co.ke/`
 - Should see products loading
 
 ### 3. Fix SSL Certificate (Site showing "Not Secure")
 1. Login to cPanel
 2. Go to **Security** → **SSL/TLS Status**
-3. Select domain: `new.kindcommoditiesltd.com`
+3. Select domain: `new.decapoli.co.ke`
 4. Click **Run AutoSSL**
 5. Wait 2-5 minutes for certificate installation
 
 ### 4. Verify Assets Loading
 Check these URLs work:
-- `https://new.kindcommoditiesltd.com/Frontend/assets/css/style.css`
-- `https://new.kindcommoditiesltd.com/Frontend/assets/js/main.js`
-- `https://new.kindcommoditiesltd.com/Frontend/assets/js/hero-slider.js`
-- `https://new.kindcommoditiesltd.com/Frontend/images/busia logo.png`
+- `https://new.decapoli.co.ke/Frontend/assets/css/style.css`
+- `https://new.decapoli.co.ke/Frontend/assets/js/main.js`
+- `https://new.decapoli.co.ke/Frontend/assets/js/hero-slider.js`
+- `https://new.decapoli.co.ke/Frontend/images/busia logo.png`
 
 ### 5. Fix Hero Slider
 The slider script is now separate: `/Frontend/assets/js/hero-slider.js`
@@ -44,20 +44,11 @@ The slider script is now separate: `/Frontend/assets/js/hero-slider.js`
 
 ### 6. Fix Icons Not Showing
 Icons use Lucide. Verify:
-- `https://new.kindcommoditiesltd.com/Frontend/assets/vendor/lucide/lucide.min.js`
+- `https://new.decapoli.co.ke/Frontend/assets/vendor/lucide/lucide.min.js`
 - Icons should render automatically via footer.php
 
-### 7. Main Domain Redirect Issue
-**Problem**: `kindcommoditiesltd.com` redirects to `https://new.decapoli.co.ke/`
-
-**Solution**:
-1. In cPanel → **Domains** → **Redirects**
-2. Remove any redirect from `kindcommoditiesltd.com` to `decapoli.co.ke`
-3. Check DNS settings - A record should point to your server IP
-4. If DNS is external (Cloudflare, etc.), check there too
-
-### 8. Test Admin Login
-- URL: `https://new.kindcommoditiesltd.com/Frontend/admin/login.php`
+### 7. Test Admin Login
+- URL: `https://new.decapoli.co.ke/Frontend/admin/login.php`
 - Username: `admin`
 - Password: `admin123`
 - **Change password immediately after first login!**
@@ -84,7 +75,7 @@ Icons use Lucide. Verify:
 
 ### Issue 1: Images Not Loading
 **Check**: All image paths use `/Frontend/images/` format
-**Fix**: Verify files exist in cPanel at `/home/qymwtpra/new.kindcommoditiesltd.com/Frontend/images/`
+**Fix**: Verify files exist in cPanel at `/home/qymwtpra/new.kindcommoditiesltd.com/Frontend/images/` (folder name doesn't change)
 
 ### Issue 2: Hero Slider Not Working
 **Cause**: Swiper library or hero-slider.js not loading

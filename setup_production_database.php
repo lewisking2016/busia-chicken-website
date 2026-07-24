@@ -128,7 +128,7 @@ try {
     echo "<code>✓ Inserted demo user (demo / demo123)</code>";
 
     echo "<code style='border-left-color:#28a745;background:#d4edda;'>✓ DATABASE SETUP COMPLETE!</code>";
-    echo "<code>You can now visit: <a href='/' style='color:#007bff;'>https://new.kindcommoditiesltd.com</a></code>";
+    echo "<code>You can now visit: <a href='/' style='color:#007bff;'>https://new.decapoli.co.ke</a></code>";
     echo "<code style='background:#fff3cd;border-left-color:#ffc107;'>⚠ IMPORTANT: Delete this file (setup_production_database.php) after successful setup for security!</code>";
 
 } catch (PDOException $e) {
