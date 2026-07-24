@@ -78,3 +78,12 @@ cloudflared2.exe
 
 # Keep DEPLOYMENT_CHECKLIST.md but ignore other temp markdown
 Analyze*.md
+
+# Ignore server-modified files to prevent pull conflicts
+busiaadmin.php
+.htaccess
+import_data.php
+update_admin_password.php
+complete_data_import.php
+test_assets.php
+status.php
