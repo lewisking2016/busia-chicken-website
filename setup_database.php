@@ -22,6 +22,7 @@ try {
     }
 
     $schema = file_get_contents($schemaFile);
+    echo "✓ Version 2.1 - Executing schema...\n";
     
     // Split by semicolon and execute each statement
     $statements = array_filter(array_map('trim', explode(';', $schema)));
@@ -29,7 +30,7 @@ try {
     foreach ($statements as $statement) {
         if (!empty($statement)) {
             // Strip database creation/selection statements to prevent permission errors on cPanel
-            if (stripos($statement, 'CREATE DATABASE') === 0 || stripos($statement, 'USE ') === 0) {
+            if (stripos($statement, 'CREATE DATABASE') !== false || stripos($statement, 'USE ') !== false) {
                 continue;
             }
             $pdo->exec($statement);
