@@ -474,7 +474,7 @@ async function loadRawMaterialHealth() {
                     <div style="flex: 1; height: 4px; background: #f1f5f9; border-radius: 2px; overflow: hidden;">
                         <div style="width: ${barWidth}%; height: 100%; background: ${daysColor}; transition: width 0.5s;"></div>
                     </div>
-                    <span style="font-size: 0.7rem; color: #94a3b8; white-space: nowrap;">${Number(m.stock_tons).toFixed(2)}t</span>
+                    <span style="font-size: 0.7rem; color: #94a3b8; white-space: nowrap;">${Number(m.stock_tons).toLocaleString()} kgs</span>
                 </div>
             </div>`;
         }).join('');
