@@ -142,6 +142,43 @@ try {
                         // Also deduct finished product stock
                         execute($pdo, "UPDATE products SET stock_quantity = GREATEST(stock_quantity - ?, 0) WHERE id = ?", [$fi['quantity'], $fi['product_id']]);
                     }
+
+                    // --- Direct Raw Material Sales: Deduct kgs from raw_materials.stock_tons ---
+                    $rawMaterialItems = fetchAll($pdo, "
+                        SELECT oi.product_id, oi.quantity, p.raw_material_id
+                        FROM order_items oi
+                        JOIN products p ON oi.product_id = p.id
+                        WHERE oi.order_id = ? AND p.raw_material_id IS NOT NULL
+                    ", [$oid]);
+
+                    foreach ($rawMaterialItems as $rmi) {
+                        $rm = fetchOne($pdo, "SELECT id, name, stock_tons, reserved_production_kg, min_stock_level FROM raw_materials WHERE id = ?", [$rmi['raw_material_id']]);
+                        if (!$rm) continue;
+
+                        $deductKg = (float)$rmi['quantity']; // Each unit sold = 1 kg of raw material
+                        $currentStock = (float)$rm['stock_tons'];
+                        $reserve = (float)$rm['reserved_production_kg'];
+                        $availableForSale = max(0, $currentStock - $reserve);
+
+                        // Deduct stock (enforce floor at zero, not the reserve — the reserve is a warning threshold)
+                        execute($pdo, "UPDATE raw_materials SET stock_tons = GREATEST(stock_tons - ?, 0) WHERE id = ?", [$deductKg, $rmi['raw_material_id']]);
+
+                        // Also deduct finished product stock
+                        execute($pdo, "UPDATE products SET stock_quantity = GREATEST(stock_quantity - ?, 0) WHERE id = ?", [$rmi['quantity'], $rmi['product_id']]);
+
+                        // If this sale breaches the safety production reserve, create a margin_protection alert
+                        if ($deductKg > $availableForSale) {
+                            execute($pdo, "INSERT INTO stock_alerts (alert_type, message, related_id) VALUES ('margin_protection', ?, ?)",
+                                ["{$rm['name']} raw material sale has breached the safety production reserve! Remaining: " . max(0, $currentStock - $deductKg) . " kgs (Reserve floor: {$reserve} kgs).", $rmi['raw_material_id']]);
+                        }
+
+                        // Low stock alert
+                        $newStock = max(0, $currentStock - $deductKg);
+                        if ($newStock <= (float)$rm['min_stock_level']) {
+                            execute($pdo, "INSERT INTO stock_alerts (alert_type, message, related_id) VALUES ('low_stock', ?, ?)",
+                                ["{$rm['name']} is critically low after direct sale! Stock: {$newStock} kgs.", $rmi['raw_material_id']]);
+                        }
+                    }
                 }
             }
             $pdo->commit();

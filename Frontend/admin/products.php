@@ -76,10 +76,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
     if ($action === 'add_product') {
         try {
             $image_url = $handleImageUpload($_FILES['product_image'] ?? null);
-            $stmt = $pdo->prepare("INSERT INTO products (category_id, name, slug, product_type, price, stock_quantity, description, image_url, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)");
+            $raw_material_id = !empty($_POST['raw_material_id']) ? (int)$_POST['raw_material_id'] : null;
+            $reserved_production_kg = (float)($_POST['reserved_production_kg'] ?? 0);
+
+            $stmt = $pdo->prepare("INSERT INTO products (category_id, raw_material_id, name, slug, product_type, price, stock_quantity, description, image_url, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
             $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', trim($_POST['name'])));
             $stmt->execute([
                 (int)$_POST['category_id'],
+                $raw_material_id,
                 trim($_POST['name']),
                 $slug,
                 $_POST['product_type'],
@@ -88,6 +92,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
                 trim($_POST['description'] ?? ''),
                 $image_url
             ]);
+
+            if ($raw_material_id) {
+                execute($pdo, "UPDATE raw_materials SET reserved_production_kg = ? WHERE id = ?", [$reserved_production_kg, $raw_material_id]);
+            }
+
             $success_message = 'Product added successfully.';
         } catch (Exception $e) {
             $error_message = 'Failed to add product: ' . $e->getMessage();
@@ -97,14 +106,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
     if ($action === 'edit_product') {
         try {
             $image_url = $handleImageUpload($_FILES['product_image'] ?? null);
-            $sql = "UPDATE products SET name = ?, product_type = ?, price = ?, stock_quantity = ?, description = ?, category_id = ?";
+            $raw_material_id = !empty($_POST['raw_material_id']) ? (int)$_POST['raw_material_id'] : null;
+            $reserved_production_kg = (float)($_POST['reserved_production_kg'] ?? 0);
+
+            $sql = "UPDATE products SET name = ?, product_type = ?, price = ?, stock_quantity = ?, description = ?, category_id = ?, raw_material_id = ?";
             $params = [
                 trim($_POST['name']),
                 $_POST['product_type'],
                 (float)$_POST['price'],
                 (int)$_POST['stock_quantity'],
                 trim($_POST['description'] ?? ''),
-                (int)$_POST['category_id']
+                (int)$_POST['category_id'],
+                $raw_material_id
             ];
             
             if ($image_url) {
@@ -117,6 +130,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
             
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
+
+            if ($raw_material_id) {
+                execute($pdo, "UPDATE raw_materials SET reserved_production_kg = ? WHERE id = ?", [$reserved_production_kg, $raw_material_id]);
+            }
+
             $success_message = 'Product updated successfully.';
         } catch (Exception $e) {
             $error_message = 'Failed to update product: ' . $e->getMessage();
@@ -151,16 +169,20 @@ $categories = [];
 $search = $_GET['search'] ?? '';
 $type_filter = $_GET['type'] ?? '';
 
+$raw_materials_list = [];
 if ($pdo) {
     try {
         // Fetch categories for dropdowns
         $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+        // Fetch raw materials list
+        $raw_materials_list = $pdo->query("SELECT id, name, reserved_production_kg, stock_tons FROM raw_materials ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
 
         // Build product query
-        $query = "SELECT p.*, c.name as category_name, fr.id as recipe_id 
+        $query = "SELECT p.*, c.name as category_name, fr.id as recipe_id, rm.name as linked_raw_material_name, rm.reserved_production_kg, rm.stock_tons as raw_material_stock
                   FROM products p 
                   LEFT JOIN categories c ON p.category_id = c.id 
                   LEFT JOIN feed_recipes fr ON fr.product_id = p.id
+                  LEFT JOIN raw_materials rm ON p.raw_material_id = rm.id
                   WHERE 1=1";
         $params = [];
 
@@ -274,7 +296,25 @@ if ($pdo) {
                         </span>
                     </td>
                     <td>
-                        <?php if ($product['product_type'] === 'feed'): ?>
+                        <?php if (!empty($product['raw_material_id'])): ?>
+                            <?php 
+                                $total_stock = (float)($product['raw_material_stock'] ?? 0);
+                                $reserved = (float)($product['reserved_production_kg'] ?? 0);
+                                $avail_sale = max(0.0, $total_stock - $reserved);
+                                $pct = $total_stock > 0 ? min(100.0, ($reserved / $total_stock) * 100) : 0;
+                            ?>
+                            <div style="font-size: 0.8rem; display: flex; flex-direction: column; gap: 4px;">
+                                <div style="display: flex; justify-content: space-between; font-weight: 700; color: #475569;">
+                                    <span><?php echo htmlspecialchars($product['linked_raw_material_name']); ?></span>
+                                    <span style="color: var(--admin-primary);"><?php echo number_format($avail_sale); ?> kgs sellable</span>
+                                </div>
+                                <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 9999px; overflow: hidden; display: flex;">
+                                    <div style="width: <?php echo $pct; ?>%; height: 100%; background: #f59e0b;" title="Reserved for Production"></div>
+                                    <div style="width: <?php echo 100 - $pct; ?>%; height: 100%; background: var(--admin-primary);" title="Available for Direct Sale"></div>
+                                </div>
+                                <span style="font-size: 0.7rem; color: #64748b;">Reserve Floor: <?php echo number_format($reserved); ?> kgs</span>
+                            </div>
+                        <?php elseif ($product['product_type'] === 'feed'): ?>
                             <?php if ($product['recipe_id']): ?>
                                 <div style="display: flex; flex-direction: column; gap: 4px;">
                                     <a href="stock_formula_center.php" class="badge-pill badge-pill-success" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px; justify-content: center;">
@@ -385,6 +425,19 @@ if ($pdo) {
                     <label class="admin-form-label">Stock Quantity *</label>
                     <input type="number" name="stock_quantity" required min="0" class="admin-form-control">
                 </div>
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Link Raw Material (For Direct Sale)</label>
+                    <select name="raw_material_id" class="admin-form-control">
+                        <option value="">None (Not a raw material)</option>
+                        <?php foreach ($raw_materials_list as $rm): ?>
+                            <option value="<?php echo $rm['id']; ?>"><?php echo htmlspecialchars($rm['name']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Safety Production Floor (kgs)</label>
+                    <input type="number" name="reserved_production_kg" class="admin-form-control" min="0" value="0" step="0.01">
+                </div>
             </div>
             <div class="admin-form-group" style="margin-top: 8px;">
                 <label class="admin-form-label">Description</label>
@@ -450,6 +503,19 @@ if ($pdo) {
                     <label class="admin-form-label">Stock Quantity *</label>
                     <input type="number" name="stock_quantity" id="edit-stock" required min="0" class="admin-form-control">
                 </div>
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Link Raw Material (For Direct Sale)</label>
+                    <select name="raw_material_id" id="edit-raw-material-id" class="form-control" style="width:100%; height:42px;">
+                        <option value="">None (Not a raw material)</option>
+                        <?php foreach ($raw_materials_list as $rm): ?>
+                            <option value="<?php echo $rm['id']; ?>"><?php echo htmlspecialchars($rm['name']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Safety Production Floor (kgs)</label>
+                    <input type="number" name="reserved_production_kg" id="edit-reserved-production-kg" class="admin-form-control" min="0" step="0.01">
+                </div>
             </div>
             <div class="admin-form-group" style="margin-top: 8px;">
                 <label class="admin-form-label">Description</label>
@@ -483,6 +549,8 @@ function openEditModal(product) {
     document.getElementById('edit-price').value = product.price;
     document.getElementById('edit-stock').value = product.stock_quantity;
     document.getElementById('edit-desc').value = product.description || '';
+    document.getElementById('edit-raw-material-id').value = product.raw_material_id || '';
+    document.getElementById('edit-reserved-production-kg').value = product.reserved_production_kg || 0;
     
     // Set preview
     const preview = document.getElementById('edit-preview');
