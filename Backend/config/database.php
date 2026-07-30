@@ -5,11 +5,16 @@
  */
 declare(strict_types=1);
 
-// Database Configuration - Production Credentials
+// Detect local development environment
+$isLocalhost = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost:8000', 'localhost', '127.0.0.1'], true) 
+    || ($_ENV['DB_HOST'] ?? getenv('DB_HOST')) === 'localhost'
+    || !empty($_SERVER['DOCUMENT_ROOT']) && (str_contains($_SERVER['DOCUMENT_ROOT'], 'Users') || str_contains($_SERVER['DOCUMENT_ROOT'], 'Desktop'));
+
+// Database Configuration - Production/Local Auto-switch
 define('DB_HOST', $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: 'localhost');
-define('DB_NAME', $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: 'mrhzdunf_busiachicken');
-define('DB_USER', $_ENV['DB_USER'] ?? getenv('DB_USER') ?: 'mrhzdunf_busia_user');
-define('DB_PASS', $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?: 'busia_user');
+define('DB_NAME', $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: ($isLocalhost ? 'busia_chicken_db' : 'mrhzdunf_busiachicken'));
+define('DB_USER', $_ENV['DB_USER'] ?? getenv('DB_USER') ?: ($isLocalhost ? 'root' : 'mrhzdunf_busia_user'));
+define('DB_PASS', $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?: ($isLocalhost ? '' : 'busia_user'));
 define('DB_CHARSET', $_ENV['DB_CHARSET'] ?? getenv('DB_CHARSET') ?: 'utf8mb4');
 
 // PDO Options
