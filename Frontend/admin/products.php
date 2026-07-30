@@ -201,6 +201,7 @@ if ($pdo) {
         $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
         error_log("Admin products error: " . $e->getMessage());
+        $error_message = "Database query error: " . $e->getMessage();
     }
 }
 ?>
