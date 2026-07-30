@@ -1,24 +1,17 @@
 <?php
 /**
  * Database Setup Script
- * Creates all tables and inserts sample data
+ * Creates all tables and inserts sample data dynamically using the database connection configuration
  */
 declare(strict_types=1);
 
-// Database Configuration
-const DB_HOST = 'localhost';
-const DB_NAME = 'busia_chicken_db';
-const DB_USER = 'root';
-const DB_PASS = '';
-const DB_CHARSET = 'utf8mb4';
+require_once __DIR__ . '/Backend/config/database.php';
 
 try {
-    // Connect to database
-    $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
-    $pdo = new PDO($dsn, DB_USER, DB_PASS, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    ]);
+    $pdo = getDatabaseConnection();
+    if (!$pdo) {
+        throw new Exception("Could not connect to the database. Verify credentials in Backend/config/database.php");
+    }
 
     echo "✓ Database connection successful\n\n";
 
@@ -108,8 +101,6 @@ try {
     echo "\n========================================\n";
     echo "✓ DATABASE SETUP COMPLETE!\n";
     echo "========================================\n";
-    echo "\nYou can now access the website at:\n";
-    echo "http://localhost:8000/Frontend/\n\n";
 
 } catch (PDOException $e) {
     echo "✗ Database Error: " . $e->getMessage() . "\n";
@@ -118,5 +109,4 @@ try {
     echo "✗ Error: " . $e->getMessage() . "\n";
     exit(1);
 }
-
 ?>
