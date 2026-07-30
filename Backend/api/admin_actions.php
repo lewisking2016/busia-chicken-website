@@ -68,9 +68,91 @@ try {
             ]);
             break;
 
+        case 'bulk_update_status':
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception("Invalid method");
+
+            $csrfToken = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+            if (function_exists('verifyCSRFToken') && !verifyCSRFToken($csrfToken)) {
+                throw new Exception("Invalid security token");
+            }
+
+            $order_ids = json_decode($_POST['order_ids'] ?? '[]', true);
+            $new_status = trim($_POST['status'] ?? '');
+            $valid = ['pending','paid','picking','packing','production','dispatch','shipped','delivered','completed','cancelled'];
+
+            if (empty($order_ids) || !is_array($order_ids)) throw new Exception("No orders selected");
+            if (!in_array($new_status, $valid, true)) throw new Exception("Invalid status: $new_status");
+
+            $pdo->beginTransaction();
+            $updated = 0;
+            foreach ($order_ids as $oid) {
+                $oid = (int)$oid;
+                if ($oid <= 0) continue;
+                
+                // Get current status to detect transitions
+                $current = fetchOne($pdo, "SELECT status FROM orders WHERE id = ?", [$oid]);
+                if (!$current) continue;
+                
+                $oldStatus = $current['status'];
+                execute($pdo, "UPDATE orders SET status = ? WHERE id = ?", [$new_status, $oid]);
+                $updated++;
+
+                // Auto-deduct raw materials when a feed order transitions to a "fulfilled" state from non-fulfilled
+                $nonFulfilled = ['pending', 'cancelled'];
+                $fulfilled = ['paid','picking','packing','production','dispatch','shipped','delivered','completed'];
+                
+                if (in_array($oldStatus, $nonFulfilled, true) && in_array($new_status, $fulfilled, true)) {
+                    // Get feed items in this order and deduct their raw materials
+                    $feedItems = fetchAll($pdo, "
+                        SELECT oi.product_id, oi.quantity, p.product_type
+                        FROM order_items oi
+                        JOIN products p ON oi.product_id = p.id
+                        WHERE oi.order_id = ? AND p.product_type = 'feed'
+                    ", [$oid]);
+
+                    foreach ($feedItems as $fi) {
+                        // Find the recipe for this product
+                        $recipe = fetchOne($pdo, "SELECT * FROM feed_recipes WHERE product_id = ? AND is_active = 1 LIMIT 1", [$fi['product_id']]);
+                        if (!$recipe) continue;
+
+                        $ingredients = fetchAll($pdo, "
+                            SELECT ri.amount_kg as base_amount, rm.id as rm_id, rm.name, rm.stock_tons, rm.current_price_per_ton
+                            FROM recipe_ingredients ri
+                            JOIN raw_materials rm ON ri.raw_material_id = rm.id
+                            WHERE ri.recipe_id = ?
+                        ", [$recipe['id']]);
+
+                        $totalCost = 0;
+                        foreach ($ingredients as $ing) {
+                            $neededKg = $ing['base_amount'] * $fi['quantity'];
+                            $neededTons = $neededKg / 1000;
+
+                            // Deduct but don't go below zero
+                            execute($pdo, "UPDATE raw_materials SET stock_tons = GREATEST(stock_tons - ?, 0) WHERE id = ?", [$neededTons, $ing['rm_id']]);
+                            $totalCost += ($neededKg / 1000) * $ing['current_price_per_ton'];
+
+                            // Check and create alert if low
+                            $updated_rm = fetchOne($pdo, "SELECT stock_tons, min_stock_level, name FROM raw_materials WHERE id = ?", [$ing['rm_id']]);
+                            if ($updated_rm && (float)$updated_rm['stock_tons'] <= (float)$updated_rm['min_stock_level']) {
+                                execute($pdo, "INSERT IGNORE INTO stock_alerts (alert_type, message, related_id) VALUES ('low_stock', ?, ?)",
+                                    ["{$updated_rm['name']} is running low after sale fulfillment! Stock: {$updated_rm['stock_tons']} tons.", $ing['rm_id']]);
+                            }
+                        }
+
+                        // Also deduct finished product stock
+                        execute($pdo, "UPDATE products SET stock_quantity = GREATEST(stock_quantity - ?, 0) WHERE id = ?", [$fi['quantity'], $fi['product_id']]);
+                    }
+                }
+            }
+            $pdo->commit();
+
+            echo json_encode(['success' => true, 'message' => "Updated $updated orders to '$new_status'."]);
+            break;
+
         default:
             throw new Exception("Invalid action");
     }
 } catch (Exception $e) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }

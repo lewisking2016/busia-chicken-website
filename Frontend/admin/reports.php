@@ -231,6 +231,74 @@ if ($pdo) {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Formula Performance Report -->
+<div class="admin-card" style="margin-top: 24px; overflow: hidden; border-radius: 4px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: var(--admin-text-heading);">Formula Performance Report</h3>
+            <p style="margin: 4px 0 0; font-size: 0.85rem; color: #64748b;">Yield comparison: production output vs. sales revenue per feed formula.</p>
+        </div>
+        <span class="badge-pill badge-pill-success">Live Data</span>
+    </div>
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Formula</th>
+                    <th>Product</th>
+                    <th style="text-align: center;">Total Produced</th>
+                    <th style="text-align: center;">Total Sold</th>
+                    <th style="text-align: right;">Production Cost</th>
+                    <th style="text-align: right;">Revenue</th>
+                    <th style="text-align: right;">Gross Profit</th>
+                    <th style="text-align: center;">Margin %</th>
+                </tr>
+            </thead>
+            <tbody id="formula-perf-body">
+                <tr><td colspan="8" style="text-align: center; color: #64748b; padding: 24px;">Loading formula performance data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// Load formula performance data
+async function loadFormulaPerformance() {
+    try {
+        const res = await fetch('/Backend/api/admin_stock.php?action=get_formula_performance');
+        const result = await res.json();
+        const tbody = document.getElementById('formula-perf-body');
+        
+        if (!result.success || !result.data.length) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:24px;">No formula performance data available yet.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = result.data.map(p => {
+            const profitColor = p.gross_profit >= 0 ? '#16a34a' : '#dc2626';
+            const marginColor = p.profit_margin_pct >= 20 ? '#16a34a' : (p.profit_margin_pct >= 10 ? '#f59e0b' : '#dc2626');
+            return `
+            <tr>
+                <td style="font-weight: 700;">${p.formula_name}</td>
+                <td style="color: #475569;">${p.product_name}</td>
+                <td style="text-align: center; font-weight: 600;">${Number(p.total_produced).toLocaleString()} bags</td>
+                <td style="text-align: center; font-weight: 600;">${Number(p.total_sold).toLocaleString()} units</td>
+                <td style="text-align: right; color: #475569;">KES ${Number(p.total_production_cost).toLocaleString()}</td>
+                <td style="text-align: right; font-weight: 600;">KES ${Number(p.total_revenue).toLocaleString()}</td>
+                <td style="text-align: right; font-weight: 700; color: ${profitColor};">KES ${Number(p.gross_profit).toLocaleString()}</td>
+                <td style="text-align: center;">
+                    <span style="background: ${marginColor}; color: #fff; padding: 3px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: 700;">
+                        ${p.profit_margin_pct}%
+                    </span>
+                </td>
+            </tr>`;
+        }).join('');
+    } catch(e) { console.error(e); }
+}
+
+document.addEventListener('DOMContentLoaded', loadFormulaPerformance);
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const labels = <?php echo json_encode(array_map(function($m) { 

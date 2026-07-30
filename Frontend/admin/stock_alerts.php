@@ -51,8 +51,31 @@ async function loadAlerts() {
         const result = await response.json();
         
         const container = document.getElementById('alerts-container');
+        if (!result.success) {
+            container.innerHTML = '<p style="padding:16px;text-align:center;color:#64748b;">Failed to load.</p>';
+            return;
+        }
+
+        const { alerts, raw_materials } = result.data;
+
+        // Build reorder alerts from raw materials
+        const reorderAlerts = (raw_materials || [])
+            .filter(rm => rm.is_below_reorder)
+            .map(rm => ({
+                id: 'rm-' + rm.id,
+                alert_type: 'reorder_point',
+                material_name: rm.name,
+                stock_tons: Number(rm.stock_tons).toFixed(2),
+                min_stock_level: Number(rm.min_stock_level).toFixed(2),
+                days_covered: rm.days_covered,
+                avg_daily_consumption_kg: rm.avg_daily_consumption_kg,
+                message: `<strong>${rm.name}</strong> is below reorder threshold. Current: <strong>${Number(rm.stock_tons).toFixed(2)} kgs</strong> (min: ${Number(rm.min_stock_level).toFixed(2)} kgs). ${rm.days_covered < 999 ? `Covers <strong>${rm.days_covered} days</strong> of production at current velocity.` : 'No recent production data to estimate coverage.'}`,
+                created_at: new Date().toISOString()
+            }));
+
+        const allAlerts = [...reorderAlerts, ...(alerts || [])];
         
-        if (!result.success || result.data.alerts.length === 0) {
+        if (allAlerts.length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 60px 40px; background: #f8fafc; border-radius: 8px;">
                     <i data-lucide="check-circle-2" style="width: 64px; height: 64px; color: #16a34a; margin-bottom: 16px;"></i>
@@ -61,21 +84,42 @@ async function loadAlerts() {
                 </div>
             `;
         } else {
-            container.innerHTML = result.data.alerts.map(a => `
-                <div class="alert-item ${a.alert_type}">
-                    <div style="display: flex; gap: 16px; align-items: center;">
+            container.innerHTML = allAlerts.map(a => {
+                let icon = 'bell', borderColor = '#f59e0b', bgColor = 'rgba(245,158,11,0.06)';
+                
+                if (a.alert_type === 'reorder_point') {
+                    icon = 'package-x';
+                    const urgent = a.days_covered < 7;
+                    borderColor = urgent ? '#dc2626' : '#f59e0b';
+                    bgColor = urgent ? 'rgba(220,38,38,0.04)' : 'rgba(245,158,11,0.04)';
+                } else if (a.alert_type === 'low_stock') {
+                    icon = 'alert-triangle';
+                    borderColor = '#ef4444';
+                    bgColor = 'rgba(239,68,68,0.04)';
+                } else if (a.alert_type === 'price_fluctuation') {
+                    icon = 'trending-up';
+                    borderColor = '#3b82f6';
+                    bgColor = 'rgba(59,130,246,0.04)';
+                }
+
+                return `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-left: 4px solid ${borderColor}; background: ${bgColor}; border-radius: 0 8px 8px 0; margin-bottom: 12px;">
+                    <div style="display: flex; gap: 16px; align-items: center; flex: 1;">
                         <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center;">
-                            <i data-lucide="${getAlertIcon(a.alert_type)}"></i>
+                            <i data-lucide="${icon}"></i>
                         </div>
-                        <div>
-                            <strong style="display: block; font-size: 1rem; text-transform: capitalize;">${a.alert_type.replace('_', ' ')}</strong>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <strong style="font-size: 0.9rem; text-transform: capitalize;">${a.alert_type.replace(/_/g, ' ')}</strong>
+                                ${a.days_covered !== undefined && a.days_covered < 999 ? `<span style="background: ${a.days_covered < 3 ? '#dc2626' : (a.days_covered < 7 ? '#f59e0b' : '#22c55e')}; color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-weight: 700;">${a.days_covered}d coverage</span>` : ''}
+                            </div>
                             <p style="margin: 0; color: #475569; font-size: 0.9rem;">${a.message}</p>
                             <span style="font-size: 0.75rem; color: #94a3b8;">${new Date(a.created_at).toLocaleString()}</span>
                         </div>
                     </div>
-                    <button class="btn btn-trans btn-sm" onclick="resolveAlert(${a.id})">Resolve</button>
-                </div>
-            `).join('');
+                    ${typeof a.id === 'number' ? `<button class="btn btn-trans btn-sm" onclick="resolveAlert(${a.id})">Resolve</button>` : ''}
+                </div>`;
+            }).join('');
         }
 
         if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -98,15 +142,6 @@ async function resolveAlert(id) {
             loadAlerts();
         }
     } catch (err) { console.error(err); }
-}
-
-function getAlertIcon(type) {
-    switch(type) {
-        case 'low_stock': return 'alert-triangle';
-        case 'price_fluctuation': return 'trending-up';
-        case 'bottleneck': return 'activity';
-        default: return 'bell';
-    }
 }
 
 document.addEventListener('DOMContentLoaded', loadAlerts);
