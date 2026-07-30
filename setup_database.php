@@ -15,30 +15,44 @@ try {
 
     echo "✓ Database connection successful\n\n";
 
-    // Read and execute schema
-    $schemaFile = __DIR__ . '/Backend/config/schema.sql';
-    if (!file_exists($schemaFile)) {
-        die("Schema file not found: $schemaFile\n");
-    }
+    // Read and execute schema files sequentially
+    $schemaFiles = [
+        __DIR__ . '/Backend/config/schema.sql',
+        __DIR__ . '/Backend/config/stock_module.sql',
+        __DIR__ . '/Backend/config/migration_v2.sql'
+    ];
 
-    $schema = file_get_contents($schemaFile);
-    echo "✓ Version 2.1 - Executing schema...\n";
-    
-    // Split by semicolon and execute each statement
-    $statements = array_filter(array_map('trim', explode(';', $schema)));
-    
-    foreach ($statements as $statement) {
-        if (!empty($statement)) {
-            // Strip database creation/selection statements to prevent permission errors on cPanel
-            if (stripos($statement, 'CREATE DATABASE') !== false || stripos($statement, 'USE ') !== false) {
-                continue;
-            }
-            $pdo->exec($statement);
-            echo "✓ Executed: " . substr($statement, 0, 50) . "...\n";
+    echo "✓ Version 2.2 - Executing schemas...\n";
+
+    foreach ($schemaFiles as $file) {
+        if (!file_exists($file)) {
+            echo "⚠ Warning: File not found: $file\n";
+            continue;
         }
+
+        $sql = file_get_contents($file);
+        $statements = array_filter(array_map('trim', explode(';', $sql)));
+
+        foreach ($statements as $statement) {
+            if (!empty($statement)) {
+                // Strip database creation/selection statements to prevent permission errors on cPanel
+                if (stripos($statement, 'CREATE DATABASE') !== false || stripos($statement, 'USE ') !== false) {
+                    continue;
+                }
+                try {
+                    $pdo->exec($statement);
+                } catch (Exception $e) {
+                    // Ignore duplicate column errors during sequential re-runs
+                    if (!str_contains($e->getMessage(), 'Duplicate column') && !str_contains($e->getMessage(), 'already exists')) {
+                        throw $e;
+                    }
+                }
+            }
+        }
+        echo "✓ Successfully executed: " . basename($file) . "\n";
     }
 
-    echo "\n✓ All tables created successfully!\n\n";
+    echo "\n✓ All tables created and migrations applied successfully!\n\n";
 
     // Insert sample categories
     $categories = [
