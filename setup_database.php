@@ -28,6 +28,10 @@ try {
     
     foreach ($statements as $statement) {
         if (!empty($statement)) {
+            // Strip database creation/selection statements to prevent permission errors on cPanel
+            if (stripos($statement, 'CREATE DATABASE') === 0 || stripos($statement, 'USE ') === 0) {
+                continue;
+            }
             $pdo->exec($statement);
             echo "✓ Executed: " . substr($statement, 0, 50) . "...\n";
         }
