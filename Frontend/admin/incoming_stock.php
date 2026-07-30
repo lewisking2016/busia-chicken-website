@@ -29,10 +29,10 @@ include __DIR__ . '/includes/admin_header.php';
     <?php include __DIR__ . '/includes/stock_nav.php'; ?>
 
     <!-- Tabs Header -->
-    <div class="formula-tabs" style="margin-bottom: 24px; border-bottom: 2px solid var(--admin-border);">
-        <button class="tab-btn active" onclick="switchTab('shipments-tab', this)">Incoming Shipments</button>
-        <button class="tab-btn" onclick="switchTab('suppliers-tab', this)">Supplier Directory</button>
-        <button class="tab-btn" onclick="switchTab('auto-orders-tab', this)">Auto-Order Assistant</button>
+    <div class="tabs" style="margin-bottom: 24px;">
+        <button class="tab-button active" onclick="switchTab('shipments-tab', this)">Incoming Shipments</button>
+        <button class="tab-button" onclick="switchTab('suppliers-tab', this)">Supplier Directory</button>
+        <button class="tab-button" onclick="switchTab('auto-orders-tab', this)">Auto-Order Assistant</button>
     </div>
 
     <!-- Tab 1: Incoming Shipments -->
@@ -219,7 +219,7 @@ window.shipments_list = [];
 
 function switchTab(tabId, btn) {
     document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
     document.getElementById(tabId).style.display = 'block';
     btn.classList.add('active');
 }

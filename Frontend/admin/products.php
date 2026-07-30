@@ -372,6 +372,68 @@ if ($pdo) {
             </tbody>
         </table>
     </div>
+
+    <!-- ========== RAW MATERIAL SALES SUB-MODULE ========== -->
+    <div class="admin-card" style="margin-top: 32px; padding: 24px; border: 1px solid var(--admin-border); border-radius: 8px; background: #ffffff;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="background: rgba(27, 94, 32, 0.1); color: var(--admin-primary); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="percent" style="width: 20px; height: 20px;"></i>
+            </div>
+            <div>
+                <h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.2rem; color: var(--admin-text-heading);">Raw Material Sales & Protection Control</h3>
+                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: #64748b;">Direct retail of ingredients while automatically safeguarding safety production reserves.</p>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px;">
+            <?php 
+            $linked_found = false;
+            foreach ($products as $p): 
+                if (!empty($p['raw_material_id'])): 
+                    $linked_found = true;
+                    $total = (float)$p['raw_material_stock'];
+                    $reserve = (float)$p['reserved_production_kg'];
+                    $sellable = max(0.0, $total - $reserve);
+                    $fill_pct = $total > 0 ? min(100.0, ($reserve / $total) * 100) : 0;
+            ?>
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; position: relative; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                            <span style="font-weight: 700; font-size: 0.95rem; color: var(--admin-text-heading);"><?php echo htmlspecialchars($p['name']); ?></span>
+                            <span class="badge-pill badge-pill-success" style="font-size: 0.7rem;">Linked to <?php echo htmlspecialchars($p['linked_raw_material_name']); ?></span>
+                        </div>
+                        <p style="margin: 0 0 12px; font-size: 0.8rem; color: #64748b;">Selling Price: <strong>KES <?php echo number_format($p['price'], 2); ?> / kg</strong></p>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #475569; margin-bottom: 4px;">
+                                <span>Production Reserve: <strong><?php echo number_format($reserve); ?> kgs</strong></span>
+                                <span>Sellable Stock: <strong><?php echo number_format($sellable); ?> kgs</strong></span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 9999px; overflow: hidden; display: flex;">
+                                <div style="width: <?php echo $fill_pct; ?>%; height: 100%; background: #f59e0b;" title="Production Reserve Floor"></div>
+                                <div style="width: <?php echo 100 - $fill_pct; ?>%; height: 100%; background: var(--admin-primary);" title="Available for Retail Sale"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 12px; font-size: 0.75rem; color: #64748b;">
+                        <span>Total physical stock: <strong><?php echo number_format($total); ?> kgs</strong></span>
+                        <button onclick="openEditModal(<?php echo htmlspecialchars(json_encode($p)); ?>)" class="btn btn-trans btn-sm" style="font-size:0.7rem; padding: 4px 8px;">Adjust Reserve</button>
+                    </div>
+                </div>
+            <?php 
+                endif;
+            endforeach; 
+            if (!$linked_found):
+            ?>
+                <div style="grid-column: 1 / -1; text-align: center; padding: 32px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; color: #64748b; font-size: 0.9rem;">
+                    <i data-lucide="alert-circle" style="width: 24px; height: 24px; color: #94a3b8; margin-bottom: 8px;"></i>
+                    <p style="margin: 0;">No products are currently configured for direct Raw Material Sales.</p>
+                    <p style="margin: 4px 0 0; font-size: 0.8rem;">Edit an existing product or add a new one, then configure the "Link Raw Material" settings.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
 </div>
 
 <!-- ========== ADD PRODUCT MODAL ========== -->
