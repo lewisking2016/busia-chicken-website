@@ -25,5 +25,7 @@ CREATE TABLE IF NOT EXISTS recurring_feed_schedules (
 
 -- 3. Add batch_number column to production_history for batch tracking
 ALTER TABLE production_history
-    ADD COLUMN IF NOT EXISTS batch_number VARCHAR(30) DEFAULT NULL AFTER id,
-    ADD COLUMN IF NOT EXISTS notes TEXT AFTER total_cost;
+    ADD COLUMN batch_number VARCHAR(30) DEFAULT NULL AFTER id;
+
+ALTER TABLE production_history
+    ADD COLUMN notes TEXT AFTER total_cost;
