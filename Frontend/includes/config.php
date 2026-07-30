@@ -56,8 +56,12 @@ define('PAYMENT_METHODS', [
 define('ORDER_STATUS', [
     'pending' => 'Pending',
     'paid' => 'Paid',
-    'processing' => 'Processing',
+    'picking' => 'Picking',
+    'packing' => 'Packing',
+    'production' => 'In Production',
+    'dispatch' => 'Dispatch',
     'shipped' => 'Shipped',
+    'delivered' => 'Delivered',
     'completed' => 'Completed',
     'cancelled' => 'Cancelled'
 ]);

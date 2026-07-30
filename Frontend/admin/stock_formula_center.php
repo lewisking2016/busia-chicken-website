@@ -209,6 +209,10 @@ include __DIR__ . '/includes/admin_header.php';
                 <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
                 Recipe Configurations
             </button>
+            <button type="button" class="tab-btn" onclick="switchTab('history', this); loadBatchHistory();" aria-pressed="false">
+                <i data-lucide="history" style="width: 18px; height: 18px;"></i>
+                Batch History
+            </button>
         </div>
         <button type="button" class="toolbar-btn" onclick="syncStorePrices()">
             <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Sync Store Prices
@@ -248,6 +252,37 @@ include __DIR__ . '/includes/admin_header.php';
                     </thead>
                     <tbody id="recipes-body">
                         <!-- Populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Batch History Tab -->
+    <div id="history-tab" class="tab-content" style="display: none;">
+        <div class="admin-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div>
+                    <h3 style="margin: 0;">Production Batch History</h3>
+                    <p style="margin: 0; font-size: 0.85rem; color: #64748b;">Track cost-per-bag and formula cost creep over time.</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Batch #</th>
+                            <th>Formula</th>
+                            <th>Bags Produced</th>
+                            <th>Total Cost</th>
+                            <th>Cost / Bag</th>
+                            <th>Sell Price</th>
+                            <th>Profit / Bag</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batch-history-body">
+                        <tr><td colspan="8" style="text-align:center;color:#64748b;padding:20px;">Click "Batch History" tab to load data.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -598,6 +633,50 @@ document.getElementById('recipe-form').addEventListener('submit', async (e) => {
         }
     } catch (err) { console.error(err); }
 });
+
+// ==================== BATCH HISTORY ====================
+async function loadBatchHistory() {
+    const tbody = document.getElementById('batch-history-body');
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:20px;">Loading batch history...</td></tr>';
+    
+    try {
+        const response = await fetch('/Backend/api/admin_stock.php?action=get_production_history&limit=50');
+        const result = await response.json();
+        if (!result.success || !result.data.length) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:30px;">No production batches recorded yet. Use "Produce Max" or "Custom" on the Live Production Center tab to create your first batch.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = result.data.map(h => {
+            const profitColor = h.profit_per_bag > 0 ? '#16a34a' : '#dc2626';
+            const marginPct = h.current_selling_price > 0 && h.cost_per_bag > 0
+                ? ((h.current_selling_price - h.cost_per_bag) / h.current_selling_price * 100).toFixed(1)
+                : '0.0';
+            return `
+            <tr>
+                <td style="font-family: monospace; font-weight: 700; color: var(--admin-primary); font-size: 0.85rem;">${h.batch_number || '-'}</td>
+                <td>
+                    <strong>${h.recipe_name}</strong><br>
+                    <small style="color: #64748b;">${h.product_name}</small>
+                </td>
+                <td style="font-weight: 600;">${h.quantity_bags}</td>
+                <td>KES ${Number(h.total_cost).toLocaleString()}</td>
+                <td style="font-weight: 700;">KES ${Number(h.cost_per_bag).toLocaleString()}</td>
+                <td>KES ${Number(h.current_selling_price).toLocaleString()}</td>
+                <td>
+                    <span style="font-weight: 700; color: ${profitColor};">
+                        KES ${Number(h.profit_per_bag).toLocaleString()}
+                    </span>
+                    <div style="font-size: 0.7rem; color: ${profitColor};">${marginPct}% margin</div>
+                </td>
+                <td style="color: #64748b; font-size: 0.85rem;">${new Date(h.produced_at).toLocaleDateString()}</td>
+            </tr>`;
+        }).join('');
+    } catch (err) {
+        console.error(err);
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:20px;">Failed to load batch history.</td></tr>';
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     loadData();

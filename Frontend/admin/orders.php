@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $order_id = (int)($_POST['order_id'] ?? 0);
     $new_status = $_POST['status'] ?? '';
     
-    $valid_statuses = ['pending', 'paid', 'processing', 'shipped', 'completed', 'cancelled'];
+    $valid_statuses = ['pending', 'paid', 'picking', 'packing', 'production', 'dispatch', 'shipped', 'delivered', 'completed', 'cancelled'];
     if (in_array($new_status, $valid_statuses, true)) {
         try {
             $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
@@ -111,8 +111,12 @@ if ($pdo) {
                 <option value="">All Statuses</option>
                 <option value="pending" <?php echo $status_filter === 'pending' ? 'selected' : ''; ?>>Pending</option>
                 <option value="paid" <?php echo $status_filter === 'paid' ? 'selected' : ''; ?>>Paid</option>
-                <option value="processing" <?php echo $status_filter === 'processing' ? 'selected' : ''; ?>>Processing</option>
+                <option value="picking" <?php echo $status_filter === 'picking' ? 'selected' : ''; ?>>Picking</option>
+                <option value="packing" <?php echo $status_filter === 'packing' ? 'selected' : ''; ?>>Packing</option>
+                <option value="production" <?php echo $status_filter === 'production' ? 'selected' : ''; ?>>In Production</option>
+                <option value="dispatch" <?php echo $status_filter === 'dispatch' ? 'selected' : ''; ?>>Dispatch</option>
                 <option value="shipped" <?php echo $status_filter === 'shipped' ? 'selected' : ''; ?>>Shipped</option>
+                <option value="delivered" <?php echo $status_filter === 'delivered' ? 'selected' : ''; ?>>Delivered</option>
                 <option value="completed" <?php echo $status_filter === 'completed' ? 'selected' : ''; ?>>Completed</option>
                 <option value="cancelled" <?php echo $status_filter === 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
             </select>
@@ -123,11 +127,31 @@ if ($pdo) {
         </div>
     </form>
 
+    <!-- Bulk Actions Bar -->
+    <div id="bulk-bar" style="display: none; padding: 12px 20px; background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%); border-bottom: 1px solid var(--admin-border); color: #fff; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <span style="font-weight: 700; font-size: 0.9rem;"><span id="bulk-count">0</span> selected</span>
+        <select id="bulk-status" style="padding: 6px 12px; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; font-size: 0.85rem; background: rgba(255,255,255,0.15); color: #fff;">
+            <option value="">Set Status...</option>
+            <option value="paid">✓ Paid</option>
+            <option value="picking">📦 Picking</option>
+            <option value="packing">📋 Packing</option>
+            <option value="production">🏭 In Production</option>
+            <option value="dispatch">🚚 Dispatch</option>
+            <option value="shipped">✈️ Shipped</option>
+            <option value="delivered">📬 Delivered</option>
+            <option value="completed">✅ Completed</option>
+            <option value="cancelled">❌ Cancelled</option>
+        </select>
+        <button onclick="bulkUpdateStatus()" class="btn btn-sm" style="background: #FFC107; color: #1B5E20; font-weight: 700; padding: 6px 16px; border-radius: 4px; border: none; cursor: pointer;">Apply</button>
+        <button onclick="deselectAll()" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: #fff; padding: 6px 16px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); cursor: pointer;">Deselect All</button>
+    </div>
+
     <!-- Orders Table -->
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
                 <tr>
+                    <th style="width: 40px;"><input type="checkbox" id="select-all" onchange="toggleAll(this)"></th>
                     <th>Order #</th>
                     <th>Customer Info</th>
                     <th>Order Date</th>
@@ -143,15 +167,13 @@ if ($pdo) {
                 <?php 
                     $status_class = 'badge-pill-warning';
                     switch(strtolower($order['status'])) {
-                        case 'completed': $status_class = 'badge-pill-success'; break;
-                        case 'paid': $status_class = 'badge-pill-success'; break;
-                        case 'processing': $status_class = 'badge-pill-warning'; break;
-                        case 'shipped': $status_class = 'badge-pill-success'; break;
-                        case 'pending': $status_class = 'badge-pill-warning'; break;
+                        case 'completed': case 'delivered': case 'paid': case 'shipped': $status_class = 'badge-pill-success'; break;
+                        case 'picking': case 'packing': case 'production': case 'dispatch': case 'pending': $status_class = 'badge-pill-warning'; break;
                         case 'cancelled': $status_class = 'badge-pill-danger'; break;
                     }
                 ?>
                 <tr>
+                    <td><input type="checkbox" class="order-cb" value="<?php echo $order['id']; ?>" onchange="updateBulkBar()"></td>
                     <td style="font-family: monospace; font-weight: 600; color: var(--admin-primary);">
                         #<?php echo htmlspecialchars($order['order_number']); ?>
                     </td>
@@ -185,8 +207,12 @@ if ($pdo) {
                                 <select name="status" onchange="this.form.submit()" style="padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.8rem; outline: none; background: #ffffff;">
                                     <option value="pending" <?php echo $order['status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
                                     <option value="paid" <?php echo $order['status'] === 'paid' ? 'selected' : ''; ?>>Paid</option>
-                                    <option value="processing" <?php echo $order['status'] === 'processing' ? 'selected' : ''; ?>>Processing</option>
+                                    <option value="picking" <?php echo $order['status'] === 'picking' ? 'selected' : ''; ?>>Picking</option>
+                                    <option value="packing" <?php echo $order['status'] === 'packing' ? 'selected' : ''; ?>>Packing</option>
+                                    <option value="production" <?php echo $order['status'] === 'production' ? 'selected' : ''; ?>>Production</option>
+                                    <option value="dispatch" <?php echo $order['status'] === 'dispatch' ? 'selected' : ''; ?>>Dispatch</option>
                                     <option value="shipped" <?php echo $order['status'] === 'shipped' ? 'selected' : ''; ?>>Shipped</option>
+                                    <option value="delivered" <?php echo $order['status'] === 'delivered' ? 'selected' : ''; ?>>Delivered</option>
                                     <option value="completed" <?php echo $order['status'] === 'completed' ? 'selected' : ''; ?>>Completed</option>
                                     <option value="cancelled" <?php echo $order['status'] === 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
                                 </select>
@@ -197,11 +223,100 @@ if ($pdo) {
                 <?php endforeach; ?>
                 <?php else: ?>
                 <tr>
-                    <td colspan="7" style="text-align: center; padding: 30px; color: #64748b;">No orders found.</td>
+                    <td colspan="8" style="text-align: center; padding: 30px; color: #64748b;">No orders found.</td>
                 </tr>
                 <?php endif; ?>
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- Customer Groups & Recurring Schedules -->
+<div class="admin-card" style="margin-top: 24px; overflow: hidden; border-radius: 4px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+        <div>
+            <h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.15rem;">Customer Groups & Recurring Orders</h3>
+            <p style="margin: 4px 0 0; font-size: 0.85rem; color: #64748b;">Lifetime value per customer and recurring feed delivery schedules.</p>
+        </div>
+    </div>
+
+    <!-- Customer LTV Table -->
+    <h4 style="margin: 0 0 12px; font-size: 0.95rem; color: var(--admin-text-heading);">Customer Lifetime Value</h4>
+    <div class="table-responsive" style="margin-bottom: 28px;">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Total Orders</th>
+                    <th>Lifetime Value</th>
+                    <th>Last Order</th>
+                </tr>
+            </thead>
+            <tbody id="customer-ltv-body">
+                <tr><td colspan="5" style="text-align:center;color:#64748b;padding:20px;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Recurring Schedules -->
+    <h4 style="margin: 0 0 12px; font-size: 0.95rem; color: var(--admin-text-heading);">Recurring Delivery Schedules</h4>
+    <div class="table-responsive" style="margin-bottom: 20px;">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Frequency</th>
+                    <th>Next Delivery</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="schedules-body">
+                <tr><td colspan="6" style="text-align:center;color:#64748b;padding:20px;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add Schedule Form -->
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 20px;">
+        <h5 style="margin: 0 0 16px; font-size: 0.9rem; color: var(--admin-text-heading);">Add Recurring Schedule</h5>
+        <form id="schedule-form" onsubmit="saveSchedule(event)" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; align-items: end;">
+            <div>
+                <label style="font-size: 0.75rem; color: #64748b; display: block; margin-bottom: 4px;">Customer</label>
+                <select name="user_id" id="sched-user" class="admin-form-control" required><option value="">Loading...</option></select>
+            </div>
+            <div>
+                <label style="font-size: 0.75rem; color: #64748b; display: block; margin-bottom: 4px;">Product</label>
+                <select name="product_id" class="admin-form-control" required>
+                    <option value="">Select Feed...</option>
+                    <?php
+                    if ($pdo) {
+                        $feeds = $pdo->query("SELECT id, name FROM products WHERE product_type = 'feed' AND is_active = 1 ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+                        foreach ($feeds as $f) {
+                            echo '<option value="' . $f['id'] . '">' . htmlspecialchars($f['name']) . '</option>';
+                        }
+                    }
+                    ?>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 0.75rem; color: #64748b; display: block; margin-bottom: 4px;">Quantity (bags)</label>
+                <input type="number" name="quantity" class="admin-form-control" value="1" min="1" required>
+            </div>
+            <div>
+                <label style="font-size: 0.75rem; color: #64748b; display: block; margin-bottom: 4px;">Every N days</label>
+                <input type="number" name="frequency_days" class="admin-form-control" value="7" min="1" required>
+            </div>
+            <div>
+                <label style="font-size: 0.75rem; color: #64748b; display: block; margin-bottom: 4px;">Next Delivery</label>
+                <input type="date" name="next_delivery_date" class="admin-form-control" required>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary btn-sm" style="width: 100%;">Add Schedule</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -321,6 +436,120 @@ async function viewOrderDetails(orderId) {
 function closeOrderModal() {
     document.getElementById('order-modal').style.display = 'none';
 }
+
+// ==================== BULK ACTIONS ====================
+function toggleAll(master) {
+    document.querySelectorAll('.order-cb').forEach(cb => cb.checked = master.checked);
+    updateBulkBar();
+}
+
+function deselectAll() {
+    document.querySelectorAll('.order-cb').forEach(cb => cb.checked = false);
+    document.getElementById('select-all').checked = false;
+    updateBulkBar();
+}
+
+function updateBulkBar() {
+    const checked = document.querySelectorAll('.order-cb:checked');
+    const bar = document.getElementById('bulk-bar');
+    document.getElementById('bulk-count').textContent = checked.length;
+    bar.style.display = checked.length > 0 ? 'flex' : 'none';
+}
+
+async function bulkUpdateStatus() {
+    const ids = Array.from(document.querySelectorAll('.order-cb:checked')).map(cb => cb.value);
+    const status = document.getElementById('bulk-status').value;
+    if (!ids.length) return alert('No orders selected.');
+    if (!status) return alert('Select a status first.');
+    if (!confirm(`Update ${ids.length} order(s) to "${status}"?`)) return;
+
+    const fd = new FormData();
+    fd.append('action', 'bulk_update_status');
+    fd.append('order_ids', JSON.stringify(ids));
+    fd.append('status', status);
+    fd.append('csrf_token', window.BusiaAdmin?.csrfToken || '');
+
+    try {
+        const res = await fetch('/Backend/api/admin_actions.php', { method: 'POST', body: fd });
+        const result = await res.json();
+        alert(result.message);
+        if (result.success) location.reload();
+    } catch (e) { alert('Bulk update failed.'); }
+}
+
+// ==================== CUSTOMER GROUPS ====================
+async function loadCustomerGroups() {
+    try {
+        const res = await fetch('/Backend/api/admin_stock.php?action=get_customer_groups');
+        const result = await res.json();
+        if (!result.success) return;
+
+        const { customers, schedules } = result.data;
+
+        // Render customer LTV table
+        document.getElementById('customer-ltv-body').innerHTML = customers.length ? customers.map(c => `
+            <tr>
+                <td style="font-weight: 600;">${c.first_name || ''} ${c.last_name || c.username}</td>
+                <td>${c.email || '-'}</td>
+                <td style="font-weight: 700; color: var(--admin-primary);">${c.total_orders}</td>
+                <td style="font-weight: 700;">KES ${Number(c.lifetime_value).toLocaleString()}</td>
+                <td style="color: #64748b; font-size: 0.85rem;">${c.last_order_date ? new Date(c.last_order_date).toLocaleDateString() : '-'}</td>
+            </tr>
+        `).join('') : '<tr><td colspan="5" style="text-align:center;color:#64748b;padding:20px;">No customer data yet.</td></tr>';
+
+        // Render schedules
+        document.getElementById('schedules-body').innerHTML = schedules.length ? schedules.map(s => {
+            const overdue = new Date(s.next_delivery_date) < new Date();
+            return `
+            <tr style="${overdue ? 'background: #fef2f2;' : ''}">
+                <td style="font-weight: 600;">${s.first_name || ''} ${s.last_name || s.username}</td>
+                <td>${s.product_name}</td>
+                <td>${s.quantity}</td>
+                <td>Every ${s.frequency_days} days</td>
+                <td style="font-weight: 600; color: ${overdue ? '#dc2626' : 'var(--admin-primary)'};">  
+                    ${s.next_delivery_date}${overdue ? ' <span style="font-size:0.75rem;">(OVERDUE)</span>' : ''}
+                </td>
+                <td>
+                    <button class="btn btn-trans btn-sm" style="color:#dc2626;" onclick="deleteSchedule(${s.id})"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+                </td>
+            </tr>`;
+        }).join('') : '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:20px;">No recurring schedules set up.</td></tr>';
+
+        // Populate customer dropdown in schedule form
+        document.getElementById('sched-user').innerHTML = '<option value="">Select Customer...</option>' +
+            customers.map(c => `<option value="${c.id}">${c.first_name || ''} ${c.last_name || c.username} (${c.email})</option>`).join('');
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    } catch(e) { console.error(e); }
+}
+
+async function saveSchedule(e) {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    fd.append('action', 'save_recurring_schedule');
+    fd.append('csrf_token', window.BusiaAdmin?.csrfToken || '');
+    try {
+        const res = await fetch('/Backend/api/admin_stock.php', { method: 'POST', body: fd });
+        const result = await res.json();
+        if (result.success) { e.target.reset(); loadCustomerGroups(); }
+        else alert(result.message);
+    } catch(e) { alert('Failed to save.'); }
+}
+
+async function deleteSchedule(id) {
+    if (!confirm('Delete this recurring schedule?')) return;
+    const fd = new FormData();
+    fd.append('action', 'delete_recurring_schedule');
+    fd.append('id', id);
+    fd.append('csrf_token', window.BusiaAdmin?.csrfToken || '');
+    try {
+        const res = await fetch('/Backend/api/admin_stock.php', { method: 'POST', body: fd });
+        const result = await res.json();
+        if (result.success) loadCustomerGroups();
+    } catch(e) { alert('Failed.'); }
+}
+
+document.addEventListener('DOMContentLoaded', loadCustomerGroups);
 </script>
 
 <?php

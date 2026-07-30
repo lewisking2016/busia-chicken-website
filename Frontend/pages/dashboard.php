@@ -320,9 +320,9 @@ if ($pdo) {
                     <?php 
                         $badge = 'user-badge-pending';
                         $s = strtolower($order['status']);
-                        if ($s === 'completed') $badge = 'user-badge-completed';
+                        if ($s === 'completed' || $s === 'delivered') $badge = 'user-badge-completed';
                         elseif ($s === 'cancelled') $badge = 'user-badge-cancelled';
-                        elseif ($s === 'processing') $badge = 'user-badge-processing';
+                        elseif ($s === 'picking' || $s === 'packing' || $s === 'production' || $s === 'dispatch') $badge = 'user-badge-processing';
                         elseif ($s === 'shipped') $badge = 'user-badge-shipped';
                         elseif ($s === 'paid') $badge = 'user-badge-paid';
                     ?>

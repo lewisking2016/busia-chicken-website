@@ -24,7 +24,7 @@ include __DIR__ . '/includes/admin_header.php';
 <div class="admin-stock-wrapper">
     <div class="dashboard-hero-card" style="background: linear-gradient(135deg, var(--admin-primary) 0%, #064e3b 100%); padding: 32px; border-radius: 8px; margin-bottom: 32px; color: #ffffff;">
         <h1 style="color: #ffffff; margin: 0 0 8px 0;">Live Stock Dashboard</h1>
-        <p style="color: rgba(255, 255, 255, 0.9); margin: 0;">Real-time tracking of raw materials in tons and finished bags in stock, including total inventory valuation.</p>
+        <p style="color: rgba(255, 255, 255, 0.9); margin: 0;">Real-time tracking of raw materials in kgs and finished bags in stock, including total inventory valuation.</p>
     </div>
 
     <?php include __DIR__ . '/includes/stock_nav.php'; ?>
@@ -56,7 +56,7 @@ include __DIR__ . '/includes/admin_header.php';
     <div class="stock-grid">
         <div class="admin-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>Raw Materials (Tons)</h3>
+                <h3>Raw Materials (kgs)</h3>
                 <button class="btn btn-primary btn-sm" onclick="openRMModal()">
                     <i data-lucide="plus"></i> Add Material
                 </button>
@@ -66,15 +66,16 @@ include __DIR__ . '/includes/admin_header.php';
                     <thead>
                         <tr>
                             <th>Material</th>
-                            <th>Stock (Tons)</th>
+                            <th>Stock (kgs)</th>
                             <th>Current Price</th>
                             <th>Total Value</th>
+                            <th>Coverage</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="raw-materials-body">
-                        <tr><td colspan="6" style="text-align:center; padding: 20px;">Syncing raw material data...</td></tr>
+                        <tr><td colspan="7" style="text-align:center; padding: 20px;">Syncing raw material data...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -116,16 +117,16 @@ include __DIR__ . '/includes/admin_header.php';
                 <input type="text" name="name" id="rm-name" class="form-control" required>
             </div>
             <div class="form-group">
-                <label class="form-label">Price per Ton (KES)</label>
+                <label class="form-label">Price per kg (KES)</label>
                 <input type="number" name="current_price_per_ton" id="rm-price" class="form-control" step="0.01" required>
             </div>
             <div class="form-group">
-                <label class="form-label">Current Stock (Tons)</label>
-                <input type="number" name="stock_tons" id="rm-stock" class="form-control" step="0.001" required>
+                <label class="form-label">Current Stock (kgs)</label>
+                <input type="number" name="stock_tons" id="rm-stock" class="form-control" step="0.01" required>
             </div>
             <div class="form-group">
-                <label class="form-label">Min Stock Level (Alert Threshold)</label>
-                <input type="number" name="min_stock_level" id="rm-min" class="form-control" step="0.001" value="1.000">
+                <label class="form-label">Min Stock Level (Alert Threshold in kgs)</label>
+                <input type="number" name="min_stock_level" id="rm-min" class="form-control" step="0.01" value="1000.00">
             </div>
             <div style="display: flex; gap: 12px; margin-top: 32px;">
                 <button type="button" class="btn btn-trans" style="flex: 1;" onclick="closeRMModal()">Cancel</button>
@@ -146,22 +147,40 @@ async function loadDashboardData() {
         const { raw_materials, finished_products, summary } = result.data;
 
         // Raw Materials
-        document.getElementById('raw-materials-body').innerHTML = raw_materials.map(m => `
+        document.getElementById('raw-materials-body').innerHTML = raw_materials.map(m => {
+            // Note: DB columns are named stock_tons and current_price_per_ton, but we present/treat them as kgs now.
+            const stockVal = Number(m.stock_tons);
+            const minVal = Number(m.min_stock_level);
+            let statusText = 'Healthy';
+            let statusClass = 'badge-pill-success';
+            
+            if (stockVal <= 0) {
+                statusText = 'Critical (Out)';
+                statusClass = 'badge-pill-danger';
+            } else if (stockVal <= minVal) {
+                statusText = 'Low Stock';
+                statusClass = 'badge-pill-warning';
+            }
+
+            return `
             <tr>
                 <td><strong>${m.name}</strong></td>
-                <td>${m.stock_tons} Tons</td>
+                <td>${Number(m.stock_tons).toLocaleString()} kgs</td>
                 <td>KES ${Number(m.current_price_per_ton).toLocaleString()}</td>
                 <td>KES ${Number(m.total_value).toLocaleString()}</td>
                 <td>
-                    <span class="badge-pill ${m.stock_tons <= m.min_stock_level ? 'badge-pill-danger' : 'badge-pill-success'}">
-                        ${m.stock_tons <= m.min_stock_level ? 'Low Stock' : 'Healthy'}
+                    ${m.days_covered < 999 ? `<strong>${m.days_covered} days</strong> remaining` : '<span style="color:#64748b;">No usage</span>'}
+                </td>
+                <td>
+                    <span class="badge-pill ${statusClass}">
+                        ${statusText}
                     </span>
                 </td>
                 <td>
                     <button class="btn btn-trans btn-sm" onclick="editRM(${m.id})">Edit</button>
                 </td>
             </tr>
-        `).join('');
+        `}).join('');
 
         // Finished Products
         document.getElementById('finished-stock-body').innerHTML = finished_products.map(p => `
@@ -241,7 +260,6 @@ document.getElementById('rm-form').addEventListener('submit', async (e) => {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadDashboardData();
-    // Auto-refresh every 30 seconds for a "Live" feel
     setInterval(loadDashboardData, 30000);
 });
 </script>

@@ -278,6 +278,14 @@ include __DIR__ . '/includes/admin_header.php';
                     <p style="padding: 16px; text-align: center; color: #64748b; margin: 0; font-size: 0.9rem;">Loading products...</p>
                 </div>
             </div>
+
+            <!-- Raw Material Health Widget -->
+            <div style="margin-top: 20px;">
+                <h4 style="margin: 0 0 14px 0; font-family: 'Outfit', sans-serif; font-size: 1rem; color: var(--admin-text-heading);">Raw Material Health</h4>
+                <div id="raw-material-health" style="border: 1px solid var(--admin-border); border-radius: 4px; overflow: hidden;">
+                    <p style="padding: 16px; text-align: center; color: #64748b; margin: 0; font-size: 0.9rem;">Loading...</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -378,6 +386,7 @@ async function loadDashboard() {
         },
     });
 
+    // Top Moving Products - fed from actual order line items
     document.getElementById('top-products').innerHTML = topProducts.length ? topProducts
         .slice(0, 5)
         .map((item) => `
@@ -425,10 +434,60 @@ async function loadDashboard() {
     document.getElementById('kpi-alerts-summary').textContent = data.data.alerts || 0;
 }
 
+// Load raw material health from stock dashboard
+async function loadRawMaterialHealth() {
+    try {
+        const res = await fetch('/Backend/api/admin_stock.php?action=get_dashboard');
+        const result = await res.json();
+        if (!result.success) return;
+
+        const materials = result.data.raw_materials || [];
+        const container = document.getElementById('raw-material-health');
+
+        // Count materials below reorder for the KPI
+        const belowReorder = materials.filter(m => m.is_below_reorder).length;
+        const alertEl = document.getElementById('kpi-alerts-summary');
+        const currentAlerts = parseInt(alertEl.textContent) || 0;
+        if (belowReorder > 0) {
+            alertEl.textContent = currentAlerts + belowReorder;
+            document.getElementById('kpi-alerts').textContent = currentAlerts + belowReorder;
+        }
+
+        if (!materials.length) {
+            container.innerHTML = '<p style="padding: 16px; text-align: center; color: #64748b; margin: 0;">No raw materials configured.</p>';
+            return;
+        }
+
+        container.innerHTML = materials.map(m => {
+            const daysColor = m.days_covered < 7 ? '#dc2626' : (m.days_covered < 14 ? '#f59e0b' : '#16a34a');
+            const barWidth = Math.min(100, m.days_covered < 999 ? (m.days_covered / 30) * 100 : 100);
+            return `
+            <div style="padding: 12px 16px; border-bottom: 1px solid var(--admin-border);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-weight: 600; font-size: 0.85rem; color: var(--admin-text-heading);">${m.name}</span>
+                    <span style="font-size: 0.75rem; font-weight: 700; color: ${daysColor};">
+                        ${m.days_covered < 999 ? m.days_covered + 'd' : '∞'}
+                        ${m.is_below_reorder ? '<span style="color:#dc2626; margin-left:4px;">⚠ REORDER</span>' : ''}
+                    </span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="flex: 1; height: 4px; background: #f1f5f9; border-radius: 2px; overflow: hidden;">
+                        <div style="width: ${barWidth}%; height: 100%; background: ${daysColor}; transition: width 0.5s;"></div>
+                    </div>
+                    <span style="font-size: 0.7rem; color: #94a3b8; white-space: nowrap;">${Number(m.stock_tons).toFixed(2)}t</span>
+                </div>
+            </div>`;
+        }).join('');
+    } catch(e) { console.error(e); }
+}
+
 // Auto-refresh every 30 seconds for live feel
 setInterval(loadDashboard, 30000);
 
-document.addEventListener('DOMContentLoaded', loadDashboard);
+document.addEventListener('DOMContentLoaded', () => {
+    loadDashboard();
+    loadRawMaterialHealth();
+});
 </script>
 
 <?php include __DIR__ . '/includes/admin_footer.php'; ?>
