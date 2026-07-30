@@ -19,10 +19,11 @@ try {
     $schemaFiles = [
         __DIR__ . '/Backend/config/schema.sql',
         __DIR__ . '/Backend/config/stock_module.sql',
-        __DIR__ . '/Backend/config/migration_v2.sql'
+        __DIR__ . '/Backend/config/migration_v2.sql',
+        __DIR__ . '/Backend/config/migration_v3.sql'
     ];
 
-    echo "✓ Version 2.2 - Executing schemas...\n";
+    echo "✓ Version 3.0 - Executing schemas...\n";
 
     foreach ($schemaFiles as $file) {
         if (!file_exists($file)) {

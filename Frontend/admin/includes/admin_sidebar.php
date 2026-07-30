@@ -39,7 +39,7 @@ function isActivePage(string $page, string $current): string {
         <?php endif; ?>
         
         <!-- Stock Brain Dropdown (Visible to all Admins & Stock Managers) -->
-        <?php $isStockActive = str_contains($currentPage, 'stock_'); ?>
+        <?php $isStockActive = str_contains($currentPage, 'stock_') || $currentPage === 'incoming_stock.php'; ?>
         <li class="has-dropdown">
             <a href="javascript:void(0)" class="dropdown-trigger <?php echo $isStockActive ? 'open' : ''; ?>" onclick="toggleDropdown('stock-dropdown', this)">
                 <div style="display: flex; align-items: center; gap: 12px;">
@@ -59,6 +59,12 @@ function isActivePage(string $page, string $current): string {
                     <a href="/Frontend/admin/stock_formula_center.php" class="<?php echo isActivePage('stock_formula_center.php', $currentPage); ?>">
                         <i data-lucide="flask-conical"></i>
                         <span>Formula Center</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Frontend/admin/incoming_stock.php" class="<?php echo isActivePage('incoming_stock.php', $currentPage); ?>">
+                        <i data-lucide="package-plus"></i>
+                        <span>Incoming Stock</span>
                     </a>
                 </li>
                 <li>

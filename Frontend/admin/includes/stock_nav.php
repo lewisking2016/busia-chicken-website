@@ -16,6 +16,10 @@ $currentStockPage = basename($_SERVER['SCRIPT_NAME']);
         <i data-lucide="flask-conical"></i>
         <span>Formula Center</span>
     </a>
+    <a href="/Frontend/admin/incoming_stock.php" class="stock-nav-item <?php echo $currentStockPage === 'incoming_stock.php' ? 'active' : ''; ?>">
+        <i data-lucide="package-plus"></i>
+        <span>Incoming Stock</span>
+    </a>
     <a href="/Frontend/admin/stock_alerts.php" class="stock-nav-item <?php echo $currentStockPage === 'stock_alerts.php' ? 'active' : ''; ?>">
         <i data-lucide="bell"></i>
         <span>Alert Center</span>
