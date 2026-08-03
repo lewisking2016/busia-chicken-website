@@ -44,7 +44,7 @@ function isActivePage(string $page, string $current): string {
             <a href="javascript:void(0)" class="dropdown-trigger <?php echo $isStockActive ? 'open' : ''; ?>" onclick="toggleDropdown('stock-dropdown', this)">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <i data-lucide="brain-circuit"></i>
-                    <span>Stock Brain</span>
+                    <span>Feed & Stock</span>
                 </div>
                 <i data-lucide="chevron-down" class="chevron"></i>
             </a>
@@ -52,25 +52,25 @@ function isActivePage(string $page, string $current): string {
                 <li>
                     <a href="/Frontend/admin/stock_dashboard.php" class="<?php echo isActivePage('stock_dashboard.php', $currentPage); ?>">
                         <i data-lucide="layout-dashboard"></i>
-                        <span>Live Dashboard</span>
+                        <span>Stock Overview</span>
                     </a>
                 </li>
                 <li>
                     <a href="/Frontend/admin/stock_formula_center.php" class="<?php echo isActivePage('stock_formula_center.php', $currentPage); ?>">
                         <i data-lucide="flask-conical"></i>
-                        <span>Formula Center</span>
+                        <span>Feed Recipes</span>
                     </a>
                 </li>
                 <li>
                     <a href="/Frontend/admin/incoming_stock.php" class="<?php echo isActivePage('incoming_stock.php', $currentPage); ?>">
                         <i data-lucide="package-plus"></i>
-                        <span>Incoming Stock</span>
+                        <span>Buy Ingredients <small style="font-weight:400; opacity:0.75;">(Raw Materials)</small></span>
                     </a>
                 </li>
                 <li>
                     <a href="/Frontend/admin/stock_alerts.php" class="<?php echo isActivePage('stock_alerts.php', $currentPage); ?>">
                         <i data-lucide="bell"></i>
-                        <span>Stock Alerts</span>
+                        <span>Alert Center</span>
                     </a>
                 </li>
             </ul>

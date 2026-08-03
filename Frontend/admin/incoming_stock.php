@@ -14,7 +14,7 @@ if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_ad
 }
 
 $path_prefix = '../../';
-$page_title = 'Incoming Stock & Purchases';
+$page_title = 'Buy Ingredients & Manage Suppliers';
 include __DIR__ . '/includes/admin_header.php';
 ?>
 
@@ -22,16 +22,16 @@ include __DIR__ . '/includes/admin_header.php';
 
 <div class="admin-stock-wrapper">
     <div class="dashboard-hero-card" style="background: linear-gradient(135deg, var(--admin-primary) 0%, #064e3b 100%); padding: 32px; border-radius: 8px; margin-bottom: 32px; color: #ffffff;">
-        <h1 style="color: #ffffff; margin: 0 0 8px 0;">Incoming Stock & Purchases</h1>
-        <p style="color: rgba(255, 255, 255, 0.9); margin: 0;">Manage shipments, suppliers directory, and auto-procurement alerts for raw feed ingredients.</p>
+        <h1 style="color: #ffffff; margin: 0 0 8px 0;">Buy Ingredients & Track Deliveries</h1>
+        <p style="color: rgba(255, 255, 255, 0.9); margin: 0;">Record what you buy, who you buy from, and get notified when stock is running low.</p>
     </div>
 
     <?php include __DIR__ . '/includes/stock_nav.php'; ?>
 
     <!-- Tabs Header -->
     <div class="tabs" style="margin-bottom: 24px;">
-        <button class="tab-button active" onclick="switchTab('shipments-tab', this)">Incoming Shipments</button>
-        <button class="tab-button" onclick="switchTab('suppliers-tab', this)">Supplier Directory</button>
+        <button class="tab-button active" onclick="switchTab('shipments-tab', this)">Purchases Made</button>
+        <button class="tab-button" onclick="switchTab('suppliers-tab', this)">Our Suppliers</button>
         <button class="tab-button" onclick="switchTab('auto-orders-tab', this)">Auto-Order Assistant</button>
     </div>
 
@@ -39,9 +39,9 @@ include __DIR__ . '/includes/admin_header.php';
     <div id="shipments-tab" class="tab-content" style="display: block;">
         <div class="admin-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>Active & Historic Deliveries</h3>
+                <h3>All Purchases & Deliveries</h3>
                 <button class="btn btn-primary btn-sm" onclick="openShipmentModal()">
-                    <i data-lucide="plus"></i> Log Shipment
+                    <i data-lucide="plus"></i> Record Purchase
                 </button>
             </div>
             <div class="table-responsive">
@@ -49,9 +49,9 @@ include __DIR__ . '/includes/admin_header.php';
                     <thead>
                         <tr>
                             <th>Expected Date</th>
-                            <th>Material</th>
-                            <th>Quantity (Tons)</th>
-                            <th>Price / Ton</th>
+                            <th>Ingredient / Material</th>
+                            <th>Quantity (kg)</th>
+                            <th>Price per kg</th>
                             <th>Total Cost</th>
                             <th>Supplier</th>
                             <th>Status</th>
@@ -70,9 +70,9 @@ include __DIR__ . '/includes/admin_header.php';
     <div id="suppliers-tab" class="tab-content" style="display: none;">
         <div class="admin-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>Our Feed Ingredient Suppliers</h3>
+                <h3>Our Suppliers</h3>
                 <button class="btn btn-primary btn-sm" onclick="openSupplierModal()">
-                    <i data-lucide="plus"></i> Add Supplier
+                    <i data-lucide="plus"></i> Add New Supplier
                 </button>
             </div>
             <div class="table-responsive">
@@ -100,21 +100,21 @@ include __DIR__ . '/includes/admin_header.php';
     <div id="auto-orders-tab" class="tab-content" style="display: none;">
         <div class="admin-card">
             <div style="margin-bottom: 20px;">
-                <h3>Automated Replenishment Planner</h3>
-                <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0;">These orders are suggested automatically because raw materials have depleted below their alert threshold.</p>
+                <h3>What Needs Restocking</h3>
+                <p style="font-size: 0.85rem; color: #64748b; margin: 4px 0 0;">These are ingredients that have run low. Click "Place Order" to buy more from your supplier.</p>
             </div>
             <div class="table-responsive">
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th>Material</th>
-                            <th>Current Stock (Tons)</th>
-                            <th>Alert Min (Tons)</th>
+                            <th>Ingredient</th>
+                            <th>Current Stock (kg)</th>
+                            <th>Minimum Stock (kg)</th>
                             <th>Supplier</th>
-                            <th>Lead Time</th>
-                            <th>Recommended Reorder (Tons)</th>
-                            <th>Est. Cost / Ton (KES)</th>
-                            <th>Est. Total Price</th>
+                            <th>Delivery Time</th>
+                            <th>How Much to Buy (kg)</th>
+                            <th>Price per kg (KES)</th>
+                            <th>Estimated Total Cost</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -130,35 +130,35 @@ include __DIR__ . '/includes/admin_header.php';
 <!-- Shipment Modal -->
 <div id="shipment-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
     <div class="modal-content" style="background: #ffffff; padding: 32px; border-radius: 8px; width: 100%; max-width: 500px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
-        <h3 id="shipment-modal-title" style="margin-bottom: 24px;">Log Incoming Shipment</h3>
+        <h3 id="shipment-modal-title" style="margin-bottom: 24px;">Record a New Purchase</h3>
         <form id="shipment-form">
             <input type="hidden" name="id" id="shipment-id">
             <div class="form-group" style="margin-bottom: 15px;">
-                <label class="form-label">Preferred Supplier</label>
+                <label class="form-label">Who are you buying from? (Supplier)</label>
                 <select name="supplier_id" id="shipment-supplier" class="form-control" required style="width:100%; height:42px;">
                     <option value="">Select Supplier</option>
                 </select>
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
-                <label class="form-label">Raw Material</label>
+                <label class="form-label">What ingredient are you buying?</label>
                 <select name="raw_material_id" id="shipment-material" class="form-control" required style="width:100%; height:42px;">
                     <option value="">Select Material</option>
                 </select>
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
-                <label class="form-label">Quantity to Order (Tons)</label>
-                <input type="number" name="quantity_kg" id="shipment-qty" class="form-control" step="0.001" min="0.001" placeholder="e.g. 5.5" required>
+                <label class="form-label">How many kilograms (kg) are you ordering?</label>
+                <input type="number" name="quantity_kg" id="shipment-qty" class="form-control" step="0.1" min="1" placeholder="e.g. 500" required>
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
-                <label class="form-label">Cost per Ton (KES)</label>
-                <input type="number" name="cost_per_kg" id="shipment-cost" class="form-control" step="0.01" min="0" placeholder="e.g. 45000" required>
+                <label class="form-label">Price per kg (KES) — How much does 1 kg cost?</label>
+                <input type="number" name="cost_per_kg" id="shipment-cost" class="form-control" step="0.01" min="0" placeholder="e.g. 45" required>
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
-                <label class="form-label">Expected Delivery Date</label>
+                <label class="form-label">When will it arrive? (Expected Date)</label>
                 <input type="date" name="expected_delivery_date" id="shipment-date" class="form-control" required>
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
-                <label class="form-label">Shipment Status</label>
+                <label class="form-label">Delivery Status</label>
                 <select name="status" id="shipment-status" class="form-control" required style="width:100%; height:42px;">
                     <?php 
                     require_once __DIR__ . '/../../Backend/api/dropdowns.php';
@@ -168,7 +168,7 @@ include __DIR__ . '/includes/admin_header.php';
             </div>
             <div style="display: flex; gap: 12px; margin-top: 32px;">
                 <button type="button" class="btn btn-trans" style="flex: 1;" onclick="closeShipmentModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary" style="flex: 1;">Save Shipment</button>
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Save Purchase</button>
             </div>
         </form>
     </div>
@@ -278,7 +278,7 @@ function populateSupplierDropdowns() {
 function renderShipments() {
     const tbody = document.getElementById('shipments-body');
     if (!window.shipments_list.length) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">No incoming stock purchases logged.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">No purchases recorded yet. Click "Record Purchase" to add one.</td></tr>';
         return;
     }
 
@@ -293,8 +293,8 @@ function renderShipments() {
         <tr>
             <td>${s.expected_delivery_date}</td>
             <td><strong>${s.material_name}</strong></td>
-            <td>${Number(s.quantity_kg).toLocaleString()} Tons</td>
-            <td>KES ${Number(s.cost_per_kg).toLocaleString()}/Ton</td>
+            <td>${Number(s.quantity_kg).toLocaleString()} kg</td>
+            <td>KES ${Number(s.cost_per_kg).toLocaleString()}/kg</td>
             <td><strong>KES ${totalCost.toLocaleString()}</strong></td>
             <td>${s.supplier_name}</td>
             <td><span class="badge-pill ${statusBadge}">${s.status.replace('_', ' ')}</span></td>
@@ -312,7 +312,7 @@ function renderShipments() {
 function renderSuppliers() {
     const tbody = document.getElementById('suppliers-body');
     if (!window.suppliers_list.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">No suppliers registered. Add a supplier to begin purchasing.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">No suppliers added yet. Click "Add New Supplier" to get started.</td></tr>';
         return;
     }
 
@@ -337,23 +337,23 @@ function renderSuppliers() {
 function renderAutoOrders(data) {
     const tbody = document.getElementById('auto-orders-body');
     if (!data || !data.length) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#16a34a; padding: 30px; font-weight:600;">✓ System Fully Stocked! No raw materials require replenishment.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#16a34a; padding: 30px; font-weight:600;">✓ All Good! Everything is well stocked. Nothing needs to be ordered right now.</td></tr>';
         return;
     }
 
     tbody.innerHTML = data.map(o => `
         <tr style="background: rgba(239, 68, 68, 0.02);">
             <td><strong>${o.material_name}</strong></td>
-            <td style="color:#dc2626; font-weight:600;">${Number(o.current_stock).toLocaleString()} Tons</td>
-            <td>${Number(o.min_level).toLocaleString()} Tons</td>
+            <td style="color:#dc2626; font-weight:600;">${Number(o.current_stock).toLocaleString()} kg</td>
+            <td>${Number(o.min_level).toLocaleString()} kg</td>
             <td><strong>${o.supplier_name}</strong></td>
-            <td>${o.lead_time_days} days</td>
-            <td><strong style="color:var(--admin-primary);">${Number(o.recommended_qty).toLocaleString()} Tons</strong></td>
-            <td>KES ${Number(o.estimated_cost_per_kg).toLocaleString()}/Ton</td>
+            <td>${o.lead_time_days} days delivery</td>
+            <td><strong style="color:var(--admin-primary);">${Number(o.recommended_qty).toLocaleString()} kg</strong></td>
+            <td>KES ${Number(o.estimated_cost_per_kg).toLocaleString()}/kg</td>
             <td><strong>KES ${Number(o.total_estimated_cost).toLocaleString()}</strong></td>
             <td>
                 <button class="btn btn-primary btn-sm" onclick="draftAutoShipment(${o.raw_material_id}, ${o.supplier_id}, ${o.recommended_qty}, ${o.estimated_cost_per_kg})">
-                    Order Replenish
+                    Place Order
                 </button>
             </td>
         </tr>
@@ -362,7 +362,7 @@ function renderAutoOrders(data) {
 
 // Modal Handlers
 function openShipmentModal() {
-    document.getElementById('shipment-modal-title').textContent = 'Log Incoming Shipment';
+    document.getElementById('shipment-modal-title').textContent = 'Record a New Purchase';
     document.getElementById('shipment-form').reset();
     document.getElementById('shipment-id').value = '';
     document.getElementById('shipment-status').value = 'ordered';
@@ -392,7 +392,7 @@ function editShipment(id) {
     const s = window.shipments_list.find(item => item.id == id);
     if (!s) return;
 
-    document.getElementById('shipment-modal-title').textContent = 'Edit Shipment';
+    document.getElementById('shipment-modal-title').textContent = 'Edit Purchase Record';
     document.getElementById('shipment-id').value = s.id;
     document.getElementById('shipment-supplier').value = s.supplier_id;
     document.getElementById('shipment-material').value = s.raw_material_id;
