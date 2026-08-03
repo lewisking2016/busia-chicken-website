@@ -266,7 +266,10 @@ async function loadData() {
 function populateMaterialDropdowns() {
     const dropdown = document.getElementById('shipment-material');
     dropdown.innerHTML = '<option value="">Select Material</option>' + 
-        window.raw_materials_list.map(m => `<option value="${m.id}">${m.name} (Current: ${m.stock_tons} kgs)</option>`).join('');
+        window.raw_materials_list.map(m => {
+            const formattedStock = Number(m.stock_tons).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 3});
+            return `<option value="${m.id}">${m.name} (Current: ${formattedStock} kgs)</option>`;
+        }).join('');
 }
 
 function populateSupplierDropdowns() {
