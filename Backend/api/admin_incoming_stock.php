@@ -166,18 +166,18 @@ try {
                     if ($pref) {
                         // Reorder quantity: Replenish to double the minimum stock level
                         $reorder_qty = ($min * 2) - $stock;
-                        if ($reorder_qty < 100) $reorder_qty = 100; // minimum bulk reorder size
+                        if ($reorder_qty < 0.5) $reorder_qty = 0.5; // minimum bulk reorder: 0.5 Ton
 
                         $auto_orders[] = [
-                            'raw_material_id' => $rm['id'],
-                            'material_name' => $rm['name'],
-                            'current_stock' => $stock,
-                            'min_level' => $min,
-                            'supplier_id' => $pref['id'],
-                            'supplier_name' => $pref['name'],
-                            'lead_time_days' => $pref['lead_time_days'],
-                            'recommended_qty' => round($reorder_qty, 2),
-                            'estimated_cost_per_kg' => $pref['last_price'],
+                            'raw_material_id'      => $rm['id'],
+                            'material_name'        => $rm['name'],
+                            'current_stock'        => $stock,
+                            'min_level'            => $min,
+                            'supplier_id'          => $pref['id'],
+                            'supplier_name'        => $pref['name'],
+                            'lead_time_days'       => $pref['lead_time_days'],
+                            'recommended_qty'      => round($reorder_qty, 3),
+                            'estimated_cost_per_kg'=> $pref['last_price'],
                             'total_estimated_cost' => round($reorder_qty * $pref['last_price'], 2)
                         ];
                     }
