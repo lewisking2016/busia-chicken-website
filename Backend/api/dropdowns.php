@@ -20,17 +20,54 @@ function getSystemDropdownOptions(string $groupKey, bool $onlyActive = true): ar
         return [];
     }
 
-    $sql = "SELECT id, group_key, group_label, option_value, option_label, sort_order, is_active, is_system 
-            FROM system_dropdowns 
-            WHERE group_key = :group_key";
-    if ($onlyActive) {
-        $sql .= " AND is_active = 1";
-    }
-    $sql .= " ORDER BY sort_order ASC, option_label ASC";
+    try {
+        $sql = "SELECT id, group_key, group_label, option_value, option_label, sort_order, is_active, is_system 
+                FROM system_dropdowns 
+                WHERE group_key = :group_key";
+        if ($onlyActive) {
+            $sql .= " AND is_active = 1";
+        }
+        $sql .= " ORDER BY sort_order ASC, option_label ASC";
 
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([':group_key' => $groupKey]);
-    return $stmt->fetchAll() ?: [];
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([':group_key' => $groupKey]);
+        return $stmt->fetchAll() ?: [];
+    } catch (PDOException $e) {
+        // Table not found error
+        if ($e->getCode() === '42S02' || str_contains($e->getMessage(), '1146')) {
+            $migrationFile = __DIR__ . '/../config/migration_v4_dropdowns.sql';
+            if (file_exists($migrationFile)) {
+                $sqlText = file_get_contents($migrationFile);
+                $statements = array_filter(array_map('trim', explode(';', $sqlText)));
+                foreach ($statements as $stmtText) {
+                    if (!empty($stmtText)) {
+                        try {
+                            $pdo->exec($stmtText);
+                        } catch (Exception $ex) {
+                            // ignore
+                        }
+                    }
+                }
+                // Try executing again
+                try {
+                    $sql = "SELECT id, group_key, group_label, option_value, option_label, sort_order, is_active, is_system 
+                            FROM system_dropdowns 
+                            WHERE group_key = :group_key";
+                    if ($onlyActive) {
+                        $sql .= " AND is_active = 1";
+                    }
+                    $sql .= " ORDER BY sort_order ASC, option_label ASC";
+
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute([':group_key' => $groupKey]);
+                    return $stmt->fetchAll() ?: [];
+                } catch (Exception $ex) {
+                    return [];
+                }
+            }
+        }
+        return [];
+    }
 }
 
 /**
@@ -61,14 +98,34 @@ function getAllDropdownGroups(): array {
     $pdo = getDatabaseConnection();
     if (!$pdo) return [];
 
-    $sql = "SELECT group_key, group_label, COUNT(*) as total_options, 
-                   SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_options
-            FROM system_dropdowns
-            GROUP BY group_key, group_label
-            ORDER BY group_label ASC";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute();
-    return $stmt->fetchAll() ?: [];
+    try {
+        $sql = "SELECT group_key, group_label, COUNT(*) as total_options, 
+                       SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_options
+                FROM system_dropdowns
+                GROUP BY group_key, group_label
+                ORDER BY group_label ASC";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll() ?: [];
+    } catch (PDOException $e) {
+        if ($e->getCode() === '42S02' || str_contains($e->getMessage(), '1146')) {
+            // Trigger auto-creation
+            getSystemDropdownOptions('product_categories', false);
+            try {
+                $sql = "SELECT group_key, group_label, COUNT(*) as total_options, 
+                               SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_options
+                        FROM system_dropdowns
+                        GROUP BY group_key, group_label
+                        ORDER BY group_label ASC";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute();
+                return $stmt->fetchAll() ?: [];
+            } catch (Exception $ex) {
+                return [];
+            }
+        }
+        return [];
+    }
 }
 
 // Check if request is an API HTTP call
