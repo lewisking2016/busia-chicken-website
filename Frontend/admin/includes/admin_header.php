@@ -528,23 +528,29 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
     <?php include __DIR__ . '/admin_sidebar.php'; ?>
     <div class="admin-content">
         <!-- Top utility bar -->
+    <?php include __DIR__ . '/admin_sidebar.php'; ?>
+    <div class="admin-content">
+        <!-- Top utility bar -->
         <div class="admin-top-bar">
             <div class="welcome-message">
                 <h2>Hello, <?php echo htmlspecialchars($_SESSION['first_name'] ?? $_SESSION['username'] ?? 'Admin'); ?></h2>
                 <p>Welcome back to your dashboard portal.</p>
             </div>
-            <div class="admin-profile-badge">
-                <div class="admin-avatar">
-                    <?php 
-                    $initial = strtoupper(substr($_SESSION['first_name'] ?? $_SESSION['username'] ?? 'A', 0, 1));
-                    echo $initial;
-                    ?>
-                </div>
-                <div style="text-align: left;">
-                    <h5 style="margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--admin-text-heading);"><?php echo htmlspecialchars($_SESSION['username'] ?? 'Administrator'); ?></h5>
-                    <span class="badge-pill badge-pill-success" style="padding: 2px 8px; font-size: 0.7rem; margin-top: 2px; display: inline-block;"><?php echo htmlspecialchars(str_replace('_', ' ', $_SESSION['role'] ?? 'super_admin')); ?></span>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <button id="open-system-guide" title="System Walkthrough Guide" style="background: none; border: none; cursor: pointer; color: var(--admin-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; background: rgba(27, 94, 32, 0.08); transition: all 0.2s; outline: none;" onmouseover="this.style.background='rgba(27, 94, 32, 0.15)'" onmouseout="this.style.background='rgba(27, 94, 32, 0.08)'">
+                    <i data-lucide="help-circle" style="width: 22px; height: 22px; stroke-width: 2.2;"></i>
+                </button>
+                <div class="admin-profile-badge">
+                    <div class="admin-avatar">
+                        <?php 
+                        $initial = strtoupper(substr($_SESSION['first_name'] ?? $_SESSION['username'] ?? 'A', 0, 1));
+                        echo $initial;
+                        ?>
+                    </div>
+                    <div style="text-align: left;">
+                        <h5 style="margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--admin-text-heading);"><?php echo htmlspecialchars($_SESSION['username'] ?? 'Administrator'); ?></h5>
+                        <span class="badge-pill badge-pill-success" style="padding: 2px 8px; font-size: 0.7rem; margin-top: 2px; display: inline-block;"><?php echo htmlspecialchars(str_replace('_', ' ', $_SESSION['role'] ?? 'super_admin')); ?></span>
+                    </div>
                 </div>
             </div>
         </div>
-
-
