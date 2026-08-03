@@ -100,8 +100,9 @@ try {
     $order_number = 'ORD-' . date('YmdHis') . '-' . rand(1000, 9999);
 
     // Save order to database
-    $pdo->beginTransaction();
-    
+    try {
+        $pdo->beginTransaction();
+
         $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
         $sql = "INSERT INTO orders (user_id, order_number, total_amount, payment_method, shipping_address, phone_contact, status) 
                 VALUES (?, ?, ?, ?, ?, ?, 'pending')";
@@ -118,7 +119,9 @@ try {
 
         $pdo->commit();
     } catch (Exception $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         throw $e;
     }
 
