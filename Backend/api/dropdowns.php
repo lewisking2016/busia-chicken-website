@@ -128,8 +128,8 @@ function getAllDropdownGroups(): array {
     }
 }
 
-// Check if request is an API HTTP call
-if (basename($_SERVER['SCRIPT_FILENAME'] ?? '') === 'dropdowns.php') {
+// Check if request is an API HTTP call (directly requested, not included)
+if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === realpath(__FILE__)) {
     header('Content-Type: application/json; charset=utf-8');
 
     // Admin authorization check for modifying actions
