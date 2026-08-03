@@ -77,6 +77,44 @@ function isActivePage(string $page, string $current): string {
         </li>
 
         <?php if ($isAdmin): ?>
+        <!-- Poultry Operations Dropdown -->
+        <?php $isPoultryActive = in_array($currentPage, ['flocks.php', 'production.php', 'vaccinations.php', 'expenses.php'], true); ?>
+        <li class="has-dropdown">
+            <a href="javascript:void(0)" class="dropdown-trigger <?php echo $isPoultryActive ? 'open' : ''; ?>" onclick="toggleDropdown('poultry-dropdown', this)">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <i data-lucide="bird"></i>
+                    <span>Poultry Operations</span>
+                </div>
+                <i data-lucide="chevron-down" class="chevron"></i>
+            </a>
+            <ul class="sidebar-dropdown <?php echo $isPoultryActive ? 'open' : ''; ?>" id="poultry-dropdown">
+                <li>
+                    <a href="/Frontend/admin/flocks.php" class="<?php echo isActivePage('flocks.php', $currentPage); ?>">
+                        <i data-lucide="git-branch"></i>
+                        <span>Flock Manager</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Frontend/admin/production.php" class="<?php echo isActivePage('production.php', $currentPage); ?>">
+                        <i data-lucide="line-chart"></i>
+                        <span>Production Tracker</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Frontend/admin/vaccinations.php" class="<?php echo isActivePage('vaccinations.php', $currentPage); ?>">
+                        <i data-lucide="syringe"></i>
+                        <span>Health & Vaccines</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Frontend/admin/expenses.php" class="<?php echo isActivePage('expenses.php', $currentPage); ?>">
+                        <i data-lucide="wallet"></i>
+                        <span>Expense Logger</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
         <li>
             <a href="/Frontend/admin/reports.php" class="<?php echo isActivePage('reports.php', $currentPage); ?>">
                 <i data-lucide="bar-chart-3"></i>
