@@ -65,15 +65,10 @@ include __DIR__ . '/includes/admin_header.php';
                 <label class="form-label">Expense Category</label>
                 <select name="category" id="expense-category" class="form-control" required style="width:100%; height:42px;">
                     <option value="">Choose Category...</option>
-                    <option value="Feed Purchase">Feed Purchase</option>
-                    <option value="Chicks / Livestock">Chicks / Livestock</option>
-                    <option value="Vaccines & Drugs">Vaccines & Drugs</option>
-                    <option value="Farm Labor / Wages">Farm Labor / Wages</option>
-                    <option value="Utilities (Water/Power)">Utilities (Water/Power)</option>
-                    <option value="Packaging & Bags">Packaging & Bags</option>
-                    <option value="Transportation / Fuel">Transportation / Fuel</option>
-                    <option value="Equipment Repairs">Equipment Repairs</option>
-                    <option value="Other Operations">Other Operations</option>
+                    <?php 
+                    require_once __DIR__ . '/../../Backend/api/dropdowns.php';
+                    echo renderDropdownOptions('expense_categories', null, ''); 
+                    ?>
                 </select>
             </div>
             
@@ -103,16 +98,41 @@ include __DIR__ . '/includes/admin_header.php';
 <script>
 window.expenses_list = [];
 
+function showTableError(tbodyId, colSpan, message) {
+    document.getElementById(tbodyId).innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center; padding: 32px;"><div style="display:inline-flex; align-items:center; gap:10px; color:#dc2626; background:#fef2f2; border:1px solid #fecaca; padding:14px 24px; border-radius:8px; font-weight:600;"><i data-lucide=\"alert-triangle\" style=\"width:18px;height:18px;\"></i>${message}</div></td></tr>`;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function setTableLoading(tbodyId, colSpan, message) {
+    document.getElementById(tbodyId).innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center; padding: 32px; color:#64748b;"><div style="display:inline-flex; align-items:center; gap:10px;"><div style="width:20px;height:20px;border:2px solid #cbd5e1;border-top-color:var(--admin-primary);border-radius:50%;animation:spin 0.8s linear infinite;"></div>${message}</div></td></tr>`;
+}
+
+function setBtnLoading(btn, loading) {
+    if (loading) {
+        btn.disabled = true;
+        btn.dataset.origText = btn.innerHTML;
+        btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px;"><div style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></div>Saving...</span>';
+    } else {
+        btn.disabled = false;
+        btn.innerHTML = btn.dataset.origText || 'Save';
+    }
+}
+
 async function loadExpenses() {
+    setTableLoading('expenses-body', 5, 'Loading expenses...');
     try {
         const response = await fetch('/Backend/api/admin_poultry.php?action=get_expenses');
+        if (!response.ok) throw new Error('Server error: ' + response.status);
         const result = await response.json();
         if (result.success) {
             window.expenses_list = result.data;
             renderExpenses();
+        } else {
+            showTableError('expenses-body', 5, result.message || 'Failed to load expenses.');
         }
     } catch(e) {
-        console.error("Error loading expenses:", e);
+        showTableError('expenses-body', 5, 'Network error. Could not connect to server.');
+        console.error('Error loading expenses:', e);
     }
 }
 
@@ -187,6 +207,8 @@ async function deleteExpense(id) {
 
 document.getElementById('expense-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const btn = e.target.querySelector('[type="submit"]');
+    setBtnLoading(btn, true);
     const formData = new FormData(e.target);
     formData.append('csrf_token', window.BusiaAdmin?.csrfToken || '');
     try {
@@ -199,10 +221,22 @@ document.getElementById('expense-form').addEventListener('submit', async (e) => 
             closeExpenseModal();
             loadExpenses();
         } else {
-            alert(result.message);
+            alert('Error: ' + (result.message || 'Could not save expense.'));
         }
-    } catch(e) { console.error(e); }
+    } catch(e) {
+        alert('Network error. Please check your connection and try again.');
+        console.error(e);
+    } finally {
+        setBtnLoading(btn, false);
+    }
 });
+
+if (!document.getElementById('admin-spin-style')) {
+    const style = document.createElement('style');
+    style.id = 'admin-spin-style';
+    style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+    document.head.appendChild(style);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     loadExpenses();

@@ -73,5 +73,16 @@ INSERT IGNORE INTO `system_dropdowns` (`group_key`, `group_label`, `option_value
 -- Vaccination Statuses
 ('vaccination_statuses', 'Vaccination Statuses', 'scheduled', 'Scheduled', 1, 1, 1),
 ('vaccination_statuses', 'Vaccination Statuses', 'completed', 'Completed', 2, 1, 1),
-('vaccination_statuses', 'Vaccination Statuses', 'missed', 'Missed', 3, 1, 1);
+('vaccination_statuses', 'Vaccination Statuses', 'missed', 'Missed', 3, 1, 1),
+
+-- Expense Categories
+('expense_categories', 'Expense Categories', 'feed_purchase', 'Feed Purchase', 1, 1, 0),
+('expense_categories', 'Expense Categories', 'chicks_livestock', 'Chicks / Livestock', 2, 1, 0),
+('expense_categories', 'Expense Categories', 'vaccines_drugs', 'Vaccines & Drugs', 3, 1, 0),
+('expense_categories', 'Expense Categories', 'farm_labor', 'Farm Labor / Wages', 4, 1, 0),
+('expense_categories', 'Expense Categories', 'utilities', 'Utilities (Water/Power)', 5, 1, 0),
+('expense_categories', 'Expense Categories', 'packaging', 'Packaging & Bags', 6, 1, 0),
+('expense_categories', 'Expense Categories', 'transport', 'Transportation / Fuel', 7, 1, 0),
+('expense_categories', 'Expense Categories', 'equipment_repairs', 'Equipment Repairs', 8, 1, 0),
+('expense_categories', 'Expense Categories', 'other', 'Other Operations', 9, 1, 0);
 
