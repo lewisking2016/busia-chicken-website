@@ -160,10 +160,10 @@ include __DIR__ . '/includes/admin_header.php';
             <div class="form-group" style="margin-bottom: 15px;">
                 <label class="form-label">Shipment Status</label>
                 <select name="status" id="shipment-status" class="form-control" required style="width:100%; height:42px;">
-                    <option value="ordered">Ordered / Draft</option>
-                    <option value="in_transit">In Transit</option>
-                    <option value="delivered">Delivered (Auto-adjusts Stock & Cost!)</option>
-                    <option value="cancelled">Cancelled</option>
+                    <?php 
+                    require_once __DIR__ . '/../../Backend/api/dropdowns.php';
+                    echo renderDropdownOptions('shipment_statuses', null, ''); 
+                    ?>
                 </select>
             </div>
             <div style="display: flex; gap: 12px; margin-top: 32px;">

@@ -15,6 +15,7 @@ $path_prefix = '../../';
 $page_title = 'Manage Orders - Admin';
 
 include __DIR__ . '/includes/admin_header.php';
+require_once __DIR__ . '/../../Backend/api/dropdowns.php';
 
 // Check admin access
 if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager'], true)) {
@@ -108,17 +109,7 @@ if ($pdo) {
         </div>
         <div style="display: flex; gap: 8px;">
             <select name="status" style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; outline: none; background: #ffffff;">
-                <option value="">All Statuses</option>
-                <option value="pending" <?php echo $status_filter === 'pending' ? 'selected' : ''; ?>>Pending</option>
-                <option value="paid" <?php echo $status_filter === 'paid' ? 'selected' : ''; ?>>Paid</option>
-                <option value="picking" <?php echo $status_filter === 'picking' ? 'selected' : ''; ?>>Picking</option>
-                <option value="packing" <?php echo $status_filter === 'packing' ? 'selected' : ''; ?>>Packing</option>
-                <option value="production" <?php echo $status_filter === 'production' ? 'selected' : ''; ?>>In Production</option>
-                <option value="dispatch" <?php echo $status_filter === 'dispatch' ? 'selected' : ''; ?>>Dispatch</option>
-                <option value="shipped" <?php echo $status_filter === 'shipped' ? 'selected' : ''; ?>>Shipped</option>
-                <option value="delivered" <?php echo $status_filter === 'delivered' ? 'selected' : ''; ?>>Delivered</option>
-                <option value="completed" <?php echo $status_filter === 'completed' ? 'selected' : ''; ?>>Completed</option>
-                <option value="cancelled" <?php echo $status_filter === 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
+                <?php echo renderDropdownOptions('order_statuses', $status_filter, 'All Statuses'); ?>
             </select>
             <button type="submit" class="btn btn-outline" style="border-radius: 4px; padding: 6px 16px; font-size: 0.85rem;">Filter</button>
             <?php if ($search || $status_filter): ?>
@@ -131,16 +122,7 @@ if ($pdo) {
     <div id="bulk-bar" style="display: none; padding: 12px 20px; background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%); border-bottom: 1px solid var(--admin-border); color: #fff; align-items: center; gap: 12px; flex-wrap: wrap;">
         <span style="font-weight: 700; font-size: 0.9rem;"><span id="bulk-count">0</span> selected</span>
         <select id="bulk-status" style="padding: 6px 12px; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; font-size: 0.85rem; background: rgba(255,255,255,0.15); color: #fff;">
-            <option value="">Set Status...</option>
-            <option value="paid">✓ Paid</option>
-            <option value="picking">📦 Picking</option>
-            <option value="packing">📋 Packing</option>
-            <option value="production">🏭 In Production</option>
-            <option value="dispatch">🚚 Dispatch</option>
-            <option value="shipped">✈️ Shipped</option>
-            <option value="delivered">📬 Delivered</option>
-            <option value="completed">✅ Completed</option>
-            <option value="cancelled">❌ Cancelled</option>
+            <?php echo renderDropdownOptions('order_statuses', null, 'Set Status...'); ?>
         </select>
         <button onclick="bulkUpdateStatus()" class="btn btn-sm" style="background: #FFC107; color: #1B5E20; font-weight: 700; padding: 6px 16px; border-radius: 4px; border: none; cursor: pointer;">Apply</button>
         <button onclick="deselectAll()" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: #fff; padding: 6px 16px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); cursor: pointer;">Deselect All</button>
@@ -205,16 +187,7 @@ if ($pdo) {
                                 <input type="hidden" name="action" value="update_status">
                                 <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
                                 <select name="status" onchange="this.form.submit()" style="padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.8rem; outline: none; background: #ffffff;">
-                                    <option value="pending" <?php echo $order['status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
-                                    <option value="paid" <?php echo $order['status'] === 'paid' ? 'selected' : ''; ?>>Paid</option>
-                                    <option value="picking" <?php echo $order['status'] === 'picking' ? 'selected' : ''; ?>>Picking</option>
-                                    <option value="packing" <?php echo $order['status'] === 'packing' ? 'selected' : ''; ?>>Packing</option>
-                                    <option value="production" <?php echo $order['status'] === 'production' ? 'selected' : ''; ?>>Production</option>
-                                    <option value="dispatch" <?php echo $order['status'] === 'dispatch' ? 'selected' : ''; ?>>Dispatch</option>
-                                    <option value="shipped" <?php echo $order['status'] === 'shipped' ? 'selected' : ''; ?>>Shipped</option>
-                                    <option value="delivered" <?php echo $order['status'] === 'delivered' ? 'selected' : ''; ?>>Delivered</option>
-                                    <option value="completed" <?php echo $order['status'] === 'completed' ? 'selected' : ''; ?>>Completed</option>
-                                    <option value="cancelled" <?php echo $order['status'] === 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
+                                    <?php echo renderDropdownOptions('order_statuses', $order['status'], ''); ?>
                                 </select>
                             </form>
                         </div>

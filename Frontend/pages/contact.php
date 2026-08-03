@@ -139,11 +139,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_submit'])) {
                         <div style="margin-bottom: var(--space-lg);">
                             <label for="subject" style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--dark);">Subject *</label>
                             <select id="subject" name="subject" required style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); font-size: 1rem; outline: none; background: var(--white);">
-                                <option value="">Select a subject</option>
-                                <option value="product-inquiry">Product Inquiry</option>
-                                <option value="bulk-order">Bulk Order</option>
-                                <option value="partnership">Partnership Opportunity</option>
-                                <option value="support">Support</option>
+                                <?php 
+                                require_once __DIR__ . '/../../Backend/api/dropdowns.php';
+                                echo renderDropdownOptions('contact_subjects', null, 'Select a subject'); 
+                                ?>
                             </select>
                         </div>
 
