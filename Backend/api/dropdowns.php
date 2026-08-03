@@ -5,9 +5,11 @@
  */
 declare(strict_types=1);
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+$temp_dir = sys_get_temp_dir();
+if (is_writable($temp_dir)) {
+    session_save_path($temp_dir);
 }
+session_start();
 
 require_once __DIR__ . '/../config/database.php';
 
