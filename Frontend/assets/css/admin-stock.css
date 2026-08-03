@@ -165,3 +165,38 @@
 .dashboard-hero-card:hover {
     transform: translateY(-2px);
 }
+
+/* Tab Buttons Navigation */
+.tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0;
+    margin-bottom: 24px;
+}
+
+.tab-button {
+    background: transparent;
+    border: none;
+    padding: 12px 24px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    outline: none;
+    border-bottom: 3px solid transparent;
+}
+
+.tab-button:hover {
+    color: var(--admin-primary);
+    background: #f8fafc;
+}
+
+.tab-button.active {
+    color: var(--admin-primary);
+    border-bottom-color: var(--admin-primary);
+    background: transparent;
+}
+
