@@ -43,12 +43,16 @@ declare(strict_types=1);
                     <span>3. Orders</span>
                 </button>
                 <button class="guide-nav-btn" onclick="showGuideStep(3)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border: none; background: none; border-radius: 6px; text-align: left; font-weight: 600; font-size: 0.85rem; color: #475569; cursor: pointer; transition: all 0.2s;">
-                    <i data-lucide="brain-circuit" style="width: 16px; height: 16px;"></i>
-                    <span>4. Feed & Stock</span>
+                    <i data-lucide="bird" style="width: 16px; height: 16px;"></i>
+                    <span>4. Poultry Ops</span>
                 </button>
                 <button class="guide-nav-btn" onclick="showGuideStep(4)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border: none; background: none; border-radius: 6px; text-align: left; font-weight: 600; font-size: 0.85rem; color: #475569; cursor: pointer; transition: all 0.2s;">
+                    <i data-lucide="brain-circuit" style="width: 16px; height: 16px;"></i>
+                    <span>5. Feed & Stock</span>
+                </button>
+                <button class="guide-nav-btn" onclick="showGuideStep(5)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border: none; background: none; border-radius: 6px; text-align: left; font-weight: 600; font-size: 0.85rem; color: #475569; cursor: pointer; transition: all 0.2s;">
                     <i data-lucide="list-filter" style="width: 16px; height: 16px;"></i>
-                    <span>5. Dropdowns</span>
+                    <span>6. Dropdowns</span>
                 </button>
             </div>
 
@@ -103,7 +107,24 @@ declare(strict_types=1);
                     </ul>
                 </div>
 
-                <!-- Step 4: Feed & Stock -->
+                <!-- Step 4: Poultry Operations -->
+                <div class="guide-step-pane" style="display: none;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 1.15rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="bird" style="color: var(--admin-primary);"></i>
+                        Poultry Operations
+                    </h4>
+                    <p style="margin: 0 0 16px 0; line-height: 1.6; font-size: 0.92rem; color: #475569;">
+                        Log daily animal yields, track flock counts, vaccine health schedules, and manage expenditures:
+                    </p>
+                    <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem; color: #334155; line-height: 1.5;">
+                        <li><strong>Flock Manager:</strong> Hatch and record new chicken groups, monitoring current counts and mortality rates.</li>
+                        <li><strong>Production Tracker:</strong> Track daily egg yields (clean vs cracked), meat weights (kgs), and feed consumed.</li>
+                        <li><strong>Health & Vaccines:</strong> Administer scheduled treatments to keep flocks healthy.</li>
+                        <li><strong>Expense Logger:</strong> Log outlays like labor, repairs, feed purchases, and cash flows.</li>
+                    </ul>
+                </div>
+
+                <!-- Step 5: Feed & Stock -->
                 <div class="guide-step-pane" style="display: none;">
                     <h4 style="margin: 0 0 12px 0; font-size: 1.15rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
                         <i data-lucide="brain-circuit" style="color: var(--admin-primary);"></i>
@@ -120,7 +141,7 @@ declare(strict_types=1);
                     </ul>
                 </div>
 
-                <!-- Step 5: Dropdown Manager -->
+                <!-- Step 6: Dropdown Manager -->
                 <div class="guide-step-pane" style="display: none;">
                     <h4 style="margin: 0 0 12px 0; font-size: 1.15rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
                         <i data-lucide="list-filter" style="color: var(--admin-primary);"></i>
@@ -150,6 +171,7 @@ declare(strict_types=1);
                 <span class="guide-dot" onclick="showGuideStep(2)" style="width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; display: inline-block; cursor: pointer; transition: all 0.2s;"></span>
                 <span class="guide-dot" onclick="showGuideStep(3)" style="width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; display: inline-block; cursor: pointer; transition: all 0.2s;"></span>
                 <span class="guide-dot" onclick="showGuideStep(4)" style="width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; display: inline-block; cursor: pointer; transition: all 0.2s;"></span>
+                <span class="guide-dot" onclick="showGuideStep(5)" style="width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; display: inline-block; cursor: pointer; transition: all 0.2s;"></span>
             </div>
             <button id="guide-next" onclick="changeGuideStep(1)" class="btn btn-primary btn-sm" style="display: flex; align-items: center; gap: 6px;">
                 Next <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
@@ -176,7 +198,7 @@ declare(strict_types=1);
 
 <script>
 let currentGuideStep = 0;
-const totalGuideSteps = 5;
+const totalGuideSteps = 6;
 
 function showGuideStep(stepIndex) {
     if (stepIndex < 0 || stepIndex >= totalGuideSteps) return;
@@ -244,10 +266,12 @@ function openGuideModal() {
         showGuideStep(1);
     } else if (path.includes('orders.php')) {
         showGuideStep(2);
-    } else if (path.includes('stock_') || path.includes('incoming_stock.php')) {
+    } else if (path.includes('flocks.php') || path.includes('production.php') || path.includes('vaccinations.php') || path.includes('expenses.php')) {
         showGuideStep(3);
-    } else if (path.includes('dropdowns.php')) {
+    } else if (path.includes('stock_') || path.includes('incoming_stock.php')) {
         showGuideStep(4);
+    } else if (path.includes('dropdowns.php')) {
+        showGuideStep(5);
     } else {
         showGuideStep(0);
     }
