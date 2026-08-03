@@ -79,6 +79,8 @@ $is_customer_logged_in = !empty($_SESSION['user_id']) && ($_SESSION['role'] ?? '
                 <ul class="navbar-nav main-links">
                     <li><a class="nav-link<?php echo navActive('home', $currentPage); ?>" href="/">Home</a></li>
                     <li><a class="nav-link<?php echo navActive('about', $currentPage); ?>" href="/Frontend/pages/about.php">About</a></li>
+                    <li><a class="nav-link<?php echo navActive('services', $currentPage); ?>" href="/Frontend/pages/services.php">Services</a></li>
+                    <li><a class="nav-link<?php echo navActive('recipes', $currentPage); ?>" href="/Frontend/pages/recipes.php">Recipes</a></li>
                     <li><a class="nav-link<?php echo navActive('products', $currentPage); ?>" href="/Frontend/pages/products.php">Products</a></li>
                     <li><a class="nav-link<?php echo navActive('shop', $currentPage); ?>" href="/Frontend/pages/shop.php">Shop</a></li>
                     <li><a class="nav-link<?php echo navActive('contact', $currentPage); ?>" href="/Frontend/pages/contact.php">Contact</a></li>

@@ -157,16 +157,22 @@ $products = loadDisplayProducts($pdo);
                             $inStock = $stock > 0;
                     ?>
                         <div class="product-card" data-id="<?php echo $product['id']; ?>" data-type="<?php echo htmlspecialchars($product['product_type'] ?? '', ENT_QUOTES); ?>" data-instock="<?php echo $inStock ? '1' : '0'; ?>">
-                        <div class="product-image">
-                            <?php if ($inStock): ?>
-                                <span class="product-badge">In Stock</span>
-                            <?php else: ?>
-                                <span class="product-badge" style="color: var(--gray-600);">Out of Stock</span>
-                            <?php endif; ?>
-                            <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
-                        </div>
+                        <a href="/Frontend/pages/product-detail.php?id=<?php echo $product['id']; ?>" style="display: block; text-decoration: none; color: inherit;">
+                            <div class="product-image">
+                                <?php if ($inStock): ?>
+                                    <span class="product-badge">In Stock</span>
+                                <?php else: ?>
+                                    <span class="product-badge" style="color: var(--gray-600);">Out of Stock</span>
+                                <?php endif; ?>
+                                <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                            </div>
+                        </a>
                         <div class="product-body">
-                            <h4 class="product-name"><?php echo htmlspecialchars($product['name'], ENT_QUOTES, 'UTF-8'); ?></h4>
+                            <h4 class="product-name">
+                                <a href="/Frontend/pages/product-detail.php?id=<?php echo $product['id']; ?>" style="color: inherit; text-decoration: none; font-weight: inherit;">
+                                    <?php echo htmlspecialchars($product['name'], ENT_QUOTES, 'UTF-8'); ?>
+                                </a>
+                            </h4>
                             <p class="product-description" style="color: var(--gray-600);"><?php echo htmlspecialchars(substr($product['description'] ?? '', 0, 80) . '...', ENT_QUOTES, 'UTF-8'); ?></p>
                             <div class="product-meta">
                                 <span class="product-price">KES <?php echo number_format((float)$product['price'], 0); ?></span>
