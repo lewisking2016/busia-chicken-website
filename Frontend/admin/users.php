@@ -15,6 +15,7 @@ $path_prefix = '../../';
 $page_title = 'Manage Users - Admin';
 
 include __DIR__ . '/includes/admin_header.php';
+require_once __DIR__ . '/../../Backend/api/dropdowns.php';
 
 // Check admin access
 if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager'], true)) {
@@ -273,11 +274,7 @@ if ($pdo) {
                 </div>
                 <div style="display: flex; gap: 8px;">
                     <select name="role" style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; outline: none; background: #ffffff;">
-                        <option value="">All Roles</option>
-                        <option value="customer" <?php echo ($_GET['role'] ?? '') === 'customer' ? 'selected' : ''; ?>>Customer</option>
-                        <option value="stock_manager" <?php echo ($_GET['role'] ?? '') === 'stock_manager' ? 'selected' : ''; ?>>Stock Manager</option>
-                        <option value="farm_manager" <?php echo ($_GET['role'] ?? '') === 'farm_manager' ? 'selected' : ''; ?>>Farm Manager</option>
-                        <option value="super_admin" <?php echo ($_GET['role'] ?? '') === 'super_admin' ? 'selected' : ''; ?>>Super Admin</option>
+                        <?php echo renderDropdownOptions('user_roles', $_GET['role'] ?? '', 'All Roles'); ?>
                     </select>
                     <button type="submit" class="btn btn-outline" style="border-radius: 4px; padding: 6px 16px; font-size: 0.85rem;">Filter</button>
                 </div>
@@ -324,10 +321,7 @@ if ($pdo) {
                                         <input type="hidden" name="action" value="update_role">
                                         <input type="hidden" name="target_user_id" value="<?php echo $usr['id']; ?>">
                                         <select name="role" onchange="this.form.submit()" style="padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.8rem; outline: none; background: #ffffff;">
-                                            <option value="customer" <?php echo $usr['role'] === 'customer' ? 'selected' : ''; ?>>Customer</option>
-                                            <option value="stock_manager" <?php echo $usr['role'] === 'stock_manager' ? 'selected' : ''; ?>>Stock Manager</option>
-                                            <option value="farm_manager" <?php echo $usr['role'] === 'farm_manager' ? 'selected' : ''; ?>>Farm Manager</option>
-                                            <option value="super_admin" <?php echo $usr['role'] === 'super_admin' ? 'selected' : ''; ?>>Super Admin</option>
+                                            <?php echo renderDropdownOptions('user_roles', $usr['role'], ''); ?>
                                         </select>
                                     </form>
                                 </td>

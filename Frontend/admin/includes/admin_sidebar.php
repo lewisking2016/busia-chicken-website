@@ -90,6 +90,12 @@ function isActivePage(string $page, string $current): string {
             </a>
         </li>
         <li>
+            <a href="/Frontend/admin/dropdowns.php" class="<?php echo isActivePage('dropdowns.php', $currentPage); ?>">
+                <i data-lucide="list-filter"></i>
+                <span>Dropdown Manager</span>
+            </a>
+        </li>
+        <li>
             <a href="/Frontend/admin/settings.php" class="<?php echo isActivePage('settings.php', $currentPage); ?>">
                 <i data-lucide="settings"></i>
                 <span>Settings</span>

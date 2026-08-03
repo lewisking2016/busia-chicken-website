@@ -6,7 +6,9 @@
 declare(strict_types=1);
 
 // Detect local development environment
-$isLocalhost = in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost:8000', 'localhost', '127.0.0.1'], true) 
+$isCli = (php_sapi_name() === 'cli');
+$isLocalhost = $isCli
+    || in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost:8000', 'localhost', '127.0.0.1'], true) 
     || ($_ENV['DB_HOST'] ?? getenv('DB_HOST')) === 'localhost'
     || !empty($_SERVER['DOCUMENT_ROOT']) && (str_contains($_SERVER['DOCUMENT_ROOT'], 'Users') || str_contains($_SERVER['DOCUMENT_ROOT'], 'Desktop'));
 

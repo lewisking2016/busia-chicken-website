@@ -15,6 +15,7 @@ $path_prefix = '../../';
 $page_title = 'Manage Products - Admin';
 
 include __DIR__ . '/includes/admin_header.php';
+require_once __DIR__ . '/../../Backend/api/dropdowns.php';
 
 // Check admin access
 if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager'], true)) {
@@ -172,8 +173,28 @@ $type_filter = $_GET['type'] ?? '';
 $raw_materials_list = [];
 if ($pdo) {
     try {
+        // Sync system_dropdowns product_categories into categories table
+        $missingCats = $pdo->query("
+            SELECT sd.option_value AS slug, sd.option_label AS name
+            FROM system_dropdowns sd
+            LEFT JOIN categories c ON c.slug = sd.option_value
+            WHERE sd.group_key = 'product_categories' AND c.id IS NULL
+        ")->fetchAll(PDO::FETCH_ASSOC);
+        if (!empty($missingCats)) {
+            $insertCat = $pdo->prepare("INSERT INTO categories (name, slug, category_type, description) VALUES (?, ?, 'chicken', '')");
+            foreach ($missingCats as $mc) {
+                $insertCat->execute([$mc['name'], $mc['slug']]);
+            }
+        }
+
         // Fetch categories for dropdowns
-        $categories = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+        $categories = $pdo->query("
+            SELECT c.id, sd.option_label AS name, sd.option_value AS slug 
+            FROM system_dropdowns sd
+            JOIN categories c ON c.slug = sd.option_value
+            WHERE sd.group_key = 'product_categories' AND sd.is_active = 1
+            ORDER BY sd.sort_order ASC, sd.option_label ASC
+        ")->fetchAll(PDO::FETCH_ASSOC);
         // Fetch raw materials list
         $raw_materials_list = $pdo->query("SELECT id, name, reserved_production_kg, stock_tons FROM raw_materials ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
 
@@ -241,12 +262,7 @@ if ($pdo) {
         </div>
         <div style="display: flex; gap: 8px;">
             <select name="type" style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; outline: none; background: #ffffff;">
-                <option value="">All Types</option>
-                <option value="live_chicken" <?php echo $type_filter === 'live_chicken' ? 'selected' : ''; ?>>Live Chicken</option>
-                <option value="feed" <?php echo $type_filter === 'feed' ? 'selected' : ''; ?>>Feeds</option>
-                <option value="chicks" <?php echo $type_filter === 'chicks' ? 'selected' : ''; ?>>Chicks</option>
-                <option value="eggs" <?php echo $type_filter === 'eggs' ? 'selected' : ''; ?>>Eggs</option>
-                <option value="meat" <?php echo $type_filter === 'meat' ? 'selected' : ''; ?>>Meat</option>
+                <?php echo renderDropdownOptions('product_types', $type_filter, 'All Types'); ?>
             </select>
             <button type="submit" class="btn btn-outline" style="border-radius: 4px; padding: 6px 16px; font-size: 0.85rem;">Filter</button>
             <?php if ($search || $type_filter): ?>
@@ -473,11 +489,7 @@ if ($pdo) {
                 <div class="admin-form-group">
                     <label class="admin-form-label">Product Type *</label>
                     <select name="product_type" required class="admin-form-control">
-                        <option value="live_chicken">Live Chicken</option>
-                        <option value="feed">Feed</option>
-                        <option value="chicks">Chicks</option>
-                        <option value="eggs">Eggs</option>
-                        <option value="meat">Meat</option>
+                        <?php echo renderDropdownOptions('product_types', null, '-- Select Type --'); ?>
                     </select>
                 </div>
                 <div class="admin-form-group">
@@ -551,11 +563,7 @@ if ($pdo) {
                 <div class="admin-form-group">
                     <label class="admin-form-label">Product Type *</label>
                     <select name="product_type" id="edit-type" required class="admin-form-control">
-                        <option value="live_chicken">Live Chicken</option>
-                        <option value="feed">Feed</option>
-                        <option value="chicks">Chicks</option>
-                        <option value="eggs">Eggs</option>
-                        <option value="meat">Meat</option>
+                        <?php echo renderDropdownOptions('product_types', null, '-- Select Type --'); ?>
                     </select>
                 </div>
                 <div class="admin-form-group">

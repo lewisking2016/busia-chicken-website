@@ -92,18 +92,15 @@ $products = loadDisplayProducts($pdo);
                         <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: var(--space-md); color: var(--dark);">Product Type</h4>
                         <form class="product-filters">
                         <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+                            <?php 
+                            require_once __DIR__ . '/../../Backend/api/dropdowns.php';
+                            $types = getSystemDropdownOptions('product_types');
+                            foreach ($types as $t):
+                            ?>
                             <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer; color: var(--gray-600); font-size: 0.95rem;">
-                                <input type="checkbox" name="type" value="live_chicken" class="form-checkbox"> Live Chicken
+                                <input type="checkbox" name="type" value="<?php echo htmlspecialchars($t['option_value']); ?>" class="form-checkbox"> <?php echo htmlspecialchars($t['option_label']); ?>
                             </label>
-                            <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer; color: var(--gray-600); font-size: 0.95rem;">
-                                <input type="checkbox" name="type" value="chicks" class="form-checkbox"> Day-Old Chicks
-                            </label>
-                            <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer; color: var(--gray-600); font-size: 0.95rem;">
-                                <input type="checkbox" name="type" value="eggs" class="form-checkbox"> Eggs
-                            </label>
-                            <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer; color: var(--gray-600); font-size: 0.95rem;">
-                                <input type="checkbox" name="type" value="feed" class="form-checkbox"> Feeds
-                            </label>
+                            <?php endforeach; ?>
                         </div>
                     </div>
 
