@@ -63,4 +63,15 @@ INSERT IGNORE INTO `system_dropdowns` (`group_key`, `group_label`, `option_value
 ('shipment_statuses', 'Shipment Statuses', 'ordered', 'Ordered / Draft', 1, 1, 1),
 ('shipment_statuses', 'Shipment Statuses', 'in_transit', 'In Transit', 2, 1, 1),
 ('shipment_statuses', 'Shipment Statuses', 'delivered', 'Delivered (Auto-adjusts Stock & Cost!)', 3, 1, 1),
-('shipment_statuses', 'Shipment Statuses', 'cancelled', 'Cancelled', 4, 1, 1);
+('shipment_statuses', 'Shipment Statuses', 'cancelled', 'Cancelled', 4, 1, 1),
+
+-- Flock Statuses
+('flock_statuses', 'Flock Statuses', 'active', 'Active', 1, 1, 1),
+('flock_statuses', 'Flock Statuses', 'sold', 'Sold', 2, 1, 1),
+('flock_statuses', 'Flock Statuses', 'archived', 'Archived', 3, 1, 1),
+
+-- Vaccination Statuses
+('vaccination_statuses', 'Vaccination Statuses', 'scheduled', 'Scheduled', 1, 1, 1),
+('vaccination_statuses', 'Vaccination Statuses', 'completed', 'Completed', 2, 1, 1),
+('vaccination_statuses', 'Vaccination Statuses', 'missed', 'Missed', 3, 1, 1);
+
