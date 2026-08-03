@@ -177,7 +177,7 @@ if ($pdo) {
         $missingCats = $pdo->query("
             SELECT sd.option_value AS slug, sd.option_label AS name
             FROM system_dropdowns sd
-            LEFT JOIN categories c ON c.slug = sd.option_value
+            LEFT JOIN categories c ON c.slug COLLATE utf8mb4_unicode_ci = sd.option_value COLLATE utf8mb4_unicode_ci
             WHERE sd.group_key = 'product_categories' AND c.id IS NULL
         ")->fetchAll(PDO::FETCH_ASSOC);
         if (!empty($missingCats)) {
@@ -191,7 +191,7 @@ if ($pdo) {
         $categories = $pdo->query("
             SELECT c.id, sd.option_label AS name, sd.option_value AS slug 
             FROM system_dropdowns sd
-            JOIN categories c ON c.slug = sd.option_value
+            JOIN categories c ON c.slug COLLATE utf8mb4_unicode_ci = sd.option_value COLLATE utf8mb4_unicode_ci
             WHERE sd.group_key = 'product_categories' AND sd.is_active = 1
             ORDER BY sd.sort_order ASC, sd.option_label ASC
         ")->fetchAll(PDO::FETCH_ASSOC);
