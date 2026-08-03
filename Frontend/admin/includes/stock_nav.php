@@ -10,15 +10,15 @@ $currentStockPage = basename($_SERVER['SCRIPT_NAME']);
 <div class="stock-sub-nav">
     <a href="/Frontend/admin/stock_dashboard.php" class="stock-nav-item <?php echo $currentStockPage === 'stock_dashboard.php' ? 'active' : ''; ?>">
         <i data-lucide="layout-dashboard"></i>
-        <span>Live Dashboard</span>
+        <span>Stock Overview</span>
     </a>
     <a href="/Frontend/admin/stock_formula_center.php" class="stock-nav-item <?php echo $currentStockPage === 'stock_formula_center.php' ? 'active' : ''; ?>">
         <i data-lucide="flask-conical"></i>
-        <span>Formula Center</span>
+        <span>Feed Recipes</span>
     </a>
     <a href="/Frontend/admin/incoming_stock.php" class="stock-nav-item <?php echo $currentStockPage === 'incoming_stock.php' ? 'active' : ''; ?>">
         <i data-lucide="package-plus"></i>
-        <span>Incoming Stock</span>
+        <span>Buy Ingredients <small style="font-weight:400; opacity:0.75;">(Raw Materials)</small></span>
     </a>
     <a href="/Frontend/admin/stock_alerts.php" class="stock-nav-item <?php echo $currentStockPage === 'stock_alerts.php' ? 'active' : ''; ?>">
         <i data-lucide="bell"></i>

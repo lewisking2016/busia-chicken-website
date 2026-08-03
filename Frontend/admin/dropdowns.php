@@ -55,10 +55,10 @@ require_once __DIR__ . '/includes/admin_header.php';
         <div>
             <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--dark, #0f172a); margin: 0 0 4px 0;">
                 <i data-lucide="list-filter" style="width: 28px; height: 28px; vertical-align: middle; color: var(--primary, #d97706); margin-right: 8px;"></i>
-                Dropdowns & Master Data Manager
+                System Lists & Choices
             </h1>
             <p style="color: #64748b; font-size: 0.95rem; margin: 0;">
-                Manage and customize every selectable dropdown option across the website and admin dashboard in one place.
+                Manage the choices that appear in dropdown menus across the website (like order statuses, product types, and more).
             </p>
         </div>
         <div style="display: flex; gap: 12px;">

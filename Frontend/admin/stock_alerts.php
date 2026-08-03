@@ -15,7 +15,7 @@ if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_ad
 }
 
 $path_prefix = '../../';
-$page_title = 'Stock Alert Center';
+$page_title = 'Alert Center';
 include __DIR__ . '/includes/admin_header.php';
 ?>
 
@@ -23,8 +23,8 @@ include __DIR__ . '/includes/admin_header.php';
 
 <div class="admin-stock-wrapper">
     <div class="dashboard-hero-card">
-        <h1>Stock Alert Center</h1>
-        <p>Stay informed about inventory shortages, market price changes, and production bottlenecks.</p>
+        <h1>Alert Center</h1>
+        <p>Stay informed about ingredients that are running low, market price changes, and anything that needs your attention.</p>
     </div>
 
     <?php include __DIR__ . '/includes/stock_nav.php'; ?>
