@@ -120,25 +120,49 @@ include __DIR__ . '/includes/admin_header.php';
 window.production_list = [];
 window.flocks_list = [];
 
+function showTableError(tbodyId, colSpan, message) {
+    document.getElementById(tbodyId).innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center; padding: 32px;"><div style="display:inline-flex; align-items:center; gap:10px; color:#dc2626; background:#fef2f2; border:1px solid #fecaca; padding:14px 24px; border-radius:8px; font-weight:600;"><i data-lucide=\"alert-triangle\" style=\"width:18px;height:18px;\"></i>${message}</div></td></tr>`;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function setTableLoading(tbodyId, colSpan, message) {
+    document.getElementById(tbodyId).innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center; padding: 32px; color:#64748b;"><div style="display:inline-flex; align-items:center; gap:10px;"><div style="width:20px;height:20px;border:2px solid #cbd5e1;border-top-color:var(--admin-primary);border-radius:50%;animation:spin 0.8s linear infinite;"></div>${message}</div></td></tr>`;
+}
+
+function setBtnLoading(btn, loading) {
+    if (loading) {
+        btn.disabled = true;
+        btn.dataset.origText = btn.innerHTML;
+        btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px;"><div style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></div>Saving...</span>';
+    } else {
+        btn.disabled = false;
+        btn.innerHTML = btn.dataset.origText || 'Save';
+    }
+}
+
 async function loadData() {
+    setTableLoading('production-body', 9, 'Loading yield records...');
     try {
-        // Fetch Flocks to populate dropdown
         const flockRes = await fetch('/Backend/api/admin_poultry.php?action=get_flocks');
+        if (!flockRes.ok) throw new Error('Server error');
         const flockResult = await flockRes.json();
         if (flockResult.success) {
             window.flocks_list = flockResult.data;
             populateFlocksDropdown();
         }
 
-        // Fetch Production Logs
         const prodRes = await fetch('/Backend/api/admin_poultry.php?action=get_production');
+        if (!prodRes.ok) throw new Error('Server error');
         const prodResult = await prodRes.json();
         if (prodResult.success) {
             window.production_list = prodResult.data;
             renderProduction();
+        } else {
+            showTableError('production-body', 9, prodResult.message || 'Failed to load production logs.');
         }
     } catch (e) {
-        console.error("Error loading production data:", e);
+        showTableError('production-body', 9, 'Network error. Could not connect to server.');
+        console.error('Error loading production data:', e);
     }
 }
 
@@ -228,6 +252,8 @@ async function deleteProduction(id) {
 
 document.getElementById('production-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const btn = e.target.querySelector('[type="submit"]');
+    setBtnLoading(btn, true);
     const formData = new FormData(e.target);
     formData.append('csrf_token', window.BusiaAdmin?.csrfToken || '');
     try {
@@ -240,10 +266,22 @@ document.getElementById('production-form').addEventListener('submit', async (e) 
             closeProductionModal();
             loadData();
         } else {
-            alert(result.message);
+            alert('Error: ' + (result.message || 'Could not save log.'));
         }
-    } catch(e) { console.error(e); }
+    } catch(e) {
+        alert('Network error. Please check your connection and try again.');
+        console.error(e);
+    } finally {
+        setBtnLoading(btn, false);
+    }
 });
+
+if (!document.getElementById('admin-spin-style')) {
+    const style = document.createElement('style');
+    style.id = 'admin-spin-style';
+    style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+    document.head.appendChild(style);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
