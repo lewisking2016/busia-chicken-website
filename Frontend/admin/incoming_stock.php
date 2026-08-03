@@ -18,7 +18,7 @@ $page_title = 'Incoming Stock & Purchases';
 include __DIR__ . '/includes/admin_header.php';
 ?>
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/admin-stock.css">
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/admin-stock.css?v=1.3">
 
 <div class="admin-stock-wrapper">
     <div class="dashboard-hero-card" style="background: linear-gradient(135deg, var(--admin-primary) 0%, #064e3b 100%); padding: 32px; border-radius: 8px; margin-bottom: 32px; color: #ffffff;">
@@ -50,8 +50,8 @@ include __DIR__ . '/includes/admin_header.php';
                         <tr>
                             <th>Expected Date</th>
                             <th>Material</th>
-                            <th>Quantity (kgs)</th>
-                            <th>Price / kg</th>
+                            <th>Quantity (Tons)</th>
+                            <th>Price / Ton</th>
                             <th>Total Cost</th>
                             <th>Supplier</th>
                             <th>Status</th>
@@ -108,12 +108,12 @@ include __DIR__ . '/includes/admin_header.php';
                     <thead>
                         <tr>
                             <th>Material</th>
-                            <th>Current Stock</th>
-                            <th>Alert Min</th>
+                            <th>Current Stock (Tons)</th>
+                            <th>Alert Min (Tons)</th>
                             <th>Supplier</th>
                             <th>Lead Time</th>
-                            <th>Recommended Reorder</th>
-                            <th>Est. Unit Cost</th>
+                            <th>Recommended Reorder (Tons)</th>
+                            <th>Est. Cost / Ton (KES)</th>
                             <th>Est. Total Price</th>
                             <th>Actions</th>
                         </tr>
@@ -146,12 +146,12 @@ include __DIR__ . '/includes/admin_header.php';
                 </select>
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
-                <label class="form-label">Quantity to Order (kgs)</label>
-                <input type="number" name="quantity_kg" id="shipment-qty" class="form-control" step="0.01" required>
+                <label class="form-label">Quantity to Order (Tons)</label>
+                <input type="number" name="quantity_kg" id="shipment-qty" class="form-control" step="0.001" min="0.001" placeholder="e.g. 5.5" required>
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
-                <label class="form-label">Cost per kg (KES)</label>
-                <input type="number" name="cost_per_kg" id="shipment-cost" class="form-control" step="0.01" required>
+                <label class="form-label">Cost per Ton (KES)</label>
+                <input type="number" name="cost_per_kg" id="shipment-cost" class="form-control" step="0.01" min="0" placeholder="e.g. 45000" required>
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
                 <label class="form-label">Expected Delivery Date</label>
@@ -293,8 +293,8 @@ function renderShipments() {
         <tr>
             <td>${s.expected_delivery_date}</td>
             <td><strong>${s.material_name}</strong></td>
-            <td>${Number(s.quantity_kg).toLocaleString()} kgs</td>
-            <td>KES ${Number(s.cost_per_kg).toLocaleString()}</td>
+            <td>${Number(s.quantity_kg).toLocaleString()} Tons</td>
+            <td>KES ${Number(s.cost_per_kg).toLocaleString()}/Ton</td>
             <td><strong>KES ${totalCost.toLocaleString()}</strong></td>
             <td>${s.supplier_name}</td>
             <td><span class="badge-pill ${statusBadge}">${s.status.replace('_', ' ')}</span></td>
@@ -344,12 +344,12 @@ function renderAutoOrders(data) {
     tbody.innerHTML = data.map(o => `
         <tr style="background: rgba(239, 68, 68, 0.02);">
             <td><strong>${o.material_name}</strong></td>
-            <td style="color:#dc2626; font-weight:600;">${Number(o.current_stock).toLocaleString()} kgs</td>
-            <td>${Number(o.min_level).toLocaleString()} kgs</td>
+            <td style="color:#dc2626; font-weight:600;">${Number(o.current_stock).toLocaleString()} Tons</td>
+            <td>${Number(o.min_level).toLocaleString()} Tons</td>
             <td><strong>${o.supplier_name}</strong></td>
             <td>${o.lead_time_days} days</td>
-            <td><strong style="color:var(--admin-primary);">${Number(o.recommended_qty).toLocaleString()} kgs</strong></td>
-            <td>KES ${Number(o.estimated_cost_per_kg).toLocaleString()}</td>
+            <td><strong style="color:var(--admin-primary);">${Number(o.recommended_qty).toLocaleString()} Tons</strong></td>
+            <td>KES ${Number(o.estimated_cost_per_kg).toLocaleString()}/Ton</td>
             <td><strong>KES ${Number(o.total_estimated_cost).toLocaleString()}</strong></td>
             <td>
                 <button class="btn btn-primary btn-sm" onclick="draftAutoShipment(${o.raw_material_id}, ${o.supplier_id}, ${o.recommended_qty}, ${o.estimated_cost_per_kg})">
