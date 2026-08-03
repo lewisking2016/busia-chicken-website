@@ -18,7 +18,7 @@ $page_title = 'Incoming Stock & Purchases';
 include __DIR__ . '/includes/admin_header.php';
 ?>
 
-<link rel="stylesheet" href="/Frontend/assets/css/admin-stock.css">
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/admin-stock.css">
 
 <div class="admin-stock-wrapper">
     <div class="dashboard-hero-card" style="background: linear-gradient(135deg, var(--admin-primary) 0%, #064e3b 100%); padding: 32px; border-radius: 8px; margin-bottom: 32px; color: #ffffff;">

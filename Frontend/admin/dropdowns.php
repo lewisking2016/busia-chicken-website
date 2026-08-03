@@ -13,8 +13,7 @@ require_once __DIR__ . '/../../Backend/config/database.php';
 require_once __DIR__ . '/../../Backend/api/dropdowns.php';
 
 // Auth Guard
-$user = $_SESSION['user'] ?? null;
-if (!$user || (($user['role'] ?? '') !== 'admin' && ($user['role'] ?? '') !== 'stock_manager')) {
+if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'stock_manager'], true)) {
     header("Location: /Frontend/admin/login.php");
     exit;
 }
