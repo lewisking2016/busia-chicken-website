@@ -528,9 +528,6 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
     <?php include __DIR__ . '/admin_sidebar.php'; ?>
     <div class="admin-content">
         <!-- Top utility bar -->
-    <?php include __DIR__ . '/admin_sidebar.php'; ?>
-    <div class="admin-content">
-        <!-- Top utility bar -->
         <div class="admin-top-bar">
             <div class="welcome-message">
                 <h2>Hello, <?php echo htmlspecialchars($_SESSION['first_name'] ?? $_SESSION['username'] ?? 'Admin'); ?></h2>
