@@ -155,8 +155,7 @@ if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === realpath(__FILE__)) {
     }
 
     // Require admin privileges for POST/PUT/DELETE actions
-    $user = $_SESSION['user'] ?? null;
-    if (!$user || (($user['role'] ?? '') !== 'admin' && ($user['role'] ?? '') !== 'stock_manager')) {
+    if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'stock_manager'], true)) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'Unauthorized. Admin permissions required.']);
         exit;
