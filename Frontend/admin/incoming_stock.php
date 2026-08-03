@@ -50,8 +50,8 @@ include __DIR__ . '/includes/admin_header.php';
                         <tr>
                             <th>Expected Date</th>
                             <th>Ingredient / Material</th>
-                            <th>Quantity (kg)</th>
-                            <th>Price per kg</th>
+                            <th>Quantity (kgs)</th>
+                            <th>Price per kgs</th>
                             <th>Total Cost</th>
                             <th>Supplier</th>
                             <th>Status</th>
@@ -108,12 +108,12 @@ include __DIR__ . '/includes/admin_header.php';
                     <thead>
                         <tr>
                             <th>Ingredient</th>
-                            <th>Current Stock (kg)</th>
-                            <th>Minimum Stock (kg)</th>
+                            <th>Current Stock (kgs)</th>
+                            <th>Minimum Stock (kgs)</th>
                             <th>Supplier</th>
                             <th>Delivery Time</th>
-                            <th>How Much to Buy (kg)</th>
-                            <th>Price per kg (KES)</th>
+                            <th>How Much to Buy (kgs)</th>
+                            <th>Price per kgs (KES)</th>
                             <th>Estimated Total Cost</th>
                             <th>Actions</th>
                         </tr>
@@ -146,11 +146,11 @@ include __DIR__ . '/includes/admin_header.php';
                 </select>
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
-                <label class="form-label">How many kilograms (kg) are you ordering?</label>
+                <label class="form-label">How many kilograms (kgs) are you ordering?</label>
                 <input type="number" name="quantity_kg" id="shipment-qty" class="form-control" step="0.1" min="1" placeholder="e.g. 500" required>
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
-                <label class="form-label">Price per kg (KES) — How much does 1 kg cost?</label>
+                <label class="form-label">Price per kgs (KES) — How much does 1 kgs cost?</label>
                 <input type="number" name="cost_per_kg" id="shipment-cost" class="form-control" step="0.01" min="0" placeholder="e.g. 45" required>
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
@@ -293,8 +293,8 @@ function renderShipments() {
         <tr>
             <td>${s.expected_delivery_date}</td>
             <td><strong>${s.material_name}</strong></td>
-            <td>${Number(s.quantity_kg).toLocaleString()} kg</td>
-            <td>KES ${Number(s.cost_per_kg).toLocaleString()}/kg</td>
+            <td>${Number(s.quantity_kg).toLocaleString()} kgs</td>
+            <td>KES ${Number(s.cost_per_kg).toLocaleString()}/kgs</td>
             <td><strong>KES ${totalCost.toLocaleString()}</strong></td>
             <td>${s.supplier_name}</td>
             <td><span class="badge-pill ${statusBadge}">${s.status.replace('_', ' ')}</span></td>
@@ -344,12 +344,12 @@ function renderAutoOrders(data) {
     tbody.innerHTML = data.map(o => `
         <tr style="background: rgba(239, 68, 68, 0.02);">
             <td><strong>${o.material_name}</strong></td>
-            <td style="color:#dc2626; font-weight:600;">${Number(o.current_stock).toLocaleString()} kg</td>
-            <td>${Number(o.min_level).toLocaleString()} kg</td>
+            <td style="color:#dc2626; font-weight:600;">${Number(o.current_stock).toLocaleString()} kgs</td>
+            <td>${Number(o.min_level).toLocaleString()} kgs</td>
             <td><strong>${o.supplier_name}</strong></td>
             <td>${o.lead_time_days} days delivery</td>
-            <td><strong style="color:var(--admin-primary);">${Number(o.recommended_qty).toLocaleString()} kg</strong></td>
-            <td>KES ${Number(o.estimated_cost_per_kg).toLocaleString()}/kg</td>
+            <td><strong style="color:var(--admin-primary);">${Number(o.recommended_qty).toLocaleString()} kgs</strong></td>
+            <td>KES ${Number(o.estimated_cost_per_kg).toLocaleString()}/kgs</td>
             <td><strong>KES ${Number(o.total_estimated_cost).toLocaleString()}</strong></td>
             <td>
                 <button class="btn btn-primary btn-sm" onclick="draftAutoShipment(${o.raw_material_id}, ${o.supplier_id}, ${o.recommended_qty}, ${o.estimated_cost_per_kg})">
