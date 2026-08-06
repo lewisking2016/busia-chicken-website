@@ -136,7 +136,7 @@ function exportOrders($pdo) {
 
 function exportCustomers($pdo) {
     $stmt = $pdo->query("
-        SELECT id, username, email, first_name, last_name, phone, role, 
+        SELECT id, username, email, first_name, last_name, phone_number, role, 
                is_active, created_at
         FROM users
         WHERE role IN ('customer', 'demo')
@@ -151,43 +151,44 @@ function exportCustomers($pdo) {
 
 function exportRawMaterials($pdo) {
     $stmt = $pdo->query("
-        SELECT id, name, stock_tons, reserved_production_kg, unit_price_per_kg, 
-               description, last_updated
+        SELECT id, name, stock_tons, current_price_per_ton, min_stock_level, 
+               created_at, updated_at
         FROM raw_materials
         ORDER BY name
     ");
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     outputCSV('raw_materials_export', [
-        'ID', 'Name', 'Stock (tons)', 'Reserved (kg)', 'Price/kg', 'Description', 'Last Updated'
+        'ID', 'Name', 'Stock (tons)', 'Price/ton', 'Min Stock Level', 'Created', 'Updated'
     ], $rows);
 }
 
 function exportFlocks($pdo) {
     $stmt = $pdo->query("
-        SELECT id, flock_name, breed, total_birds, mortality_count, 
-               date_arrived, location, status
+        SELECT id, flock_name, breed, initial_count, current_count, 
+               hatch_date, status
         FROM flocks
-        ORDER BY date_arrived DESC
+        ORDER BY hatch_date DESC
     ");
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     outputCSV('flocks_export', [
-        'ID', 'Flock Name', 'Breed', 'Total Birds', 'Mortality', 'Arrived', 'Location', 'Status'
+        'ID', 'Flock Name', 'Breed', 'Initial Count', 'Current Count', 'Hatch Date', 'Status'
     ], $rows);
 }
 
 function exportExpenses($pdo) {
     $stmt = $pdo->query("
-        SELECT id, category, description, amount, expense_date, 
-               payment_method, vendor, created_at
-        FROM expenses
-        ORDER BY expense_date DESC
+        SELECT id, category, description, amount, transaction_date, 
+               payment_method, created_at
+        FROM financial_records
+        WHERE type = 'expense'
+        ORDER BY transaction_date DESC
     ");
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     outputCSV('expenses_export', [
-        'ID', 'Category', 'Description', 'Amount', 'Date', 'Payment Method', 'Vendor', 'Created'
+        'ID', 'Category', 'Description', 'Amount', 'Date', 'Payment Method', 'Created'
     ], $rows);
 }
 
@@ -279,10 +280,10 @@ function importCustomers($pdo, $file_path) {
                 $password_hash = password_hash('password123', PASSWORD_DEFAULT);
                 
                 $stmt = $pdo->prepare("
-                    INSERT INTO users (username, email, password_hash, first_name, last_name, phone, role, is_active)
+                    INSERT INTO users (username, email, password_hash, first_name, last_name, phone_number, role, is_active)
                     VALUES (?, ?, ?, ?, ?, ?, 'customer', 1)
                     ON DUPLICATE KEY UPDATE 
-                    first_name = VALUES(first_name), last_name = VALUES(last_name), phone = VALUES(phone)
+                    first_name = VALUES(first_name), last_name = VALUES(last_name), phone_number = VALUES(phone_number)
                 ");
                 $stmt->execute([$username, $email, $password_hash, $first_name, $last_name, $phone]);
                 $success++;
@@ -305,12 +306,11 @@ function importRawMaterials($pdo, $file_path) {
         
         while (($data = fgetcsv($handle)) !== FALSE) {
             try {
-                // Expected: Name, Stock (tons), Reserved (kg), Price/kg, Description
+                // Expected: Name, Stock (tons), Price/ton, Min Stock Level
                 $name = trim($data[0] ?? '');
                 $stock_tons = (float)($data[1] ?? 0);
-                $reserved_kg = (float)($data[2] ?? 0);
-                $price_per_kg = (float)($data[3] ?? 0);
-                $description = trim($data[4] ?? '');
+                $price_per_ton = (float)($data[2] ?? 0);
+                $min_stock_level = (float)($data[3] ?? 1.0);
                 
                 if (empty($name)) {
                     $errors++;
@@ -318,13 +318,13 @@ function importRawMaterials($pdo, $file_path) {
                 }
                 
                 $stmt = $pdo->prepare("
-                    INSERT INTO raw_materials (name, stock_tons, reserved_production_kg, unit_price_per_kg, description)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO raw_materials (name, stock_tons, current_price_per_ton, min_stock_level)
+                    VALUES (?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE 
-                    stock_tons = VALUES(stock_tons), reserved_production_kg = VALUES(reserved_production_kg), 
-                    unit_price_per_kg = VALUES(unit_price_per_kg), description = VALUES(description)
+                    stock_tons = VALUES(stock_tons), current_price_per_ton = VALUES(current_price_per_ton), 
+                    min_stock_level = VALUES(min_stock_level)
                 ");
-                $stmt->execute([$name, $stock_tons, $reserved_kg, $price_per_kg, $description]);
+                $stmt->execute([$name, $stock_tons, $price_per_ton, $min_stock_level]);
                 $success++;
             } catch (Exception $e) {
                 $errors++;
@@ -345,25 +345,29 @@ function importFlocks($pdo, $file_path) {
         
         while (($data = fgetcsv($handle)) !== FALSE) {
             try {
-                // Expected: Flock Name, Breed, Total Birds, Mortality, Arrived (YYYY-MM-DD), Location, Status
+                // Expected: Flock Name, Breed, Initial Count, Current Count, Hatch Date (YYYY-MM-DD), Status
                 $flock_name = trim($data[0] ?? '');
                 $breed = trim($data[1] ?? '');
-                $total_birds = (int)($data[2] ?? 0);
-                $mortality = (int)($data[3] ?? 0);
-                $date_arrived = trim($data[4] ?? date('Y-m-d'));
-                $location = trim($data[5] ?? '');
-                $status = trim($data[6] ?? 'active');
+                $initial_count = (int)($data[2] ?? 0);
+                $current_count = (int)($data[3] ?? 0);
+                $hatch_date = trim($data[4] ?? date('Y-m-d'));
+                $status = trim($data[5] ?? 'active');
                 
                 if (empty($flock_name)) {
                     $errors++;
                     continue;
                 }
                 
+                // If current_count not provided, use initial_count
+                if ($current_count === 0 && $initial_count > 0) {
+                    $current_count = $initial_count;
+                }
+                
                 $stmt = $pdo->prepare("
-                    INSERT INTO flocks (flock_name, breed, total_birds, mortality_count, date_arrived, location, status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO flocks (flock_name, breed, initial_count, current_count, hatch_date, status)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 ");
-                $stmt->execute([$flock_name, $breed, $total_birds, $mortality, $date_arrived, $location, $status]);
+                $stmt->execute([$flock_name, $breed, $initial_count, $current_count, $hatch_date, $status]);
                 $success++;
             } catch (Exception $e) {
                 $errors++;
@@ -384,13 +388,12 @@ function importExpenses($pdo, $file_path) {
         
         while (($data = fgetcsv($handle)) !== FALSE) {
             try {
-                // Expected: Category, Description, Amount, Date (YYYY-MM-DD), Payment Method, Vendor
+                // Expected: Category, Description, Amount, Date (YYYY-MM-DD), Payment Method
                 $category = trim($data[0] ?? '');
                 $description = trim($data[1] ?? '');
                 $amount = (float)($data[2] ?? 0);
-                $expense_date = trim($data[3] ?? date('Y-m-d'));
+                $transaction_date = trim($data[3] ?? date('Y-m-d'));
                 $payment_method = trim($data[4] ?? 'cash');
-                $vendor = trim($data[5] ?? '');
                 
                 if (empty($description) || $amount <= 0) {
                     $errors++;
@@ -398,10 +401,10 @@ function importExpenses($pdo, $file_path) {
                 }
                 
                 $stmt = $pdo->prepare("
-                    INSERT INTO expenses (category, description, amount, expense_date, payment_method, vendor)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO financial_records (type, category, description, amount, transaction_date, payment_method)
+                    VALUES ('expense', ?, ?, ?, ?, ?)
                 ");
-                $stmt->execute([$category, $description, $amount, $expense_date, $payment_method, $vendor]);
+                $stmt->execute([$category, $description, $amount, $transaction_date, $payment_method]);
                 $success++;
             } catch (Exception $e) {
                 $errors++;
@@ -494,7 +497,7 @@ function importExpenses($pdo, $file_path) {
                     <i data-lucide="layers" style="width: 18px; height: 18px; color: var(--admin-primary);"></i>
                     <h4 style="margin: 0; font-weight: 700; font-size: 0.95rem; color: var(--admin-text-heading);">Raw Materials</h4>
                 </div>
-                <p style="margin: 0; font-size: 0.8rem; color: #64748b;">Ingredient stock levels, reserves, and pricing data.</p>
+                <p style="margin: 0; font-size: 0.8rem; color: #64748b;">Ingredient stock levels and pricing data.</p>
             </div>
             <a href="?export=raw_materials" class="btn btn-primary btn-sm" style="margin-top: 16px; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
                 <i data-lucide="download" style="width: 14px; height: 14px;"></i>
@@ -580,9 +583,9 @@ function importExpenses($pdo, $file_path) {
                 <ul style="margin: 0; padding-left: 20px; font-size: 0.85rem; color: #b45309; line-height: 1.8;">
                     <li><strong>Products:</strong> Name, Category, Type, Price, Stock, Description</li>
                     <li><strong>Customers:</strong> Username, Email, First Name, Last Name, Phone</li>
-                    <li><strong>Raw Materials:</strong> Name, Stock (tons), Reserved (kg), Price/kg, Description</li>
-                    <li><strong>Flocks:</strong> Flock Name, Breed, Total Birds, Mortality, Arrived (YYYY-MM-DD), Location, Status</li>
-                    <li><strong>Expenses:</strong> Category, Description, Amount, Date (YYYY-MM-DD), Payment Method, Vendor</li>
+                    <li><strong>Raw Materials:</strong> Name, Stock (tons), Price/ton, Min Stock Level</li>
+                    <li><strong>Flocks:</strong> Flock Name, Breed, Initial Count, Current Count, Hatch Date (YYYY-MM-DD), Status</li>
+                    <li><strong>Expenses:</strong> Category, Description, Amount, Date (YYYY-MM-DD), Payment Method</li>
                 </ul>
                 <p style="margin: 12px 0 0 0; font-size: 0.8rem; color: #92400e; font-weight: 600;">
                     <i data-lucide="lightbulb" style="width: 14px; height: 14px; display: inline-block; margin-right: 4px;"></i>
