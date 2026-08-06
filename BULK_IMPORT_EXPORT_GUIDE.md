@@ -81,22 +81,22 @@ johndoe,john@example.com,John,Doe,0712345678
 
 ### Raw Materials CSV:
 ```
-Name,Stock (tons),Reserved (kg),Price/kg,Description
-Maize,5.5,500,45,Yellow corn
-Soya Bean Cake,3.2,300,85,High protein
+Name,Stock (tons),Price/ton,Min Stock Level
+Maize,5.5,35000,1.0
+Soya Bean Cake,3.2,85000,0.5
 ```
 
 ### Flocks CSV:
 ```
-Flock Name,Breed,Total Birds,Mortality,Arrived,Location,Status
-Batch 15 2026,Broiler,500,5,2026-01-15,House A,active
+Flock Name,Breed,Initial Count,Current Count,Hatch Date,Status
+Batch 15 2026,Broiler,500,485,2026-01-15,active
 ```
 
 ### Expenses CSV:
 ```
-Category,Description,Amount,Date,Payment Method,Vendor
-Feed,50 bags layer mash,125000,2026-02-01,mpesa,Farmers Choice
-Veterinary,Vaccination batch 15,15000,2026-02-02,cash,Vet Clinic
+Category,Description,Amount,Date,Payment Method
+Feed,50 bags layer mash,125000,2026-02-01,mpesa
+Veterinary,Vaccination batch 15,15000,2026-02-02,cash
 ```
 
 ## Important Notes
