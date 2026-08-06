@@ -53,9 +53,13 @@ $selectedGroupLabel = $groupMap[$section] ?? 'Setup Group';
 
 $options = [];
 if ($pdo) {
-    $stmt = $pdo->prepare('SELECT id, option_label, option_value, sort_order, is_active FROM system_dropdowns WHERE group_key = ? ORDER BY sort_order ASC, option_label ASC');
-    $stmt->execute([$section]);
-    $options = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->prepare('SELECT id, option_label, option_value, sort_order, is_active FROM system_dropdowns WHERE group_key = ? ORDER BY sort_order ASC, option_label ASC');
+        $stmt->execute([$section]);
+        $options = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
+    }
 }
 ?>
 

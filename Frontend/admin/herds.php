@@ -51,8 +51,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_herd'])) {
 
 $herds = [];
 if ($pdo) {
-    $stmt = $pdo->query('SELECT * FROM herds ORDER BY created_at DESC');
-    $herds = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->query('SELECT * FROM herds ORDER BY created_at DESC');
+        $herds = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
+    }
 }
 
 $selectedHerd = null;

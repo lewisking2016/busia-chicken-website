@@ -52,8 +52,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_item'])) {
 
 $items = [];
 if ($pdo) {
-    $stmt = $pdo->query('SELECT * FROM farm_items ORDER BY created_at DESC');
-    $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->query('SELECT * FROM farm_items ORDER BY created_at DESC');
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
+    }
 }
 
 $selectedItem = null;

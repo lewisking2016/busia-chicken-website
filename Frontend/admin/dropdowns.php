@@ -42,8 +42,12 @@ $totalGroups = count($groups);
 $totalOptions = 0;
 $totalCustom = 0;
 if ($pdo) {
-    $totalOptions = (int)($pdo->query("SELECT COUNT(*) FROM system_dropdowns")->fetchColumn() ?: 0);
-    $totalCustom = (int)($pdo->query("SELECT COUNT(*) FROM system_dropdowns WHERE is_system = 0")->fetchColumn() ?: 0);
+    try {
+        $totalOptions = (int)($pdo->query("SELECT COUNT(*) FROM system_dropdowns")->fetchColumn() ?: 0);
+        $totalCustom = (int)($pdo->query("SELECT COUNT(*) FROM system_dropdowns WHERE is_system = 0")->fetchColumn() ?: 0);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
+    }
 }
 
 require_once __DIR__ . '/includes/admin_header.php';

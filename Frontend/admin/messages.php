@@ -42,15 +42,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
 
 $users = [];
 if ($pdo) {
-    $stmt = $pdo->query('SELECT id, username, first_name, last_name FROM users WHERE id != ' . $currentAdminId . ' ORDER BY first_name ASC, last_name ASC');
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->prepare('SELECT id, username, first_name, last_name FROM users WHERE id != ? ORDER BY first_name ASC, last_name ASC');
+        $stmt->execute([$currentAdminId]);
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
+    }
 }
 
 $messages = [];
 if ($pdo) {
-    $stmt = $pdo->prepare('SELECT m.*, su.username AS sender_username, ru.username AS recipient_username FROM messages m LEFT JOIN users su ON m.sender_id = su.id LEFT JOIN users ru ON m.recipient_id = ru.id WHERE m.sender_id = ? OR m.recipient_id = ? ORDER BY m.created_at DESC');
-    $stmt->execute([$currentAdminId, $currentAdminId]);
-    $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->prepare('SELECT m.*, su.username AS sender_username, ru.username AS recipient_username FROM messages m LEFT JOIN users su ON m.sender_id = su.id LEFT JOIN users ru ON m.recipient_id = ru.id WHERE m.sender_id = ? OR m.recipient_id = ? ORDER BY m.created_at DESC');
+        $stmt->execute([$currentAdminId, $currentAdminId]);
+        $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
+    }
 }
 
 $selectedMessage = null;

@@ -50,8 +50,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_feed'])) {
 
 $feedItems = [];
 if ($pdo) {
-    $stmt = $pdo->query('SELECT * FROM raw_materials ORDER BY name ASC');
-    $feedItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->query('SELECT * FROM raw_materials ORDER BY name ASC');
+        $feedItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
+    }
 }
 
 $selectedItem = null;
