@@ -117,19 +117,19 @@ function isActivePage(string $page, string $current): string {
 
         <li>
             <a href="/Frontend/admin/animals.php" class="<?php echo isActivePage('animals.php', $currentPage); ?>">
-                <i data-lucide="cpu"></i>
+                <i data-lucide="paw-print"></i>
                 <span>Animals</span>
             </a>
         </li>
         <li>
             <a href="/Frontend/admin/herds.php" class="<?php echo isActivePage('herds.php', $currentPage); ?>">
-                <i data-lucide="users"></i>
+                <i data-lucide="grid"></i>
                 <span>Herds</span>
             </a>
         </li>
         <li>
             <a href="/Frontend/admin/feed_stock.php" class="<?php echo isActivePage('feed_stock.php', $currentPage); ?>">
-                <i data-lucide="leaf"></i>
+                <i data-lucide="sprout"></i>
                 <span>Feed Stock</span>
             </a>
         </li>
@@ -141,7 +141,7 @@ function isActivePage(string $page, string $current): string {
         </li>
         <li>
             <a href="/Frontend/admin/breeding.php" class="<?php echo isActivePage('breeding.php', $currentPage); ?>">
-                <i data-lucide="activity"></i>
+                <i data-lucide="dna"></i>
                 <span>Breeding</span>
             </a>
         </li>
@@ -177,25 +177,25 @@ function isActivePage(string $page, string $current): string {
         </li>
         <li>
             <a href="/Frontend/admin/staff.php" class="<?php echo isActivePage('staff.php', $currentPage); ?>">
-                <i data-lucide="users"></i>
+                <i data-lucide="user-check"></i>
                 <span>Staff</span>
             </a>
         </li>
         <li>
             <a href="/Frontend/admin/logs.php" class="<?php echo isActivePage('logs.php', $currentPage); ?>">
-                <i data-lucide="server"></i>
+                <i data-lucide="terminal"></i>
                 <span>Logs</span>
             </a>
         </li>
         <li>
             <a href="/Frontend/admin/messages.php" class="<?php echo isActivePage('messages.php', $currentPage); ?>">
-                <i data-lucide="message-circle"></i>
+                <i data-lucide="mail"></i>
                 <span>Messages</span>
             </a>
         </li>
         <li>
             <a href="/Frontend/admin/setup.php" class="<?php echo isActivePage('setup.php', $currentPage); ?>">
-                <i data-lucide="settings"></i>
+                <i data-lucide="wrench"></i>
                 <span>Setup</span>
             </a>
         </li>
