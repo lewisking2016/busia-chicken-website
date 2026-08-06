@@ -688,6 +688,15 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
             gap: 5px;
         }
     </style>
+    <script>
+        // Dynamically hide sidebar and topbar elements if loaded inside an iframe
+        if (window.self !== window.top) {
+            document.documentElement.classList.add('in-iframe');
+            const style = document.createElement('style');
+            style.textContent = '.admin-shell > nav, .admin-top-bar { display: none !important; } .admin-shell { display: block !important; } .admin-content { padding: 0 !important; }';
+            document.head.appendChild(style);
+        }
+    </script>
 </head>
 <body class="admin-layout">
 <script>
