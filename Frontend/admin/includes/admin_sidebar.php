@@ -149,6 +149,14 @@ HTML;
         );
         ?>
 
+        <li style="margin-bottom: 2px;">
+            <a href="/Frontend/admin/bulk_import_export.php"
+               style="display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.18s cubic-bezier(0.4,0,0.2,1);border:1px solid transparent;<?= $cp === 'bulk_import_export.php' ? 'background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;box-shadow:0 4px 14px rgba(27,94,32,0.22);' : 'color:#475569;' ?>">
+                <i data-lucide="database" style="width:19px;height:19px;flex-shrink:0;"></i>
+                <span>Bulk Import/Export</span>
+            </a>
+        </li>
+
     </ul>
 
     <!-- User info & logout -->
