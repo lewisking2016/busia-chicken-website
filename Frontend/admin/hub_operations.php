@@ -336,11 +336,28 @@ document.addEventListener('DOMContentLoaded', loadFlocks);
                     <select class="admin-form-control" id="prod-flock" required><option value="">Choose flock...</option></select>
                 </div>
                 <div class="admin-form-group"><label class="admin-form-label">Date *</label><input class="admin-form-control" type="date" id="prod-date" required></div>
-                <div class="admin-form-group"><label class="admin-form-label">Eggs Collected</label><input class="admin-form-control" type="number" id="prod-eggs" min="0" value="0"></div>
-                <div class="admin-form-group"><label class="admin-form-label">Cracked / Rejected</label><input class="admin-form-control" type="number" id="prod-cracked" min="0" value="0"></div>
-                <div class="admin-form-group"><label class="admin-form-label">Feed Consumed (kg)</label><input class="admin-form-control" type="number" step="0.1" id="prod-feed" min="0" value="0"></div>
-                <div class="admin-form-group"><label class="admin-form-label">Mortality (Birds Lost)</label><input class="admin-form-control" type="number" id="prod-mortality" min="0" value="0" style="border-color:#fca5a5;"></div>
-                <div class="admin-form-group" style="grid-column:span 2"><label class="admin-form-label">Notes / Cause of Death</label><textarea class="admin-form-control" id="prod-notes" rows="3" placeholder="Any remarks, cause of mortality, observations..."></textarea></div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Eggs Collected (Pieces)</label>
+                    <input class="admin-form-control" type="number" id="prod-eggs" min="0" value="0">
+                </div>
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Cracked / Rejected Eggs</label>
+                    <input class="admin-form-control" type="number" id="prod-cracked" min="0" value="0">
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Milk Yield (Litres)</label>
+                    <input class="admin-form-control" type="number" step="0.1" id="prod-milk" min="0" value="0" placeholder="For Cows/Goats">
+                </div>
+                <div class="admin-form-group">
+                    <label class="admin-form-label">Feed Consumed (kg)</label>
+                    <input class="admin-form-control" type="number" step="0.1" id="prod-feed" min="0" value="0">
+                </div>
+            </div>
+            <div class="admin-form-group"><label class="admin-form-label">Mortality (Animals Lost Today)</label><input class="admin-form-control" type="number" id="prod-mortality" min="0" value="0" style="border-color:#fca5a5;"></div>
+            <div class="admin-form-group" style="grid-column:span 2"><label class="admin-form-label">Notes / Observations</label><textarea class="admin-form-control" id="prod-notes" rows="2" placeholder="Any remarks, cause of mortality, observations..."></textarea></div>
             </div>
             <div style="display:flex;gap:12px;margin-top:20px;">
                 <button type="button" class="btn btn-outline" style="flex:1;" onclick="closeProductionModal()">Cancel</button>
@@ -727,11 +744,21 @@ document.addEventListener('click',e=>{ const m=document.getElementById('health-m
         <h3 id="breeding-modal-title" style="margin:0 0 22px;font-family:'Outfit',sans-serif;">Record Breeding Event</h3>
         <form method="POST"><input type="hidden" name="_action" value="save_breeding"><input type="hidden" name="id" id="br-id">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="admin-form-group" style="grid-column:span 2"><label class="admin-form-label">Livestock Species</label>
+                <select class="admin-form-control" id="br-species" onchange="calculateExpectedBirth()">
+                    <option value="chicken">Chicken (21 Days)</option>
+                    <option value="cow">Cow (283 Days)</option>
+                    <option value="goat">Goat (150 Days)</option>
+                    <option value="pig">Pig (114 Days)</option>
+                    <option value="sheep">Sheep (150 Days)</option>
+                    <option value="other">Other / Custom</option>
+                </select>
+            </div>
             <div class="admin-form-group"><label class="admin-form-label">Sire (Father) ID/Tag</label><input class="admin-form-control" name="sire" id="br-sire" placeholder="e.g. A-003"></div>
             <div class="admin-form-group"><label class="admin-form-label">Dam (Mother) ID/Tag</label><input class="admin-form-control" name="dam" id="br-dam" placeholder="e.g. A-007"></div>
-            <div class="admin-form-group"><label class="admin-form-label">Breeding Date</label><input class="admin-form-control" type="date" name="breeding_date" id="br-date" value="<?= date('Y-m-d') ?>"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Breeding Date</label><input class="admin-form-control" type="date" name="breeding_date" id="br-date" value="<?= date('Y-m-d') ?>" onchange="calculateExpectedBirth()"></div>
             <div class="admin-form-group"><label class="admin-form-label">Expected Birth</label><input class="admin-form-control" type="date" name="expected_birth" id="br-exp"></div>
-            <div class="admin-form-group"><label class="admin-form-label">Status</label><select class="admin-form-control" name="status" id="br-status"><option>Pending</option><option>Born</option><option>Failed</option><option>Aborted</option></select></div>
+            <div class="admin-form-group" style="grid-column:span 2"><label class="admin-form-label">Status</label><select class="admin-form-control" name="status" id="br-status"><option>Pending</option><option>Born</option><option>Failed</option><option>Aborted</option></select></div>
             <div class="admin-form-group" style="grid-column:span 2"><label class="admin-form-label">Notes</label><textarea class="admin-form-control" name="notes" id="br-notes" rows="3"></textarea></div>
         </div>
         <div style="display:flex;gap:12px;margin-top:20px;">
@@ -741,12 +768,29 @@ document.addEventListener('click',e=>{ const m=document.getElementById('health-m
     </div>
 </div>
 <script>
+function calculateExpectedBirth() {
+    const breedDateVal = document.getElementById('br-date').value;
+    if (!breedDateVal) return;
+    const species = document.getElementById('br-species').value;
+    let days = 21;
+    if (species === 'cow') days = 283;
+    else if (species === 'goat' || species === 'sheep') days = 150;
+    else if (species === 'pig') days = 114;
+    else if (species === 'other') return; // let user enter custom
+
+    const d = new Date(breedDateVal);
+    d.setDate(d.getDate() + days);
+    document.getElementById('br-exp').value = d.toISOString().split('T')[0];
+}
 function openBreedingModal(d){
     document.getElementById('breeding-modal-title').textContent=d?.id?'Edit Breeding Record':'Record Breeding Event';
     document.getElementById('br-id').value=d?.id||''; document.getElementById('br-sire').value=d?.sire||'';
     document.getElementById('br-dam').value=d?.dam||''; document.getElementById('br-date').value=d?.breeding_date||'<?= date("Y-m-d") ?>';
     document.getElementById('br-exp').value=d?.expected_birth||''; document.getElementById('br-status').value=d?.status||'Pending';
-    document.getElementById('br-notes').value=d?.notes||''; document.getElementById('breeding-modal').style.display='flex';
+    document.getElementById('br-notes').value=d?.notes||''; 
+    document.getElementById('br-species').value = 'cow';
+    document.getElementById('breeding-modal').style.display='flex';
+    calculateExpectedBirth();
 }
 document.addEventListener('click',e=>{ const m=document.getElementById('breeding-modal'); if(m&&e.target===m) m.style.display='none'; });
 </script>
