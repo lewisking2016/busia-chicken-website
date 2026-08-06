@@ -95,6 +95,22 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
             box-shadow: 4px 0 24px rgba(15, 23, 42, 0.02); 
             box-sizing: border-box;
             z-index: 100;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(27, 94, 32, 0.2) transparent;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(27, 94, 32, 0.2);
+            border-radius: 4px;
         }
 
         .admin-sidebar-brand { 
