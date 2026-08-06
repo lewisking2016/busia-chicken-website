@@ -1,203 +1,77 @@
 <?php
 /**
- * Admin sidebar navigation for dashboard pages.
+ * Admin Sidebar — Clean 6-item navigation.
  */
 declare(strict_types=1);
-$currentPage = basename($_SERVER['SCRIPT_NAME']);
-function isActivePage(string $page, string $current): string {
-    return $current === $page ? 'active' : '';
+
+$cp   = basename($_SERVER['SCRIPT_NAME']);
+$tab  = $_GET['tab'] ?? '';
+
+// Active hub detection
+$isOps      = $cp === 'hub_operations.php';
+$isInventory= $cp === 'hub_inventory.php';
+$isFinance  = $cp === 'hub_finance.php';
+$isPeople   = $cp === 'hub_people.php';
+$isSettings = $cp === 'hub_settings.php';
+$isDash     = $cp === 'dashboard.php';
+
+function navLink(string $href, string $icon, string $label, bool $active): string {
+    $base = $active
+        ? 'background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;box-shadow:0 4px 14px rgba(27,94,32,0.22);'
+        : 'color:#475569;';
+    return <<<HTML
+    <li>
+        <a href="{$href}"
+           style="display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.18s cubic-bezier(0.4,0,0.2,1);border:1px solid transparent;{$base}">
+            <i data-lucide="{$icon}" style="width:19px;height:19px;flex-shrink:0;"></i>
+            <span>{$label}</span>
+        </a>
+    </li>
+    HTML;
 }
 ?>
-<nav class="admin-sidebar">
-    <div class="admin-sidebar-brand">
-        <img src="/Frontend/images/busia logo.png" alt="Busia Chicken" style="height: 48px; width: auto;">
+<nav style="width:264px;background:#fff;border-right:1px solid rgba(203,213,225,0.7);padding:18px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;box-shadow:2px 0 16px rgba(15,23,42,0.03);box-sizing:border-box;z-index:100;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(27,94,32,0.15) transparent;flex-shrink:0;">
+
+    <!-- Brand -->
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:28px;padding:0 4px;">
+        <img src="/Frontend/images/busia logo.png" alt="Busia Chicken" style="height:44px;width:auto;border-radius:8px;">
         <div>
-            <p>Busia Admin</p>
-            <small>Manager Console</small>
+            <p style="margin:0;font-family:'Outfit',sans-serif;font-size:1.05rem;font-weight:800;color:#0f172a;letter-spacing:-0.3px;">Busia Chicken</p>
+            <small style="display:block;color:#64748b;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">Admin Console</small>
         </div>
     </div>
-    <ul class="admin-sidebar-nav">
-        <li>
-            <a href="/Frontend/admin/dashboard.php" class="<?php echo isActivePage('dashboard.php', $currentPage); ?>">
-                <i data-lucide="layout-dashboard"></i>
-                <span>Dashboard</span>
-            </a>
-        </li>
-        <?php if ($isAdmin): ?>
-        <li>
-            <a href="/Frontend/admin/products.php" class="<?php echo isActivePage('products.php', $currentPage); ?>">
-                <i data-lucide="package"></i>
-                <span>Products</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Frontend/admin/orders.php" class="<?php echo isActivePage('orders.php', $currentPage); ?>">
-                <i data-lucide="shopping-bag"></i>
-                <span>Orders</span>
-            </a>
-        </li>
-        <?php endif; ?>
-        
-        <!-- Stock Brain Dropdown (Visible to all Admins & Stock Managers) -->
-        <?php $isStockActive = str_contains($currentPage, 'stock_') || $currentPage === 'incoming_stock.php'; ?>
-        <li class="has-dropdown">
-            <a href="javascript:void(0)" class="dropdown-trigger <?php echo $isStockActive ? 'open' : ''; ?>" onclick="toggleDropdown('stock-dropdown', this)">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <i data-lucide="brain-circuit"></i>
-                    <span>Feed & Stock</span>
-                </div>
-                <i data-lucide="chevron-down" class="chevron"></i>
-            </a>
-            <ul class="sidebar-dropdown <?php echo $isStockActive ? 'open' : ''; ?>" id="stock-dropdown">
-                <li>
-                    <a href="/Frontend/admin/stock_dashboard.php" class="<?php echo isActivePage('stock_dashboard.php', $currentPage); ?>">
-                        <i data-lucide="layout-dashboard"></i>
-                        <span>Stock Overview</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/Frontend/admin/stock_formula_center.php" class="<?php echo isActivePage('stock_formula_center.php', $currentPage); ?>">
-                        <i data-lucide="flask-conical"></i>
-                        <span>Feed Recipes</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/Frontend/admin/incoming_stock.php" class="<?php echo isActivePage('incoming_stock.php', $currentPage); ?>">
-                        <i data-lucide="package-plus"></i>
-                        <span>Buy Ingredients <small style="font-weight:400; opacity:0.75;">(Raw Materials)</small></span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/Frontend/admin/stock_alerts.php" class="<?php echo isActivePage('stock_alerts.php', $currentPage); ?>">
-                        <i data-lucide="bell"></i>
-                        <span>Alert Center</span>
-                    </a>
-                </li>
-            </ul>
-        </li>
 
-        <?php if ($isAdmin): ?>
-        <li>
-            <a href="/Frontend/admin/operations.php?tab=flocks" class="<?php echo ($currentPage === 'operations.php') ? 'active' : ''; ?>">
-                <i data-lucide="bird"></i>
-                <span>Livestock & Poultry</span>
-            </a>
-        </li>
+    <!-- Navigation -->
+    <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px;flex-grow:1;">
 
-        <li>
-            <a href="/Frontend/admin/feed_stock.php" class="<?php echo isActivePage('feed_stock.php', $currentPage); ?>">
-                <i data-lucide="sprout"></i>
-                <span>Feed Stock</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Frontend/admin/tasks.php" class="<?php echo isActivePage('tasks.php', $currentPage); ?>">
-                <i data-lucide="clipboard-list" ></i>
-                <span>Tasks</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Frontend/admin/calendar.php" class="<?php echo isActivePage('calendar.php', $currentPage); ?>">
-                <i data-lucide="calendar" ></i>
-                <span>Calendar</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Frontend/admin/payments.php" class="<?php echo isActivePage('payments.php', $currentPage); ?>">
-                <i data-lucide="credit-card" ></i>
-                <span>Payments</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Frontend/admin/farm_items.php" class="<?php echo isActivePage('farm_items.php', $currentPage); ?>">
-                <i data-lucide="package" ></i>
-                <span>Farm Items</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Frontend/admin/sales.php" class="<?php echo isActivePage('sales.php', $currentPage); ?>">
-                <i data-lucide="shopping-bag" ></i>
-                <span>Sales</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Frontend/admin/staff.php" class="<?php echo isActivePage('staff.php', $currentPage); ?>">
-                <i data-lucide="user-check"></i>
-                <span>Staff</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Frontend/admin/logs.php" class="<?php echo isActivePage('logs.php', $currentPage); ?>">
-                <i data-lucide="terminal"></i>
-                <span>Logs</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Frontend/admin/messages.php" class="<?php echo isActivePage('messages.php', $currentPage); ?>">
-                <i data-lucide="mail"></i>
-                <span>Messages</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Frontend/admin/setup.php" class="<?php echo isActivePage('setup.php', $currentPage); ?>">
-                <i data-lucide="wrench"></i>
-                <span>Setup</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Frontend/admin/reports.php" class="<?php echo isActivePage('reports.php', $currentPage); ?>">
-                <i data-lucide="bar-chart-3"></i>
-                <span>Reports</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Frontend/admin/users.php" class="<?php echo isActivePage('users.php', $currentPage); ?>">
-                <i data-lucide="users"></i>
-                <span>Users</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Frontend/admin/dropdowns.php" class="<?php echo isActivePage('dropdowns.php', $currentPage); ?>">
-                <i data-lucide="list-filter"></i>
-                <span>Dropdown Manager</span>
-            </a>
-        </li>
-        <li>
-            <a href="/Frontend/admin/settings.php" class="<?php echo isActivePage('settings.php', $currentPage); ?>">
-                <i data-lucide="settings"></i>
-                <span>Settings</span>
-            </a>
-        </li>
-        <?php endif; ?>
+        <?php echo navLink('/Frontend/admin/dashboard.php',      'layout-dashboard', 'Dashboard',         $isDash);     ?>
+        <?php echo navLink('/Frontend/admin/hub_operations.php', 'bird',             'Farm Operations',   $isOps);      ?>
+        <?php echo navLink('/Frontend/admin/hub_inventory.php',  'package',          'Inventory & Store', $isInventory);?>
+        <?php echo navLink('/Frontend/admin/hub_finance.php',    'trending-up',      'Sales & Finance',   $isFinance);  ?>
+        <?php echo navLink('/Frontend/admin/hub_people.php',     'users',            'Team & Messages',   $isPeople);   ?>
+        <?php echo navLink('/Frontend/admin/hub_settings.php',   'settings',         'Settings',          $isSettings); ?>
+
     </ul>
-    <div class="admin-sidebar-footer">
-        <a href="/Frontend/pages/logout.php" class="btn btn-outline" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
-            <span>Sign Out</span>
+
+    <!-- User info & logout -->
+    <div style="margin-top:auto;padding-top:14px;border-top:1px solid rgba(203,213,225,0.6);">
+        <!-- Profile badge -->
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8fafc;border-radius:8px;margin-bottom:10px;">
+            <div style="width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#1B5E20,#FFC107);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Outfit',sans-serif;font-size:0.95rem;flex-shrink:0;">
+                <?php echo strtoupper(substr($_SESSION['first_name'] ?? $_SESSION['username'] ?? 'A', 0, 1)); ?>
+            </div>
+            <div style="min-width:0;">
+                <p style="margin:0;font-size:0.88rem;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($_SESSION['username'] ?? 'Admin', ENT_QUOTES, 'UTF-8'); ?></p>
+                <span style="font-size:0.7rem;color:#64748b;text-transform:capitalize;"><?php echo htmlspecialchars(str_replace('_', ' ', $_SESSION['role'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
+            </div>
+        </div>
+
+        <!-- Logout -->
+        <a href="/Frontend/pages/logout.php"
+           style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border-radius:8px;background:#fee2e2;color:#b91c1c;text-decoration:none;font-weight:600;font-size:0.88rem;transition:background 0.18s;"
+           onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'">
+            <i data-lucide="log-out" style="width:16px;height:16px;"></i>
+            Sign Out
         </a>
     </div>
 </nav>
-
-<script>
-function toggleDropdown(id, trigger) {
-    const dropdown = document.getElementById(id);
-    const isOpen = dropdown.classList.contains('open');
-    
-    // Close all other dropdowns if any (optional, but good for UX)
-    document.querySelectorAll('.sidebar-dropdown').forEach(el => {
-        if (el.id !== id) {
-            el.classList.remove('open');
-            el.previousElementSibling.classList.remove('open');
-        }
-    });
-
-    // Toggle current
-    if (isOpen) {
-        dropdown.classList.remove('open');
-        trigger.classList.remove('open');
-    } else {
-        dropdown.classList.add('open');
-        trigger.classList.add('open');
-    }
-}
-</script>
