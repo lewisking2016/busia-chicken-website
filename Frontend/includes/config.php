@@ -11,6 +11,12 @@ if (session_status() === PHP_SESSION_NONE) {
     if (is_writable($temp_dir)) {
         session_save_path($temp_dir);
     }
+    // Secure Session Configuration parameters
+    ini_set('session.cookie_httponly', '1');
+    ini_set('session.use_only_cookies', '1');
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        ini_set('session.cookie_secure', '1');
+    }
     session_start();
 }
 
