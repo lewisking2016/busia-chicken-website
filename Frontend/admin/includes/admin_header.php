@@ -533,6 +533,160 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
         }
 
         .admin-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+        /* ═══════════════════════════════════════════════════════════════ */
+        /* ADMIN BUTTON SYSTEM — overrides global .btn for admin context   */
+        /* ═══════════════════════════════════════════════════════════════ */
+
+        /* Base admin button reset — tighter padding than front-end */
+        .admin-layout .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+            border: 1px solid transparent;
+            text-decoration: none;
+            white-space: nowrap;
+            line-height: 1;
+        }
+
+        .admin-layout .btn i,
+        .admin-layout .btn svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        /* Small variant used for table row actions */
+        .admin-layout .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            gap: 5px;
+            border-radius: 5px;
+        }
+
+        .admin-layout .btn-sm i,
+        .admin-layout .btn-sm svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Primary — green */
+        .admin-layout .btn-primary {
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-light) 100%);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 2px 8px rgba(27,94,32,0.2);
+        }
+
+        .admin-layout .btn-primary:hover {
+            background: linear-gradient(135deg, #145214 0%, var(--admin-primary) 100%);
+            box-shadow: 0 4px 16px rgba(27,94,32,0.3);
+            transform: translateY(-1px);
+            color: #ffffff;
+        }
+
+        .admin-layout .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 4px rgba(27,94,32,0.2);
+        }
+
+        /* Outline — border only */
+        .admin-layout .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--admin-border);
+            color: #475569;
+        }
+
+        .admin-layout .btn-outline:hover {
+            background: rgba(27,94,32,0.06);
+            border-color: var(--admin-primary);
+            color: var(--admin-primary);
+            transform: translateY(-1px);
+        }
+
+        /* Trans (transparent ghost) — for table row secondary actions */
+        .admin-layout .btn-trans {
+            background: rgba(241,245,249,0.8);
+            border: 1.5px solid #e2e8f0;
+            color: #475569;
+        }
+
+        .admin-layout .btn-trans:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #1e293b;
+            transform: translateY(-1px);
+        }
+
+        /* Danger variant */
+        .admin-layout .btn-danger {
+            background: #fee2e2;
+            border: 1.5px solid #fecaca;
+            color: #b91c1c;
+        }
+
+        .admin-layout .btn-danger:hover {
+            background: #fca5a5;
+            border-color: #f87171;
+            color: #7f1d1d;
+            transform: translateY(-1px);
+        }
+
+        /* Warning variant */
+        .admin-layout .btn-warning {
+            background: #fef3c7;
+            border: 1.5px solid #fde68a;
+            color: #b45309;
+        }
+
+        .admin-layout .btn-warning:hover {
+            background: #fde68a;
+            border-color: #fbbf24;
+            color: #78350f;
+            transform: translateY(-1px);
+        }
+
+        /* Info variant */
+        .admin-layout .btn-info {
+            background: #dbeafe;
+            border: 1.5px solid #bfdbfe;
+            color: #1d4ed8;
+        }
+
+        .admin-layout .btn-info:hover {
+            background: #bfdbfe;
+            border-color: #93c5fd;
+            color: #1e3a8a;
+            transform: translateY(-1px);
+        }
+
+        /* ═══════════════════════════════════════════
+           Table action button group (View/Edit/Delete)
+        ═══════════════════════════════════════════ */
+        .tbl-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: flex-end;
+        }
+
+        /* Auto-icons for semantic btn-sm links in tables via data attrs */
+        .admin-layout a.btn-sm[href*="action=view"],
+        .admin-layout a.btn-sm[href*="action=edit"],
+        .admin-layout button.btn-sm[onclick*="edit"],
+        .admin-layout button.btn-sm[onclick*="delete"] {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
     </style>
 </head>
 <body class="admin-layout">

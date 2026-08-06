@@ -139,9 +139,15 @@ function renderInput(string $label, string $name, string $value = '', string $ty
                     <td><?php echo htmlspecialchars($task['due_date'] ?: 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
                     <td><?php echo htmlspecialchars(trim($task['assigned_name']) ?: 'Unassigned', ENT_QUOTES, 'UTF-8'); ?></td>
                     <td><?php echo htmlspecialchars($task['status'], ENT_QUOTES, 'UTF-8'); ?></td>
-                    <td style="text-align:right;">
-                        <a class="btn btn-outline btn-sm" href="?action=view&id=<?php echo (int)$task['id']; ?>">View</a>
-                        <a class="btn btn-outline btn-sm" href="?action=edit&id=<?php echo (int)$task['id']; ?>">Edit</a>
+                    <td>
+                        <div class="tbl-actions">
+                            <a class="btn btn-info btn-sm" href="?action=view&id=<?php echo (int)$task['id']; ?>">
+                                <i data-lucide="eye" style="width:13px;height:13px;"></i> View
+                            </a>
+                            <a class="btn btn-trans btn-sm" href="?action=edit&id=<?php echo (int)$task['id']; ?>">
+                                <i data-lucide="pencil" style="width:13px;height:13px;"></i> Edit
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -204,9 +210,13 @@ function renderInput(string $label, string $name, string $value = '', string $ty
                 </select>
             </div>
         </div>
-        <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;">
-            <button type="submit" class="btn btn-primary" style="border-radius:4px;">Save Task</button>
-            <a href="/Frontend/admin/tasks.php" class="btn btn-outline" style="border-radius:4px;">Cancel</a>
+        <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="save" style="width:16px;height:16px;"></i> Save Task
+            </button>
+            <a href="/Frontend/admin/tasks.php" class="btn btn-outline">
+                <i data-lucide="x" style="width:16px;height:16px;"></i> Cancel
+            </a>
         </div>
     </form>
 </div>
@@ -217,7 +227,9 @@ function renderInput(string $label, string $name, string $value = '', string $ty
             <h3 style="margin:0;font-family:'Outfit',sans-serif;font-size:1.2rem;color:var(--admin-text-heading);">Task Details</h3>
             <p style="margin:6px 0 0 0;color:#64748b;">Review the selected task and assignment details.</p>
         </div>
-        <a href="/Frontend/admin/tasks.php" class="btn btn-outline" style="border-radius:4px;">Back</a>
+        <a href="/Frontend/admin/tasks.php" class="btn btn-outline">
+            <i data-lucide="arrow-left" style="width:16px;height:16px;"></i> Back
+        </a>
     </div>
     <?php if ($selectedTask): ?>
     <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;">
