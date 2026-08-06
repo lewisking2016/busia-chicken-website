@@ -21,7 +21,8 @@ try {
         __DIR__ . '/Backend/config/stock_module.sql',
         __DIR__ . '/Backend/config/migration_v2.sql',
         __DIR__ . '/Backend/config/migration_v3.sql',
-        __DIR__ . '/Backend/config/migration_v4_dropdowns.sql'
+        __DIR__ . '/Backend/config/migration_v4_dropdowns.sql',
+        __DIR__ . '/Backend/config/migration_v5_admin_extensions.sql'
     ];
 
     echo "✓ Version 3.0 - Executing schemas...\n";

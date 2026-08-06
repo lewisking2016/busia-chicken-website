@@ -116,6 +116,90 @@ function isActivePage(string $page, string $current): string {
         </li>
 
         <li>
+            <a href="/Frontend/admin/animals.php" class="<?php echo isActivePage('animals.php', $currentPage); ?>">
+                <i data-lucide="cpu"></i>
+                <span>Animals</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Frontend/admin/herds.php" class="<?php echo isActivePage('herds.php', $currentPage); ?>">
+                <i data-lucide="users"></i>
+                <span>Herds</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Frontend/admin/feed_stock.php" class="<?php echo isActivePage('feed_stock.php', $currentPage); ?>">
+                <i data-lucide="leaf"></i>
+                <span>Feed Stock</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Frontend/admin/health.php" class="<?php echo isActivePage('health.php', $currentPage); ?>">
+                <i data-lucide="heart-pulse"></i>
+                <span>Health</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Frontend/admin/breeding.php" class="<?php echo isActivePage('breeding.php', $currentPage); ?>">
+                <i data-lucide="activity"></i>
+                <span>Breeding</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Frontend/admin/tasks.php" class="<?php echo isActivePage('tasks.php', $currentPage); ?>">
+                <i data-lucide="clipboard-list" ></i>
+                <span>Tasks</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Frontend/admin/calendar.php" class="<?php echo isActivePage('calendar.php', $currentPage); ?>">
+                <i data-lucide="calendar" ></i>
+                <span>Calendar</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Frontend/admin/payments.php" class="<?php echo isActivePage('payments.php', $currentPage); ?>">
+                <i data-lucide="credit-card" ></i>
+                <span>Payments</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Frontend/admin/farm_items.php" class="<?php echo isActivePage('farm_items.php', $currentPage); ?>">
+                <i data-lucide="package" ></i>
+                <span>Farm Items</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Frontend/admin/sales.php" class="<?php echo isActivePage('sales.php', $currentPage); ?>">
+                <i data-lucide="shopping-bag" ></i>
+                <span>Sales</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Frontend/admin/staff.php" class="<?php echo isActivePage('staff.php', $currentPage); ?>">
+                <i data-lucide="users"></i>
+                <span>Staff</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Frontend/admin/logs.php" class="<?php echo isActivePage('logs.php', $currentPage); ?>">
+                <i data-lucide="server"></i>
+                <span>Logs</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Frontend/admin/messages.php" class="<?php echo isActivePage('messages.php', $currentPage); ?>">
+                <i data-lucide="message-circle"></i>
+                <span>Messages</span>
+            </a>
+        </li>
+        <li>
+            <a href="/Frontend/admin/setup.php" class="<?php echo isActivePage('setup.php', $currentPage); ?>">
+                <i data-lucide="settings"></i>
+                <span>Setup</span>
+            </a>
+        </li>
+        <li>
             <a href="/Frontend/admin/reports.php" class="<?php echo isActivePage('reports.php', $currentPage); ?>">
                 <i data-lucide="bar-chart-3"></i>
                 <span>Reports</span>
