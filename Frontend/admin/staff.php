@@ -60,8 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_staff'])) {
 
 $users = [];
 if ($pdo) {
-    $stmt = $pdo->query('SELECT * FROM users WHERE role IN ("super_admin", "farm_manager", "stock_manager") ORDER BY created_at DESC');
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->query('SELECT * FROM users WHERE role IN ("super_admin", "farm_manager", "stock_manager") ORDER BY created_at DESC');
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
+    }
 }
 
 $selectedUser = null;

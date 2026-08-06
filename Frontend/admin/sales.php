@@ -43,23 +43,27 @@ $search = trim($_GET['search'] ?? '');
 $statusFilter = trim($_GET['status'] ?? '');
 $orders = [];
 if ($pdo) {
-    $query = 'SELECT o.*, u.username, u.email FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE 1=1';
-    $params = [];
-    if ($search !== '') {
-        $query .= ' AND (o.order_number LIKE ? OR u.username LIKE ? OR u.email LIKE ?)';
-        $searchTerm = "%{$search}%";
-        $params[] = $searchTerm;
-        $params[] = $searchTerm;
-        $params[] = $searchTerm;
+    try {
+        $query = 'SELECT o.*, u.username, u.email FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE 1=1';
+        $params = [];
+        if ($search !== '') {
+            $query .= ' AND (o.order_number LIKE ? OR u.username LIKE ? OR u.email LIKE ?)';
+            $searchTerm = "%{$search}%";
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+        }
+        if ($statusFilter !== '') {
+            $query .= ' AND o.status = ?';
+            $params[] = $statusFilter;
+        }
+        $query .= ' ORDER BY o.created_at DESC';
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
+        $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
     }
-    if ($statusFilter !== '') {
-        $query .= ' AND o.status = ?';
-        $params[] = $statusFilter;
-    }
-    $query .= ' ORDER BY o.created_at DESC';
-    $stmt = $pdo->prepare($query);
-    $stmt->execute($params);
-    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 $selectedOrder = null;

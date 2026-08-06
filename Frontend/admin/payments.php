@@ -51,8 +51,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_payment'])) {
 
 $payments = [];
 if ($pdo) {
-    $stmt = $pdo->query('SELECT * FROM financial_records WHERE type = "expense" ORDER BY transaction_date DESC, created_at DESC');
-    $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->query('SELECT * FROM financial_records WHERE type = "expense" ORDER BY transaction_date DESC, created_at DESC');
+        $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
+    }
 }
 
 $selectedPayment = null;

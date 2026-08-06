@@ -26,7 +26,11 @@ $staffUsers = [];
 $selectedTask = null;
 
 if ($pdo) {
-    $staffUsers = $pdo->query("SELECT id, username, first_name, last_name FROM users WHERE role IN ('super_admin','farm_manager','stock_manager') ORDER BY first_name ASC, last_name ASC")->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $staffUsers = $pdo->query("SELECT id, username, first_name, last_name FROM users WHERE role IN ('super_admin','farm_manager','stock_manager') ORDER BY first_name ASC, last_name ASC")->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Failed to load staff users: ' . $e->getMessage();
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_task'])) {

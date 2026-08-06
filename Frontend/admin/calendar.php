@@ -22,10 +22,18 @@ $tasks = [];
 $events = [];
 
 if ($pdo) {
-    $stmt = $pdo->query('SELECT id, title, due_date, status FROM tasks ORDER BY due_date ASC, created_at DESC LIMIT 20');
-    $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $stmt = $pdo->query('SELECT id, vaccine_name AS title, scheduled_date AS date, status FROM vaccinations ORDER BY scheduled_date ASC LIMIT 20');
-    $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->query('SELECT id, title, due_date, status FROM tasks ORDER BY due_date ASC, created_at DESC LIMIT 20');
+        $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error (tasks): ' . $e->getMessage();
+    }
+    try {
+        $stmt = $pdo->query('SELECT id, vaccine_name AS title, scheduled_date AS date, status FROM vaccinations ORDER BY scheduled_date ASC LIMIT 20');
+        $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = ($error_message ? $error_message . ' | ' : '') . 'Database error (vaccinations): ' . $e->getMessage();
+    }
 }
 ?>
 

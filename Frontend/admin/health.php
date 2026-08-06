@@ -53,8 +53,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_health'])) {
 $statuses = ['Scheduled', 'Completed', 'Pending', 'Missed'];
 $records = [];
 if ($pdo) {
-    $stmt = $pdo->query('SELECT * FROM health_records ORDER BY date DESC, created_at DESC');
-    $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->query('SELECT * FROM health_records ORDER BY date DESC, created_at DESC');
+        $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
+    }
 }
 
 $selectedRecord = null;

@@ -19,8 +19,12 @@ if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_ad
 $pdo = getDB();
 $logs = [];
 if ($pdo) {
-    $stmt = $pdo->query('SELECT * FROM system_logs ORDER BY log_time DESC LIMIT 100');
-    $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->query('SELECT * FROM system_logs ORDER BY log_time DESC LIMIT 100');
+        $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
+    }
 }
 ?>
 

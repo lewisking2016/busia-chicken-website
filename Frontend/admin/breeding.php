@@ -53,8 +53,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_breeding'])) {
 $statuses = ['Pending', 'Insemination', 'Pregnant', 'Confirmed', 'Completed', 'Cancelled'];
 $records = [];
 if ($pdo) {
-    $stmt = $pdo->query('SELECT * FROM breeding_records ORDER BY date DESC, created_at DESC');
-    $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->query('SELECT * FROM breeding_records ORDER BY date DESC, created_at DESC');
+        $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
+    }
 }
 
 $selectedRecord = null;

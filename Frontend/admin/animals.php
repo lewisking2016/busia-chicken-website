@@ -54,13 +54,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_animal'])) {
 
 $herds = [];
 if ($pdo) {
-    $herds = $pdo->query('SELECT id, name FROM herds ORDER BY name ASC')->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $herds = $pdo->query('SELECT id, name FROM herds ORDER BY name ASC')->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
+    }
 }
 
 $animals = [];
 if ($pdo) {
-    $stmt = $pdo->query('SELECT a.*, h.name AS herd_name FROM animals a LEFT JOIN herds h ON a.herd_id = h.id ORDER BY a.created_at DESC');
-    $animals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->query('SELECT a.*, h.name AS herd_name FROM animals a LEFT JOIN herds h ON a.herd_id = h.id ORDER BY a.created_at DESC');
+        $animals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $error_message = 'Database error: ' . $e->getMessage();
+    }
 }
 
 $selectedAnimal = null;
