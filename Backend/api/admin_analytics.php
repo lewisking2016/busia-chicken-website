@@ -208,10 +208,7 @@ try {
     $creditAging = $creditAgingStmt->fetch(PDO::FETCH_ASSOC);
 
     // Bird count trend (per active batch over time)
-    $birdTrend = safeFetchAll($pdo, "SELECT record_date AS day, SUM(closing_birds) AS birds
-        FROM daily_batch_records
-        WHERE record_date >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)
-        GROUP BY record_date ORDER BY record_date");
+    $birdTrend = safeFetchAll($pdo, "SELECT record_date AS day, SUM(closing_birds) AS birds FROM daily_batch_records WHERE record_date >= DATE_SUB(CURDATE(), INTERVAL 29 DAY) GROUP BY record_date ORDER BY record_date");
 
     // Top debtors
     $topDebtorsStmt = $pdo->prepare("
