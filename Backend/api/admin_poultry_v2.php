@@ -28,6 +28,54 @@ function api_err(string $msg, int $code = 400): never {
     exit;
 }
 
+/**
+ * Safe query helpers: return empty arrays on SQL errors (missing tables, etc.)
+ */
+function safe_query_all(PDO $pdo, string $sql, array $params = []): array {
+    try {
+        if (count($params) === 0) {
+            $res = $pdo->query($sql);
+            return $res ? $res->fetchAll(PDO::FETCH_ASSOC) : [];
+        }
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    } catch (PDOException $e) {
+        return [];
+    }
+}
+
+function safe_query_one(PDO $pdo, string $sql, array $params = []): mixed {
+    try {
+        if (count($params) === 0) {
+            $res = $pdo->query($sql);
+            return $res ? $res->fetch(PDO::FETCH_ASSOC) : null;
+        }
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    } catch (PDOException $e) {
+        return null;
+    }
+}
+
+function safe_scalar(PDO $pdo, string $sql, array $params = []): mixed {
+    try {
+        if (count($params) === 0) {
+            $res = $pdo->query($sql);
+            if (!$res) return null;
+            $col = $res->fetch(PDO::FETCH_NUM);
+            return $col[0] ?? null;
+        }
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $col = $stmt->fetch(PDO::FETCH_NUM);
+        return $col[0] ?? null;
+    } catch (PDOException $e) {
+        return null;
+    }
+}
+
 try {
     if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'stock_manager', 'sales_staff'], true)) {
         api_err('Unauthorized access', 401);
@@ -47,7 +95,7 @@ try {
     // HOUSES
     // ─────────────────────────────────────────────────────────
     if ($action === 'get_houses') {
-        $rows = $pdo->query("SELECT * FROM houses ORDER BY house_name ASC")->fetchAll(PDO::FETCH_ASSOC);
+        $rows = safe_query_all($pdo, "SELECT * FROM houses ORDER BY house_name ASC");
         api_ok(['data' => $rows]);
     }
     if ($action === 'save_house' && $method === 'POST') {
@@ -80,7 +128,8 @@ try {
         $sql = "SELECT b.*, h.house_name, h.house_code
                 FROM batches b LEFT JOIN houses h ON h.id=b.house_id
                 ORDER BY b.placement_date DESC, b.id DESC";
-        api_ok(['data' => $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC)]);
+        $rows = safe_query_all($pdo, $sql);
+        api_ok(['data' => $rows]);
     }
     if ($action === 'save_batch' && $method === 'POST') {
         $id = (int)($_POST['id'] ?? 0);
@@ -124,9 +173,8 @@ try {
         if ($from) { $sql .= " AND record_date >= ?"; $params[] = $from; }
         if ($to) { $sql .= " AND record_date <= ?"; $params[] = $to; }
         $sql .= " ORDER BY record_date DESC LIMIT 500";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        api_ok(['data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+        $rows = safe_query_all($pdo, $sql, $params);
+        api_ok(['data' => $rows]);
     }
     if ($action === 'save_batch_record' && $method === 'POST') {
         $id = (int)($_POST['id'] ?? 0);
@@ -182,9 +230,8 @@ try {
         if ($from) { $sql .= " AND h.record_date >= ?"; $params[] = $from; }
         if ($to) { $sql .= " AND h.record_date <= ?"; $params[] = $to; }
         $sql .= " ORDER BY h.record_date DESC LIMIT 500";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        api_ok(['data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+        $rows = safe_query_all($pdo, $sql, $params);
+        api_ok(['data' => $rows]);
     }
     if ($action === 'save_health_record' && $method === 'POST') {
         $id = (int)($_POST['id'] ?? 0);
@@ -231,7 +278,7 @@ try {
     // EGG GRADING
     // ─────────────────────────────────────────────────────────
     if ($action === 'get_grades') {
-        $rows = $pdo->query("SELECT * FROM egg_grades ORDER BY weight_min_grams DESC")->fetchAll(PDO::FETCH_ASSOC);
+        $rows = safe_query_all($pdo, "SELECT * FROM egg_grades ORDER BY weight_min_grams DESC");
         api_ok(['data' => $rows]);
     }
     if ($action === 'get_daily_grading') {
@@ -246,9 +293,8 @@ try {
         if ($from) { $sql .= " AND g.record_date >= ?"; $params[] = $from; }
         if ($to) { $sql .= " AND g.record_date <= ?"; $params[] = $to; }
         $sql .= " ORDER BY g.record_date DESC LIMIT 500";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        api_ok(['data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+        $rows = safe_query_all($pdo, $sql, $params);
+        api_ok(['data' => $rows]);
     }
     if ($action === 'save_daily_grading' && $method === 'POST') {
         $id = (int)($_POST['id'] ?? 0);
@@ -281,14 +327,11 @@ try {
         if ($from) { $sql .= " AND sale_date >= ?"; $params[] = $from; }
         if ($to) { $sql .= " AND sale_date <= ?"; $params[] = $to; }
         $sql .= " ORDER BY sale_date DESC LIMIT 200";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        $headers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $headers = safe_query_all($pdo, $sql, $params);
         $out = [];
         foreach ($headers as $h) {
-            $lines = $pdo->prepare("SELECT * FROM daily_sales_lines WHERE reconciliation_id=? ORDER BY id");
-            $lines->execute([$h['id']]);
-            $h['lines'] = $lines->fetchAll(PDO::FETCH_ASSOC);
+            $lines = safe_query_all($pdo, "SELECT * FROM daily_sales_lines WHERE reconciliation_id=? ORDER BY id", [$h['id']]);
+            $h['lines'] = $lines;
             $out[] = $h;
         }
         api_ok(['data' => $out]);
@@ -385,9 +428,8 @@ try {
         $params = [];
         if ($mat_id > 0) { $sql .= " AND m.material_id=?"; $params[] = $mat_id; }
         $sql .= " ORDER BY m.movement_date DESC, m.id DESC LIMIT 500";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        api_ok(['data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+        $rows = safe_query_all($pdo, $sql, $params);
+        api_ok(['data' => $rows]);
     }
     if ($action === 'save_movement' && $method === 'POST') {
         $pdo->beginTransaction();
@@ -434,15 +476,14 @@ try {
     // FEED RECIPES & PRODUCTION
     // ─────────────────────────────────────────────────────────
     if ($action === 'get_recipes') {
-        $rows = $pdo->query("SELECT * FROM feed_recipes ORDER BY recipe_name")->fetchAll(PDO::FETCH_ASSOC);
+        $rows = safe_query_all($pdo, "SELECT * FROM feed_recipes ORDER BY recipe_name");
         api_ok(['data' => $rows]);
     }
     if ($action === 'get_recipe_ingredients') {
         $rid = (int)($_GET['recipe_id'] ?? 0);
         $sql = "SELECT ri.*, rm.material_name, rm.unit FROM feed_recipe_ingredients ri LEFT JOIN raw_materials rm ON rm.id=ri.raw_material_id WHERE ri.recipe_id=? ORDER BY ri.id";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$rid]);
-        api_ok(['data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+        $rows = safe_query_all($pdo, $sql, [$rid]);
+        api_ok(['data' => $rows]);
     }
     if ($action === 'save_recipe' && $method === 'POST') {
         $pdo->beginTransaction();
@@ -518,14 +559,15 @@ try {
     }
     if ($action === 'get_production_history') {
         $sql = "SELECT p.*, r.recipe_name FROM feed_production_batches p LEFT JOIN feed_recipes r ON r.id=p.recipe_id ORDER BY p.production_date DESC LIMIT 200";
-        api_ok(['data' => $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC)]);
+        $rows = safe_query_all($pdo, $sql);
+        api_ok(['data' => $rows]);
     }
 
     // ─────────────────────────────────────────────────────────
     // BULK SALES & WALK-IN CUSTOMERS
     // ─────────────────────────────────────────────────────────
     if ($action === 'get_walkin_customers') {
-        $rows = $pdo->query("SELECT * FROM walk_in_customers ORDER BY customer_name")->fetchAll(PDO::FETCH_ASSOC);
+        $rows = safe_query_all($pdo, "SELECT * FROM walk_in_customers ORDER BY customer_name");
         api_ok(['data' => $rows]);
     }
     if ($action === 'save_walkin_customer' && $method === 'POST') {
@@ -552,9 +594,8 @@ try {
         if ($from) { $sql .= " AND sale_date >= ?"; $params[] = $from; }
         if ($to) { $sql .= " AND sale_date <= ?"; $params[] = $to; }
         $sql .= " ORDER BY sale_date DESC LIMIT 500";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        api_ok(['data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+        $rows = safe_query_all($pdo, $sql, $params);
+        api_ok(['data' => $rows]);
     }
     if ($action === 'save_bulk_sale' && $method === 'POST') {
         $id = (int)($_POST['id'] ?? 0);
@@ -595,14 +636,14 @@ try {
     // ─────────────────────────────────────────────────────────
     if ($action === 'dashboard_kpis') {
         $kpis = [];
-        $kpis['active_batches']   = (int)$pdo->query("SELECT COUNT(*) FROM batches WHERE status='active'")->fetchColumn();
-        $kpis['total_birds']      = (int)$pdo->query("SELECT COALESCE(SUM(current_birds),0) FROM batches WHERE status='active'")->fetchColumn();
-        $kpis['eggs_today']       = tableExists($pdo, 'daily_batch_records') ? (int)$pdo->query("SELECT COALESCE(SUM(total_eggs),0) FROM daily_batch_records WHERE record_date=CURDATE()")->fetchColumn() : 0;
-        $kpis['mortality_today']  = tableExists($pdo, 'daily_batch_records') ? (int)$pdo->query("SELECT COALESCE(SUM(mortality),0) FROM daily_batch_records WHERE record_date=CURDATE()")->fetchColumn() : 0;
-        $kpis['sales_today']      = tableExists($pdo, 'daily_sales_reconciliation') ? (float)$pdo->query("SELECT COALESCE(SUM(total_sales_amount),0) FROM daily_sales_reconciliation WHERE sale_date=CURDATE()")->fetchColumn() : 0;
-        $kpis['pending_orders']   = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE status IN ('pending','paid','processing')")->fetchColumn();
-        $kpis['low_stock_items']  = tableExists($pdo, 'raw_materials') ? (int)$pdo->query("SELECT COUNT(*) FROM raw_materials WHERE current_stock <= min_stock_level")->fetchColumn() : 0;
-        $kpis['upcoming_vaccines']= (int)$pdo->query("SELECT COUNT(*) FROM health_records WHERE record_type='vaccination' AND status='scheduled' AND next_due_date >= CURDATE()")->fetchColumn();
+        $kpis['active_batches']   = tableExists($pdo, 'batches') ? (int)(safe_scalar($pdo, "SELECT COUNT(*) FROM batches WHERE status='active'") ?? 0) : 0;
+        $kpis['total_birds']      = tableExists($pdo, 'batches') ? (int)(safe_scalar($pdo, "SELECT COALESCE(SUM(current_birds),0) FROM batches WHERE status='active'") ?? 0) : 0;
+        $kpis['eggs_today']       = tableExists($pdo, 'daily_batch_records') ? (int)(safe_scalar($pdo, "SELECT COALESCE(SUM(total_eggs),0) FROM daily_batch_records WHERE record_date=CURDATE()") ?? 0) : 0;
+        $kpis['mortality_today']  = tableExists($pdo, 'daily_batch_records') ? (int)(safe_scalar($pdo, "SELECT COALESCE(SUM(mortality),0) FROM daily_batch_records WHERE record_date=CURDATE()") ?? 0) : 0;
+        $kpis['sales_today']      = tableExists($pdo, 'daily_sales_reconciliation') ? (float)(safe_scalar($pdo, "SELECT COALESCE(SUM(total_sales_amount),0) FROM daily_sales_reconciliation WHERE sale_date=CURDATE()") ?? 0) : 0;
+        $kpis['pending_orders']   = tableExists($pdo, 'orders') ? (int)(safe_scalar($pdo, "SELECT COUNT(*) FROM orders WHERE status IN ('pending','paid','processing')") ?? 0) : 0;
+        $kpis['low_stock_items']  = tableExists($pdo, 'raw_materials') ? (int)(safe_scalar($pdo, "SELECT COUNT(*) FROM raw_materials WHERE current_stock <= min_stock_level") ?? 0) : 0;
+        $kpis['upcoming_vaccines']= tableExists($pdo, 'health_records') ? (int)(safe_scalar($pdo, "SELECT COUNT(*) FROM health_records WHERE record_type='vaccination' AND status='scheduled' AND next_due_date >= CURDATE()") ?? 0) : 0;
         api_ok(['data' => $kpis]);
     }
 
