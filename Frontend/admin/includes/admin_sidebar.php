@@ -1,19 +1,37 @@
 <?php
 /**
- * Admin Sidebar — Clean 6-item navigation with dropdown submodules.
+ * Admin Sidebar — Complete Poultry Management Navigation
+ * 6 hub modules with sub-tabs each
  */
 declare(strict_types=1);
 
 $cp   = basename($_SERVER['SCRIPT_NAME']);
 $tab  = $_GET['tab'] ?? '';
 
-// Active hub detection
-$isOps      = $cp === 'hub_operations.php';
-$isInventory= $cp === 'hub_inventory.php';
-$isFinance  = $cp === 'hub_finance.php';
-$isPeople   = $cp === 'hub_people.php';
-$isSettings = $cp === 'hub_settings.php';
-$isDash     = $cp === 'dashboard.php';
+$isOps       = $cp === 'hub_operations.php';
+$isFlock     = $cp === 'flocks.php' || $cp === 'production.php' || $cp === 'vaccinations.php';
+$isBatches   = $cp === 'batches.php';
+$isHealth    = $cp === 'health.php';
+$isInventory = $cp === 'hub_inventory.php';
+$isStores    = $cp === 'stores.php';
+$isFeed      = $cp === 'feed_production.php';
+$isEggGrade  = $cp === 'egg_grading.php';
+$isReports   = $cp === 'reports.php';
+$isProfit    = $cp === 'profit.php';
+$isCashbook  = $cp === 'cashbook.php';
+$isCredit    = $cp === 'credit.php';
+$isFeeding   = $cp === 'feeding.php';
+$isProcure   = $cp === 'purchase_orders.php';
+$isBroiler   = $cp === 'broiler.php';
+$isHatchery  = $cp === 'hatchery.php';
+$isExtras    = $cp === 'extras.php';
+$isFinance   = $cp === 'hub_finance.php';
+$isSales     = $cp === 'orders.php' || $cp === 'sales.php' || $cp === 'payments.php' || $cp === 'expenses.php' || $cp === 'reports.php';
+$isDaily     = $cp === 'daily_sales.php';
+$isBulk      = $cp === 'bulk_sales.php';
+$isPeople    = $cp === 'hub_people.php';
+$isSettings  = $cp === 'hub_settings.php';
+$isDash      = $cp === 'dashboard.php';
 
 function navLinkWithSub(string $href, string $icon, string $label, bool $active, array $submodules, string $currentTab): string {
     $base = $active
@@ -49,6 +67,20 @@ HTML;
 
     return $html;
 }
+
+function navLinkDirect(string $href, string $icon, string $label, bool $active): string {
+    $base = $active
+        ? 'background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;box-shadow:0 4px 14px rgba(27,94,32,0.22);'
+        : 'color:#475569;';
+    return <<<HTML
+    <li style="margin-bottom: 2px;">
+        <a href="{$href}" style="display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.18s cubic-bezier(0.4,0,0.2,1);border:1px solid transparent;{$base}">
+            <i data-lucide="{$icon}" style="width:19px;height:19px;flex-shrink:0;"></i>
+            <span>{$label}</span>
+        </a>
+    </li>
+HTML;
+}
 ?>
 <nav style="width:264px;background:#fff;border-right:1px solid rgba(203,213,225,0.7);padding:18px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;box-shadow:2px 0 16px rgba(15,23,42,0.03);box-sizing:border-box;z-index:100;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(27,94,32,0.15) transparent;flex-shrink:0;">
 
@@ -64,104 +96,113 @@ HTML;
     <!-- Navigation -->
     <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px;flex-grow:1;">
 
-        <li>
-            <a href="/Frontend/admin/dashboard.php"
-               style="display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.18s cubic-bezier(0.4,0,0.2,1);border:1px solid transparent;<?= $isDash ? 'background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;' : 'color:#475569;' ?>">
-                <i data-lucide="layout-dashboard" style="width:19px;height:19px;flex-shrink:0;"></i>
-                <span>Dashboard</span>
-            </a>
-        </li>
+        <?= navLinkDirect('/Frontend/admin/dashboard.php','layout-dashboard','Dashboard',$isDash) ?>
 
-        <?php
-        echo navLinkWithSub(
+        <?= navLinkWithSub(
             '/Frontend/admin/hub_operations.php',
             'bird',
             'Farm Operations',
-            $isOps,
+            $isOps || $isFlock,
             [
-                'flocks'       => 'Flocks / Herds',
+                'flocks'       => 'Flocks',
                 'production'   => 'Daily Production',
-                'vaccinations' => 'Vaccinations',
-                'animals'      => 'Animals List',
-                'health'       => 'Health Records',
-                'breeding'     => 'Breeding Events',
-                'herds'        => 'Herds / Pens'
+                'vaccinations' => 'Vaccinations'
             ],
             $tab ?: 'flocks'
-        );
+        ) ?>
 
-        echo navLinkWithSub(
+        <?= navLinkDirect('/Frontend/admin/batches.php','package-2','Batches & Houses',$isBatches) ?>
+
+        <?= navLinkDirect('/Frontend/admin/health.php','heart-pulse','Health & Vet',$isHealth) ?>
+
+        <?= navLinkWithSub(
             '/Frontend/admin/hub_inventory.php',
             'package',
-            'Inventory & Store',
+            'Inventory',
             $isInventory,
             [
-                'products'  => 'Products Catalog',
-                'equipment' => 'Farm Equipment',
-                'feedstock' => 'Feed & Stock',
-                'alerts'    => 'Inventory Alerts'
+                'products' => 'Products Catalog'
             ],
             $tab ?: 'products'
-        );
+        ) ?>
 
-        echo navLinkWithSub(
+        <?= navLinkDirect('/Frontend/admin/stores.php','warehouse','Stores & Stock',$isStores) ?>
+
+        <?= navLinkDirect('/Frontend/admin/feed_production.php','flask-conical','Feed Production',$isFeed) ?>
+
+        <?= navLinkDirect('/Frontend/admin/egg_grading.php','egg','Egg Grading',$isEggGrade) ?>
+
+        <?= navLinkDirect('/Frontend/admin/broiler.php','drumstick','Broiler Workflow',$isBroiler) ?>
+
+        <?= navLinkDirect('/Frontend/admin/hatchery.php','baby','Hatchery (DOC)',$isHatchery) ?>
+
+        <?= navLinkDirect('/Frontend/admin/feeding.php','utensils','Feeding Program',$isFeeding) ?>
+
+        <?= navLinkDirect('/Frontend/admin/profit.php','trending-up','Costs & Profit',$isProfit) ?>
+
+        <?= navLinkDirect('/Frontend/admin/cashbook.php','wallet','Cashbook',$isCashbook) ?>
+
+        <?= navLinkDirect('/Frontend/admin/credit.php','hand-coins','Customer Credit',$isCredit) ?>
+
+        <?= navLinkDirect('/Frontend/admin/purchase_orders.php','truck','Procurement (PO)',$isProcure) ?>
+
+        <?= navLinkDirect('/Frontend/admin/extras.php','alert-circle','Losses & Quality',$isExtras) ?>
+
+        <?= navLinkDirect('/Frontend/admin/analytics.php','bar-chart-3','Analytics & Charts',$cp === 'analytics.php') ?>
+
+        <?= navLinkWithSub(
             '/Frontend/admin/hub_finance.php',
             'trending-up',
             'Sales & Finance',
             $isFinance,
             [
-                'orders'   => 'Customer Orders',
+                'orders'   => 'Online Orders',
                 'sales'    => 'Sales Register',
-                'payments' => 'Incoming Payments',
-                'expenses' => 'Outgoing Expenses',
-                'reports'  => 'Reports & Charts'
+                'payments' => 'Payments',
+                'expenses' => 'Expenses',
+                'reports'  => 'Reports'
             ],
             $tab ?: 'orders'
-        );
+        ) ?>
 
-        echo navLinkWithSub(
+        <?= navLinkDirect('/Frontend/admin/daily_sales.php','calculator','Daily Reconciliation',$isDaily) ?>
+
+        <?= navLinkDirect('/Frontend/admin/bulk_sales.php','shopping-bag','Bulk Sales',$isBulk) ?>
+
+        <?= navLinkWithSub(
             '/Frontend/admin/hub_people.php',
             'users',
             'Team & Messages',
             $isPeople,
             [
-                'staff'    => 'Staff Accounts',
-                'users'    => 'Customer List',
-                'tasks'    => 'Assigned Tasks',
-                'messages' => 'Team Messages'
+                'staff'    => 'Staff',
+                'users'    => 'Customers',
+                'tasks'    => 'Tasks',
+                'messages' => 'Messages'
             ],
             $tab ?: 'staff'
-        );
+        ) ?>
 
-        echo navLinkWithSub(
+        <?= navLinkWithSub(
             '/Frontend/admin/hub_settings.php',
             'settings',
             'Settings',
             $isSettings,
             [
-                'calendar'  => 'Calendar View',
-                'dropdowns' => 'Dropdown Config',
+                'calendar'  => 'Calendar',
+                'dropdowns' => 'Dropdowns',
                 'settings'  => 'App Settings',
-                'logs'      => 'System Logs',
-                'setup'     => 'DB Setup'
+                'logs'      => 'Activity Logs'
             ],
             $tab ?: 'calendar'
-        );
-        ?>
+        ) ?>
 
-        <li style="margin-bottom: 2px;">
-            <a href="/Frontend/admin/bulk_import_export.php"
-               style="display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.18s cubic-bezier(0.4,0,0.2,1);border:1px solid transparent;<?= $cp === 'bulk_import_export.php' ? 'background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;box-shadow:0 4px 14px rgba(27,94,32,0.22);' : 'color:#475569;' ?>">
-                <i data-lucide="database" style="width:19px;height:19px;flex-shrink:0;"></i>
-                <span>Bulk Import/Export</span>
-            </a>
-        </li>
+        <?= navLinkDirect('/Frontend/admin/bulk_import_export.php','database','Bulk Import/Export',$cp === 'bulk_import_export.php') ?>
 
     </ul>
 
     <!-- User info & logout -->
     <div style="margin-top:auto;padding-top:14px;border-top:1px solid rgba(203,213,225,0.6);">
-        <!-- Profile badge -->
         <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8fafc;border-radius:8px;margin-bottom:10px;">
             <div style="width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#1B5E20,#FFC107);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Outfit',sans-serif;font-size:0.95rem;flex-shrink:0;">
                 <?php echo strtoupper(substr($_SESSION['first_name'] ?? $_SESSION['username'] ?? 'A', 0, 1)); ?>
@@ -171,13 +212,8 @@ HTML;
                 <span style="font-size:0.7rem;color:#64748b;text-transform:capitalize;"><?php echo htmlspecialchars(str_replace('_', ' ', $_SESSION['role'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
             </div>
         </div>
-
-        <!-- Logout -->
-        <a href="/Frontend/pages/logout.php"
-           style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border-radius:8px;background:#fee2e2;color:#b91c1c;text-decoration:none;font-weight:600;font-size:0.88rem;transition:background 0.18s;"
-           onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'">
-            <i data-lucide="log-out" style="width:16px;height:16px;"></i>
-            Sign Out
+        <a href="/Frontend/pages/logout.php" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border-radius:8px;background:#fee2e2;color:#b91c1c;text-decoration:none;font-weight:600;font-size:0.88rem;transition:background 0.18s;" onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'">
+            <i data-lucide="log-out" style="width:16px;height:16px;"></i> Sign Out
         </a>
     </div>
 </nav>

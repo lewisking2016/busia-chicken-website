@@ -1,7 +1,7 @@
 <?php
 /**
- * Hub: Farm Operations — ALL content inline, no double-includes.
- * Tabs: Flocks | Production | Vaccinations | Animals | Health | Breeding | Herds
+ * Hub: Farm Operations — Poultry-Only Edition
+ * Tabs: Flocks | Production | Vaccinations | Breeding
  */
 declare(strict_types=1);
 $temp_dir = sys_get_temp_dir();
@@ -16,7 +16,7 @@ $page_title = 'Farm Operations - Admin';
 include __DIR__ . '/includes/admin_header.php';
 
 $tab = $_GET['tab'] ?? 'flocks';
-$validTabs = ['flocks','production','vaccinations','animals','health','breeding','herds'];
+$validTabs = ['flocks','production','vaccinations'];
 if (!in_array($tab, $validTabs, true)) $tab = 'flocks';
 
 $pdo = getDB();
@@ -26,81 +26,15 @@ $message = ''; $error_message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
     $postAction = $_POST['_action'] ?? '';
 
-    if ($postAction === 'save_animal') {
-        $id = (int)($_POST['id'] ?? 0);
-        $fields = [$_POST['tag_id']??'',$_POST['name']??'',$_POST['species']??'',$_POST['breed']??'',$_POST['gender']??'',$_POST['dob']??'',$_POST['status']??'alive',$_POST['notes']??''];
-        $fields = array_map('trim', $fields);
-        try {
-            if ($id > 0) {
-                $pdo->prepare('UPDATE animals SET tag_id=?,name=?,species=?,breed=?,gender=?,date_of_birth=?,status=?,notes=? WHERE id=?')
-                    ->execute(array_merge($fields, [$id]));
-                $message = 'Animal updated.';
-            } else {
-                $pdo->prepare('INSERT INTO animals (tag_id,name,species,breed,gender,date_of_birth,status,notes) VALUES (?,?,?,?,?,?,?,?)')
-                    ->execute($fields);
-                $message = 'Animal added.';
-            }
-        } catch(Exception $e) { $error_message = $e->getMessage(); }
-        $tab = 'animals';
-    }
-
-    if ($postAction === 'save_herd') {
-        $id = (int)($_POST['id'] ?? 0);
-        $n=$_POST['name']??''; $t=$_POST['type']??''; $l=$_POST['location']??''; $c=(int)($_POST['head_count']??0);
-        try {
-            $id > 0
-                ? $pdo->prepare('UPDATE herds SET name=?,type=?,location=?,head_count=? WHERE id=?')->execute([$n,$t,$l,$c,$id])
-                : $pdo->prepare('INSERT INTO herds (name,type,location,head_count) VALUES (?,?,?,?)')->execute([$n,$t,$l,$c]);
-            $message = $id > 0 ? 'Herd updated.' : 'Herd created.';
-        } catch(Exception $e) { $error_message = $e->getMessage(); }
-        $tab = 'herds';
-    }
-
-    if ($postAction === 'save_health') {
-        $id=(int)($_POST['id']??0);
-        $v=[$_POST['animal_id']??null,$_POST['record_date']??date('Y-m-d'),$_POST['diagnosis']??'',$_POST['treatment']??'',$_POST['vet_name']??'',(float)($_POST['cost']??0)?:(null),$_POST['notes']??''];
-        try {
-            $id > 0
-                ? $pdo->prepare('UPDATE health_records SET animal_id=?,record_date=?,diagnosis=?,treatment=?,vet_name=?,cost=?,notes=? WHERE id=?')->execute(array_merge($v,[$id]))
-                : $pdo->prepare('INSERT INTO health_records (animal_id,record_date,diagnosis,treatment,vet_name,cost,notes) VALUES (?,?,?,?,?,?,?)')->execute($v);
-            $message = $id > 0 ? 'Health record updated.' : 'Health record logged.';
-        } catch(Exception $e) { $error_message = $e->getMessage(); }
-        $tab = 'health';
-    }
-
-    if ($postAction === 'save_breeding') {
-        $id=(int)($_POST['id']??0);
-        $v=[$_POST['sire']??'',$_POST['dam']??'',$_POST['breeding_date']??date('Y-m-d'),$_POST['expected_birth']??null,$_POST['status']??'Pending',$_POST['notes']??''];
-        try {
-            $id > 0
-                ? $pdo->prepare('UPDATE breeding_records SET sire=?,dam=?,breeding_date=?,expected_birth=?,status=?,notes=? WHERE id=?')->execute(array_merge($v,[$id]))
-                : $pdo->prepare('INSERT INTO breeding_records (sire,dam,breeding_date,expected_birth,status,notes) VALUES (?,?,?,?,?,?)')->execute($v);
-            $message = $id > 0 ? 'Breeding record updated.' : 'Breeding recorded.';
-        } catch(Exception $e) { $error_message = $e->getMessage(); }
-        $tab = 'breeding';
-    }
 }
 
 /* ── Load PHP-tab data ─── */
-$animals = $herds = $healthRecs = $breedingRecs = $animalList = [];
-if ($pdo) {
-    try {
-        if ($tab === 'animals')     $animals     = $pdo->query('SELECT * FROM animals ORDER BY created_at DESC')->fetchAll(PDO::FETCH_ASSOC);
-        if ($tab === 'herds')       $herds       = $pdo->query('SELECT * FROM herds ORDER BY created_at DESC')->fetchAll(PDO::FETCH_ASSOC);
-        if ($tab === 'health')      $healthRecs  = $pdo->query('SELECT hr.*, a.name AS aname, a.tag_id FROM health_records hr LEFT JOIN animals a ON hr.animal_id=a.id ORDER BY hr.record_date DESC')->fetchAll(PDO::FETCH_ASSOC);
-        if ($tab === 'breeding')    $breedingRecs= $pdo->query('SELECT * FROM breeding_records ORDER BY breeding_date DESC')->fetchAll(PDO::FETCH_ASSOC);
-        $animalList = $pdo->query("SELECT id, CONCAT(COALESCE(tag_id,''), ' – ', COALESCE(name,'?')) AS label FROM animals ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
-    } catch(Exception $e) { /* non-fatal */ }
-}
+$breedingRecs = [];
 
 $tabs = [
-    'flocks'      => ['icon'=>'layers',        'label'=>'Flocks'],
-    'production'  => ['icon'=>'egg',           'label'=>'Daily Production'],
-    'vaccinations'=> ['icon'=>'syringe',       'label'=>'Vaccinations'],
-    'animals'     => ['icon'=>'paw-print',     'label'=>'Animals'],
-    'health'      => ['icon'=>'heart-pulse',   'label'=>'Health'],
-    'breeding'    => ['icon'=>'dna',           'label'=>'Breeding'],
-    'herds'       => ['icon'=>'users',         'label'=>'Herds / Pens'],
+    'flocks'      => ['icon'=>'layers', 'label'=>'Flocks'],
+    'production'  => ['icon'=>'egg',     'label'=>'Daily Production'],
+    'vaccinations'=> ['icon'=>'syringe', 'label'=>'Vaccinations'],
 ];
 ?>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
@@ -108,7 +42,7 @@ $tabs = [
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
     <div>
         <h1 style="margin:0;font-family:'Outfit',sans-serif;font-size:1.6rem;color:var(--admin-text-heading);font-weight:800;">Farm Operations</h1>
-        <p style="margin:4px 0 0;color:#64748b;font-size:0.9rem;">Manage flocks, daily egg collection, vaccinations, animals, health records, and breeding.</p>
+        <p style="margin:4px 0 0;color:#64748b;font-size:0.9rem;">Manage chicken flocks, daily egg production, and vaccinations.</p>
     </div>
 </div>
 

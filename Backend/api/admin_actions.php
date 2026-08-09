@@ -28,20 +28,67 @@ try {
             // Generate CSV for orders
             header('Content-Type: text/csv');
             header('Content-Disposition: attachment; filename="busia_orders_report_' . date('Y-m-d') . '.csv"');
-            
+
             $output = fopen('php://output', 'w');
             fputcsv($output, ['Order ID', 'Order Number', 'Customer', 'Email', 'Amount', 'Status', 'Date']);
-            
-            $stmt = $pdo->query("SELECT o.id, o.order_number, u.username, u.email, o.total_amount, o.status, o.created_at 
-                                 FROM orders o 
-                                 LEFT JOIN users u ON o.user_id = u.id 
+
+            $stmt = $pdo->query("SELECT o.id, o.order_number, u.username, u.email, o.total_amount, o.status, o.created_at
+                                 FROM orders o
+                                 LEFT JOIN users u ON o.user_id = u.id
                                  ORDER BY o.created_at DESC");
-            
+
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 fputcsv($output, $row);
             }
             fclose($output);
             exit;
+
+        case 'list_orders':
+            $status = $_GET['status'] ?? null;
+            $from = $_GET['from'] ?? null;
+            $to = $_GET['to'] ?? null;
+            $sql = "SELECT o.*, u.username, u.email, u.first_name, u.last_name, u.phone_number
+                    FROM orders o LEFT JOIN users u ON o.user_id=u.id WHERE 1=1";
+            $params = [];
+            if ($status) { $sql .= " AND o.status=?"; $params[] = $status; }
+            if ($from) { $sql .= " AND DATE(o.created_at) >= ?"; $params[] = $from; }
+            if ($to) { $sql .= " AND DATE(o.created_at) <= ?"; $params[] = $to; }
+            $sql .= " ORDER BY o.created_at DESC LIMIT 500";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($rows as &$r) {
+                $r['customer_name']  = trim(($r['first_name'] ?? '') . ' ' . ($r['last_name'] ?? '')) ?: ($r['username'] ?? 'Guest');
+                $r['customer_email'] = $r['email'] ?? '';
+                $r['phone_contact']  = $r['phone_contact'] ?? $r['phone_number'] ?? '';
+            }
+            echo json_encode(['success' => true, 'data' => $rows]);
+            break;
+
+        case 'get_order':
+            $id = (int)($_GET['id'] ?? 0);
+            if (!$id) throw new Exception('Order ID required');
+            $order = fetchOne($pdo, "SELECT o.*, u.username, u.email, u.first_name, u.last_name
+                                      FROM orders o LEFT JOIN users u ON o.user_id=u.id WHERE o.id=?", [$id]);
+            if (!$order) throw new Exception('Order not found');
+            $items = fetchAll($pdo, "SELECT oi.*, p.name FROM order_items oi
+                                     JOIN products p ON p.id=oi.product_id WHERE oi.order_id=?", [$id]);
+            $order['customer_name']  = trim(($order['first_name'] ?? '') . ' ' . ($order['last_name'] ?? '')) ?: ($order['username'] ?? 'Guest');
+            $order['customer_email'] = $order['email'] ?? '';
+            $order['items'] = $items;
+            echo json_encode(['success' => true, 'data' => $order]);
+            break;
+
+        case 'update_order_status':
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Invalid method');
+            $id = (int)($_POST['id'] ?? 0);
+            $status = trim($_POST['status'] ?? '');
+            $valid = ['pending','paid','processing','shipped','completed','cancelled'];
+            if (!$id) throw new Exception('ID required');
+            if (!in_array($status, $valid, true)) throw new Exception('Invalid status');
+            execute($pdo, "UPDATE orders SET status=? WHERE id=?", [$status, $id]);
+            echo json_encode(['success' => true, 'message' => 'Status updated']);
+            break;
 
         case 'get_order_details':
             $order_id = (int)($_GET['order_id'] ?? 0);

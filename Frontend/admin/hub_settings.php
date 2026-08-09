@@ -14,7 +14,7 @@ if (empty($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'super_admin') 
 }
 
 $tab = $_GET['tab'] ?? 'calendar';
-$validTabs = ['calendar','dropdowns','settings','logs','setup'];
+$validTabs = ['calendar','dropdowns','settings','logs'];
 if (!in_array($tab, $validTabs, true)) $tab = 'calendar';
 
 $pdo = getDB();
@@ -63,11 +63,10 @@ if ($pdo) {
 }
 
 $tabs = [
-    'calendar'  => ['icon' => 'calendar',        'label' => 'Calendar'],
-    'dropdowns' => ['icon' => 'list-filter',      'label' => 'Dropdowns'],
+    'calendar'  => ['icon' => 'calendar',         'label' => 'Calendar'],
+    'dropdowns' => ['icon' => 'list-filter',       'label' => 'Dropdowns'],
     'settings'  => ['icon' => 'sliders-horizontal','label' => 'App Settings'],
-    'logs'      => ['icon' => 'terminal',         'label' => 'System Logs'],
-    'setup'     => ['icon' => 'database',         'label' => 'DB Setup'],
+    'logs'      => ['icon' => 'terminal',          'label' => 'System Logs'],
 ];
 ?>
 
@@ -225,10 +224,6 @@ $tabs = [
         </table>
     </div>
 </div>
-
-<!-- ══════ DB SETUP ══════ -->
-<?php elseif ($tab === 'setup'): ?>
-<?php include __DIR__ . '/setup.php'; ?>
 
 <?php endif; ?>
 

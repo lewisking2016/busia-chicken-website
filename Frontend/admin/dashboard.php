@@ -223,16 +223,16 @@ include __DIR__ . '/includes/admin_header.php';
             </div>
         </div>
 
-        <div class="stat-card" style="cursor: pointer;" onclick="window.location.href='stock_alerts.php'">
+        <div class="stat-card">
             <div class="stat-card-info">
-                <small>Inventory Alerts</small>
-                <strong id="kpi-alerts-summary">0</strong>
-                <span style="font-size: 0.8rem; color: #dc2626; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
-                    <i data-lucide="alert-triangle" style="width: 14px; height: 14px;"></i> Action required
+                <small>Healthy Flocks</small>
+                <strong id="kpi-flock-summary">—</strong>
+                <span style="font-size: 0.8rem; color: #16a34a; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                    <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> Active
                 </span>
             </div>
-            <div class="stat-card-icon accent" style="background: rgba(220, 38, 38, 0.1); color: #dc2626;">
-                <i data-lucide="alert-circle"></i>
+            <div class="stat-card-icon accent" style="background: rgba(22, 163, 74, 0.1); color: #16a34a;">
+                <i data-lucide="layers"></i>
             </div>
         </div>
     </div>
@@ -262,11 +262,11 @@ include __DIR__ . '/includes/admin_header.php';
                     </div>
                 </div>
 
-                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: rgba(255, 193, 7, 0.06); border-radius: 4px; border: 1px solid rgba(255, 193, 7, 0.1); cursor: pointer;" onclick="window.location.href='stock_alerts.php'">
-                    <i data-lucide="bell" style="width: 16px; height: 16px; color: #d97706;"></i>
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: rgba(27, 94, 32, 0.04); border-radius: 4px; border: 1px solid rgba(27, 94, 32, 0.08);">
+                    <i data-lucide="bird" style="width: 16px; height: 16px; color: #16a34a;"></i>
                     <div style="flex-grow: 1;">
-                        <h5 style="margin: 0; font-size: 0.9rem; color: var(--admin-text-heading);"><span id="kpi-alerts">0</span> Stock Alerts</h5>
-                        <p style="margin: 0; font-size: 0.75rem; color: #64748b;">Review item counts</p>
+                        <h5 style="margin: 0; font-size: 0.9rem; color: var(--admin-text-heading);"><span id="kpi-active-flocks">0</span> Active Flocks</h5>
+                        <p style="margin: 0; font-size: 0.75rem; color: #64748b;">Currently producing</p>
                     </div>
                 </div>
             </div>
@@ -320,8 +320,10 @@ include __DIR__ . '/includes/admin_header.php';
     </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="/Frontend/assets/js/busia-charts.js"></script>
 <script>
+let dashCharts = {};
 async function loadDashboard() {
     const response = await fetch('/Backend/api/admin_analytics.php');
     const data = await response.json();
@@ -331,163 +333,54 @@ async function loadDashboard() {
         return;
     }
 
+    // Destroy previous
+    Object.values(dashCharts).forEach(c => c && c.destroy());
+    dashCharts = {};
+
     const sales = (data.data.sales || []).map((item) => ({ date: item.day, value: Number(item.total) }));
     const orders = (data.data.orders || []).map((item) => ({ date: item.day, value: Number(item.cnt) }));
     const topProducts = data.data.top_products || [];
 
-    const labels = sales.map((item) => item.date);
+    const labels = sales.map((item) => BusiaCharts.dayLabel(item.date));
 
-    new Chart(document.getElementById('chart-sales'), {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [{
-                label: 'Revenue',
-                data: sales.map((item) => item.value),
-                borderColor: '#1B5E20',
-                backgroundColor: 'rgba(27, 94, 32, 0.08)',
-                fill: true,
-                tension: 0.32,
-                pointRadius: 3,
-                pointBackgroundColor: '#FFC107',
-            }],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { grid: { display: false }, ticks: { color: '#64748b' } },
-                y: { grid: { color: 'rgba(148,163,184,0.12)' }, ticks: { color: '#64748b' } },
-            },
-        },
-    });
+    // Revenue trend (line/area)
+    dashCharts.sales = BusiaCharts.areaChart(document.getElementById('chart-sales'), labels, sales.map(i => i.value), { color: BusiaCharts.C.primary });
 
-    new Chart(document.getElementById('chart-orders'), {
-        type: 'bar',
-        data: {
-            labels,
-            datasets: [{
-                label: 'Orders',
-                data: orders.map((item) => item.value),
-                backgroundColor: '#FFC107',
-                borderRadius: 0,
-                maxBarThickness: 28,
-            }],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { grid: { display: false }, ticks: { color: '#64748b' } },
-                y: { grid: { color: 'rgba(148,163,184,0.12)' }, ticks: { color: '#64748b', precision: 0 } },
-            },
-        },
-    });
+    // Orders (bar)
+    dashCharts.orders = BusiaCharts.barChart(document.getElementById('chart-orders'), labels, orders.map(i => i.value), { color: BusiaCharts.C.amber, radius: 4 });
 
-    // Top Moving Products - fed from actual order line items
-    document.getElementById('top-products').innerHTML = topProducts.length ? topProducts
-        .slice(0, 5)
-        .map((item) => `
-            <div class="mini-list-item">
-                <div class="item-details">
-                    <strong>${item.name}</strong>
-                    <span>${item.qty} units sold</span>
-                </div>
-                <strong style="color: var(--admin-primary);">${item.qty}</strong>
-            </div>
-        `)
-        .join('') : '<p style="padding: 16px; text-align: center; color: #64748b; margin: 0; font-size: 0.9rem;">No product sales recorded yet.</p>';
+    // Top products (horizontal bar)
+    if (document.getElementById('chart-top-products') && topProducts.length) {
+        dashCharts.top = BusiaCharts.hBarChart(
+            document.getElementById('chart-top-products'),
+            topProducts.map(p => p.name || ''),
+            topProducts.map(p => +p.qty || 0),
+            { color: BusiaCharts.C.primary }
+        );
+    }
 
-    const recentOrders = data.data.recent_orders || [];
-
-    document.getElementById('recent-activity').innerHTML = recentOrders.length ? recentOrders
-        .map((order) => {
-            const dateStr = new Date(order.created_at).toLocaleDateString(undefined, {month: 'short', day: 'numeric'});
-            const statusClass = order.status === 'completed' ? 'badge-pill-success' : (order.status === 'pending' ? 'badge-pill-warning' : 'badge-pill-danger');
-            return `
-                <tr>
-                    <td>
-                        <div style="font-weight: 600; color: var(--admin-text-heading);">Order #${order.id} by ${order.first_name || 'Guest'} ${order.last_name || ''}</div>
-                        <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px; display: flex; align-items: center; gap: 8px;">
-                            <span>KES ${Number(order.total_amount).toLocaleString()}</span>
-                            <span class="badge-pill ${statusClass}">${order.status}</span>
-                        </div>
-                    </td>
-                    <td style="text-align: right; vertical-align: middle; color: #64748b; font-size: 0.85rem;">
-                        ${dateStr}
-                    </td>
-                </tr>
-            `;
-        })
-        .join('') : '<tr><td colspan="2" style="text-align: center; color: #64748b; padding: 20px;">No recent activities/orders found.</td></tr>';
-
-    const revenue = sales.reduce((sum, item) => sum + item.value, 0);
-    const orderCount = orders.reduce((sum, item) => sum + item.value, 0);
-    const averageOrder = orderCount ? Math.round(revenue / orderCount) : 0;
-
-    document.getElementById('kpi-sales').textContent = `KES ${revenue.toLocaleString()}`;
-    document.getElementById('kpi-orders').textContent = orderCount.toLocaleString();
-    document.getElementById('kpi-avg').textContent = `KES ${averageOrder.toLocaleString()}`;
-    document.getElementById('kpi-alerts').textContent = data.data.alerts || 0;
-    document.getElementById('kpi-alerts-summary').textContent = data.data.alerts || 0;
-}
-
-// Load raw material health from stock dashboard
-async function loadRawMaterialHealth() {
-    try {
-        const res = await fetch('/Backend/api/admin_stock.php?action=get_dashboard');
-        const result = await res.json();
-        if (!result.success) return;
-
-        const materials = result.data.raw_materials || [];
-        const container = document.getElementById('raw-material-health');
-
-        // Count materials below reorder for the KPI
-        const belowReorder = materials.filter(m => m.is_below_reorder).length;
-        const alertEl = document.getElementById('kpi-alerts-summary');
-        const currentAlerts = parseInt(alertEl.textContent) || 0;
-        if (belowReorder > 0) {
-            alertEl.textContent = currentAlerts + belowReorder;
-            document.getElementById('kpi-alerts').textContent = currentAlerts + belowReorder;
+    // Recent activity (audit log)
+    const acts = data.data.recent_orders || [];
+    const tbody = document.getElementById('recent-activity');
+    if (tbody) {
+        if (!acts.length) {
+            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#94a3b8;padding:20px;">No recent activity.</td></tr>';
+        } else {
+            tbody.innerHTML = acts.map(a => {
+                const name = ((a.first_name || '') + ' ' + (a.last_name || '')).trim() || 'Guest';
+                const color = a.status === 'completed' ? '#16a34a' : a.status === 'cancelled' ? '#dc2626' : '#d97706';
+                return `<tr><td><strong>${escapeHtml(name)}</strong> — order #${a.id} for KES ${parseFloat(a.total_amount||0).toLocaleString()} <span style="color:${color};font-size:0.78rem;text-transform:uppercase;font-weight:600;">${a.status}</span></td><td style="text-align:right;color:#64748b;font-size:0.85rem;">${(a.created_at||'').split(' ')[0]}</td></tr>`;
+            }).join('');
         }
+    }
 
-        if (!materials.length) {
-            container.innerHTML = '<p style="padding: 16px; text-align: center; color: #64748b; margin: 0;">No raw materials configured.</p>';
-            return;
-        }
-
-        container.innerHTML = materials.map(m => {
-            const daysColor = m.days_covered < 7 ? '#dc2626' : (m.days_covered < 14 ? '#f59e0b' : '#16a34a');
-            const barWidth = Math.min(100, m.days_covered < 999 ? (m.days_covered / 30) * 100 : 100);
-            return `
-            <div style="padding: 12px 16px; border-bottom: 1px solid var(--admin-border);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <span style="font-weight: 600; font-size: 0.85rem; color: var(--admin-text-heading);">${m.name}</span>
-                    <span style="font-size: 0.75rem; font-weight: 700; color: ${daysColor};">
-                        ${m.days_covered < 999 ? m.days_covered + 'd' : '∞'}
-                        ${m.is_below_reorder ? '<span style="color:#dc2626; margin-left:4px;">⚠ REORDER</span>' : ''}
-                    </span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="flex: 1; height: 4px; background: #f1f5f9; border-radius: 2px; overflow: hidden;">
-                        <div style="width: ${barWidth}%; height: 100%; background: ${daysColor}; transition: width 0.5s;"></div>
-                    </div>
-                    <span style="font-size: 0.7rem; color: #94a3b8; white-space: nowrap;">${Number(m.stock_tons).toLocaleString()} kgs</span>
-                </div>
-            </div>`;
-        }).join('');
-    } catch(e) { console.error(e); }
+    // Update small KPI numbers with count-up
+    if (typeof BusiaCharts !== 'undefined') BusiaCharts.countUpAll();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
-
-// Auto-refresh every 30 seconds for live feel
-setInterval(loadDashboard, 30000);
-
-document.addEventListener('DOMContentLoaded', () => {
-    loadDashboard();
-    loadRawMaterialHealth();
-});
+function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+loadDashboard();
 </script>
+
 
 <?php include __DIR__ . '/includes/admin_footer.php'; ?>
