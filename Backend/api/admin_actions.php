@@ -24,6 +24,104 @@ $action = $_GET['action'] ?? '';
 
 try {
     switch ($action) {
+        case 'clear_cache':
+            // Clear OPcache/APCu and temp cache files (best-effort)
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Invalid method');
+            try {
+                if (function_exists('apcu_clear_cache')) @apcu_clear_cache();
+                if (function_exists('opcache_reset')) @opcache_reset();
+                $tmp = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'busia_cache';
+                if (is_dir($tmp)) {
+                    $files = glob($tmp . DIRECTORY_SEPARATOR . '*');
+                    foreach ($files as $f) { if (is_file($f)) @unlink($f); }
+                }
+            } catch (Exception $e) {
+                // ignore
+            }
+            echo json_encode(['success' => true, 'message' => 'Cache cleared']);
+            break;
+
+        case 'prepare_delete':
+            // Prepare a full-data CSV backup and return a download URL + token + confirmation word
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Invalid method');
+            $token = bin2hex(random_bytes(8));
+            $word = substr(bin2hex(random_bytes(4)), 0, 8);
+            $tmpDir = sys_get_temp_dir();
+            $fname = "busia_full_backup_" . date('Ymd_His') . "_" . $token . ".csv";
+            $path = $tmpDir . DIRECTORY_SEPARATOR . $fname;
+            $out = fopen($path, 'w');
+            if (!$out) throw new Exception('Failed to create backup file');
+
+            // Column headers: table, row_json
+            fputcsv($out, ['table','row_json']);
+            $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_NUM);
+            foreach ($tables as $t) {
+                $table = $t[0];
+                try {
+                    $stmt = $pdo->query("SELECT * FROM `{$table}`");
+                    if ($stmt) {
+                        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                            fputcsv($out, [$table, json_encode($row, JSON_UNESCAPED_UNICODE)]);
+                        }
+                    }
+                } catch (Exception $e) {
+                    // skip problematic tables
+                }
+            }
+            fclose($out);
+
+            // Save token+file in session for later confirmation
+            $_SESSION['pending_delete'] = ['token' => $token, 'word' => $word, 'file' => $path, 'filename' => $fname];
+
+            $downloadUrl = dirname($_SERVER['PHP_SELF']) . '/admin_actions.php?action=download_backup&file=' . urlencode($fname) . '&token=' . $token;
+            echo json_encode(['success' => true, 'token' => $token, 'word' => $word, 'download' => $downloadUrl]);
+            break;
+
+        case 'download_backup':
+            $file = $_GET['file'] ?? '';
+            $token = $_GET['token'] ?? '';
+            if (!$file || !$token) throw new Exception('File and token required');
+            if (empty($_SESSION['pending_delete']) || $_SESSION['pending_delete']['token'] !== $token) throw new Exception('Invalid or expired token');
+            $path = $_SESSION['pending_delete']['file'] ?? '';
+            if (!is_file($path) || basename($path) !== $file) throw new Exception('File not found');
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="' . basename($path) . '"');
+            header('Content-Length: ' . filesize($path));
+            readfile($path);
+            exit;
+            break;
+
+        case 'confirm_delete':
+        case 'delete_everything':
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Invalid method');
+            $token = $_POST['token'] ?? '';
+            $typed = trim($_POST['typed_word'] ?? '');
+            if (empty($_SESSION['pending_delete']) || $_SESSION['pending_delete']['token'] !== $token) throw new Exception('Invalid or expired token');
+            if ($typed === '' || $typed !== ($_SESSION['pending_delete']['word'] ?? '')) throw new Exception('Confirmation word mismatch');
+
+            // Proceed to delete — keep super_admin users intact
+            $pdo->beginTransaction();
+            try {
+                $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_NUM);
+                foreach ($tables as $t) {
+                    $table = $t[0];
+                    if ($table === 'users') {
+                        $pdo->prepare("DELETE FROM users WHERE role != 'super_admin'")->execute();
+                    } else {
+                        // Use DELETE to avoid needing DROP privileges; TRUNCATE may require permissions
+                        $pdo->exec("DELETE FROM `{$table}`");
+                    }
+                }
+                $pdo->commit();
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                throw $e;
+            }
+
+            // remove pending token and leave backup file in temp for download/restore
+            unset($_SESSION['pending_delete']);
+            echo json_encode(['success' => true, 'message' => 'All non-admin data deleted']);
+            break;
         case 'export_orders':
             // Generate CSV for orders
             header('Content-Type: text/csv');

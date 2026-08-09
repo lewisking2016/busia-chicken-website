@@ -156,9 +156,17 @@ $tabs = [
             <h3 style="margin:0;font-family:'Outfit',sans-serif;font-size:1.1rem;">Application Settings</h3>
             <p style="margin:4px 0 0;font-size:0.85rem;color:#64748b;">Configure system-wide settings and parameters.</p>
         </div>
-        <button class="btn btn-primary" onclick="openSettingModal()">
-            <i data-lucide="plus-circle" style="width:16px;height:16px;"></i> Add Setting
-        </button>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn btn-primary" onclick="openSettingModal()">
+                <i data-lucide="plus-circle" style="width:16px;height:16px;"></i> Add Setting
+            </button>
+            <button class="btn btn-outline" onclick="clearCache()" id="clear-cache-btn">
+                <i data-lucide="trash" style="width:16px;height:16px;"></i> Clear Cache
+            </button>
+            <button class="btn btn-danger" onclick="initiateDeleteEverything()" id="delete-everything-btn">
+                <i data-lucide="x-circle" style="width:16px;height:16px;"></i> Delete Everything
+            </button>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="admin-table">
@@ -290,6 +298,94 @@ document.addEventListener('click', function(e) {
     const modal = document.getElementById('setting-modal');
     if (modal && e.target === modal) modal.style.display = 'none';
 });
+</script>
+
+<!-- Delete Everything Modal -->
+<div id="delete-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:3000;align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:28px;border-radius:12px;width:100%;max-width:540px;box-shadow:0 20px 40px rgba(0,0,0,0.15);">
+        <h3 style="margin:0 0 14px;font-family:'Outfit',sans-serif;">Confirm Delete Everything</h3>
+        <p style="color:#334155;margin:0 0 12px;">A full backup will be created and downloaded automatically. To confirm deletion, type the confirmation word shown below exactly.</p>
+        <div style="margin:12px 0;padding:12px;border-radius:8px;background:#f8fafc;border:1px dashed var(--admin-border);">
+            <strong>Confirmation word: </strong> <span id="confirm-word" style="font-family:monospace;padding:6px 10px;background:#fff;border-radius:6px;border:1px solid #e6eef8;margin-left:8px;"></span>
+        </div>
+        <div style="margin-top:8px;">
+            <input id="confirm-input" class="admin-form-control" placeholder="Type the confirmation word here">
+        </div>
+        <div style="display:flex;gap:10px;margin-top:18px;">
+            <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn btn-danger" id="confirm-delete-btn" onclick="confirmDelete()">Delete Everything</button>
+        </div>
+    </div>
+</div>
+
+<script>
+async function clearCache() {
+    const btn = document.getElementById('clear-cache-btn');
+    btn.disabled = true;
+    try {
+        const res = await fetch('/Backend/api/admin_actions.php?action=clear_cache', { method: 'POST' });
+        const j = await res.json();
+        alert(j.message || 'Cache cleared');
+    } catch (e) { alert('Failed to clear cache'); }
+    btn.disabled = false;
+}
+
+function closeDeleteModal() {
+    document.getElementById('delete-modal').style.display = 'none';
+    document.getElementById('confirm-input').value = '';
+}
+
+async function initiateDeleteEverything() {
+    const btn = document.getElementById('delete-everything-btn');
+    btn.disabled = true;
+    try {
+        const res = await fetch('/Backend/api/admin_actions.php?action=prepare_delete', { method: 'POST' });
+        const j = await res.json();
+        if (!j.success) { alert(j.message || 'Failed to prepare backup'); btn.disabled = false; return; }
+
+        // Show confirmation modal with provided word
+        document.getElementById('confirm-word').textContent = j.word;
+        document.getElementById('delete-modal').style.display = 'flex';
+
+        // Auto-start download in background using iframe
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = j.download;
+        document.body.appendChild(iframe);
+        alert('Backup download started. After it finishes, type the word to confirm deletion.');
+
+        // store token in modal dataset for later confirmation
+        document.getElementById('delete-modal').dataset.token = j.token;
+    } catch (e) {
+        alert('Failed to prepare delete: ' + e.message);
+    }
+    btn.disabled = false;
+}
+
+async function confirmDelete() {
+    const token = document.getElementById('delete-modal').dataset.token;
+    const typed = document.getElementById('confirm-input').value.trim();
+    if (!typed) { alert('Type the confirmation word'); return; }
+    const ok = confirm('This will permanently delete most system data. Are you sure?');
+    if (!ok) return;
+    const btn = document.getElementById('confirm-delete-btn');
+    btn.disabled = true;
+    try {
+        const form = new FormData();
+        form.append('token', token);
+        form.append('typed_word', typed);
+        const res = await fetch('/Backend/api/admin_actions.php?action=delete_everything', { method: 'POST', body: form });
+        const j = await res.json();
+        if (j.success) {
+            alert('Delete complete. Backup kept in temporary storage.');
+            closeDeleteModal();
+            location.reload();
+        } else {
+            alert('Delete failed: ' + (j.message || 'Unknown'));
+        }
+    } catch (e) { alert('Delete request failed'); }
+    btn.disabled = false;
+}
 </script>
 
 <?php include __DIR__ . '/includes/admin_footer.php'; ?>
