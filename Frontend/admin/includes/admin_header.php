@@ -23,18 +23,6 @@ if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_ad
 
 // Authorization logic for specific roles
 $isAdmin = in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager'], true);
-$isStockManager = ($_SESSION['role'] ?? '') === 'stock_manager';
-
-// Restrict Stock Manager to ONLY stock-related pages
-if ($isStockManager) {
-    $currentPage = basename($_SERVER['SCRIPT_NAME']);
-    $allowedStockPages = ['stock_dashboard.php', 'stock_calculator.php', 'stock_recipes.php', 'stock_costing.php', 'stock_alerts.php', 'incoming_stock.php', 'profile.php'];
-    if (!in_array($currentPage, $allowedStockPages) && strpos($currentPage, 'stock_') === false && strpos($currentPage, 'incoming_') === false) {
-        // Redirect stock managers away from non-stock pages (like orders, settings, users)
-        header('Location: /Frontend/admin/stock_dashboard.php');
-        exit;
-    }
-}
 
 $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SESSION['csrf_token'] ?? '');
 ?>

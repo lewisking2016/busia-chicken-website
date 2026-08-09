@@ -332,20 +332,9 @@ if ($pdo) {
                                 <span style="font-size: 0.7rem; color: #64748b;">Reserve Floor: <?php echo number_format($reserved); ?> kgs</span>
                             </div>
                         <?php elseif ($product['product_type'] === 'feed'): ?>
-                            <?php if ($product['recipe_id']): ?>
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <a href="stock_formula_center.php" class="badge-pill badge-pill-success" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px; justify-content: center;">
-                                        <i data-lucide="brain-circuit" style="width: 12px; height: 12px;"></i> Linked
-                                    </a>
-                                    <a href="stock_formula_center.php" class="btn btn-trans btn-sm" style="font-size: 0.7rem; padding: 2px 4px; color: var(--admin-primary); border: 1px solid var(--admin-primary);">
-                                        <i data-lucide="package-plus" style="width: 12px; height: 12px;"></i> Produce
-                                    </a>
-                                </div>
-                            <?php else: ?>
-                                <a href="stock_formula_center.php" class="badge-pill badge-pill-warning" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-                                    <i data-lucide="alert-circle" style="width: 12px; height: 12px;"></i> No Recipe
-                                </a>
-                            <?php endif; ?>
+                            <span class="badge-pill badge-pill-success" style="display: inline-flex; align-items: center; gap: 4px;">
+                                <i data-lucide="package" style="width: 12px; height: 12px;"></i> Feed
+                            </span>
                         <?php else: ?>
                             <span style="color: #94a3b8; font-size: 0.8rem;">N/A</span>
                         <?php endif; ?>
