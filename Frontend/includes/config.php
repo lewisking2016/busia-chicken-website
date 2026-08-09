@@ -145,6 +145,35 @@ function getDB(): ?PDO {
 }
 
 /**
+ * Execute a SELECT query safely and return rows.
+ */
+function safeQueryAll(PDO $pdo, string $sql, array $params = []): array {
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        error_log('SafeQueryAll failed: ' . $e->getMessage() . ' SQL: ' . $sql);
+        return [];
+    }
+}
+
+/**
+ * Execute a scalar query safely and return a single value.
+ */
+function safeQueryScalar(PDO $pdo, string $sql, array $params = [], mixed $default = null): mixed {
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $value = $stmt->fetchColumn();
+        return $value !== false ? $value : $default;
+    } catch (Exception $e) {
+        error_log('SafeQueryScalar failed: ' . $e->getMessage() . ' SQL: ' . $sql);
+        return $default;
+    }
+}
+
+/**
  * Get site setting by key
  */
 function getSetting(string $key, string $default = ''): string {

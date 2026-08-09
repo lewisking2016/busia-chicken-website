@@ -84,14 +84,18 @@ if ($pdo) {
                 $params[] = $statusFilter;
             }
             $q .= ' ORDER BY o.created_at DESC LIMIT 200';
-            $stmt = $pdo->prepare($q); $stmt->execute($params);
-            $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $orders = safeQueryAll($pdo, $q, $params);
         } elseif ($tab === 'sales') {
-            $orders = $pdo->query('SELECT o.*, u.username FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE o.status IN ("completed","paid") ORDER BY o.created_at DESC LIMIT 200')->fetchAll(PDO::FETCH_ASSOC);
+            $orders = safeQueryAll($pdo, 'SELECT o.*, u.username FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE o.status IN ("completed","paid") ORDER BY o.created_at DESC LIMIT 200');
         } elseif ($tab === 'payments') {
-            $paymentsList = $pdo->query('SELECT * FROM financial_records WHERE type="income" ORDER BY transaction_date DESC, created_at DESC LIMIT 200')->fetchAll(PDO::FETCH_ASSOC);
+            $paymentsList = safeQueryAll($pdo, 'SELECT * FROM financial_records WHERE type="income" ORDER BY transaction_date DESC, created_at DESC LIMIT 200');
         }
-    } catch (Exception $e) { $error_message = $e->getMessage(); }
+    } catch (Exception $e) {
+        error_log('Hub finance page query error: ' . $e->getMessage());
+        $error_message = 'Database query error. Please retry.';
+        $orders = [];
+        $paymentsList = [];
+    }
 }
 
 $tabs = [

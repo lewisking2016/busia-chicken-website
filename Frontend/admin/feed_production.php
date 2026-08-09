@@ -16,7 +16,10 @@ $tab = $_GET['tab'] ?? 'recipes';
 $validTabs = ['recipes','produce','history'];
 if (!in_array($tab, $validTabs, true)) $tab = 'recipes';
 
-$recipes = $pdo ? $pdo->query("SELECT * FROM feed_recipes ORDER BY recipe_name")->fetchAll(PDO::FETCH_ASSOC) : [];
+$recipes = [];
+if ($pdo) {
+    $recipes = safeQueryAll($pdo, "SELECT * FROM feed_recipes ORDER BY recipe_name");
+}
 ?>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
@@ -147,11 +150,14 @@ $recipes = $pdo ? $pdo->query("SELECT * FROM feed_recipes ORDER BY recipe_name")
     </div>
 </div>
 
+<?php
+$allMaterials = [];
+if ($pdo) {
+    $allMaterials = safeQueryAll($pdo, "SELECT id, material_name, current_stock, unit, current_price_per_unit FROM raw_materials WHERE category='feed_ingredient' ORDER BY material_name");
+}
+?>
 <script>
-let ingredients = <?php
-    $allMaterials = $pdo ? $pdo->query("SELECT id, material_name, current_stock, unit, current_price_per_unit FROM raw_materials WHERE category='feed_ingredient' ORDER BY material_name")->fetchAll(PDO::FETCH_ASSOC) : [];
-    echo json_encode($allMaterials);
-?>;
+let ingredients = <?= json_encode($allMaterials) ?>;
 let ingIdx = 0;
 
 function addIngredientRow(data = null) {

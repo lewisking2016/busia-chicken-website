@@ -12,7 +12,10 @@ $page_title = 'Egg Grading - Admin';
 include __DIR__ . '/includes/admin_header.php';
 
 $pdo = getDB();
-$batches = $pdo ? $pdo->query("SELECT id, batch_name, batch_code FROM batches WHERE status='active' ORDER BY batch_name")->fetchAll(PDO::FETCH_ASSOC) : [];
+$batches = [];
+if ($pdo) {
+    $batches = safeQueryAll($pdo, "SELECT id, batch_name, batch_code FROM batches WHERE status='active' ORDER BY batch_name");
+}
 ?>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
