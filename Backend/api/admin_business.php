@@ -23,6 +23,9 @@ require_once __DIR__ . '/../config/database.php';
 function ok(array $d = []): never { echo json_encode(array_merge(['success' => true], $d)); exit; }
 function err(string $m, int $c = 400): never { http_response_code($c); echo json_encode(['success' => false, 'message' => $m]); exit; }
 
+// Auto-run new tables if missing — self-healing
+require_once __DIR__ . '/../config/auto_migrate.php';
+
 try {
     if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'stock_manager', 'sales_staff'], true)) {
         err('You must be logged in', 401);
@@ -113,6 +116,9 @@ try {
     // CASHBOOK
     // ─────────────────────────────────────────────────────────
     if ($action === 'list_cashbook') {
+        if (!tableExists($pdo, 'cashbook_entries')) {
+            ok(['data' => [], 'closing_balance' => 0]);
+        }
         $from = $_GET['from'] ?? null;
         $to = $_GET['to'] ?? null;
         $dir = $_GET['direction'] ?? null;
@@ -317,6 +323,9 @@ try {
     // PURCHASE ORDERS
     // ─────────────────────────────────────────────────────────
     if ($action === 'list_purchase_orders') {
+        if (!tableExists($pdo, 'purchase_orders')) {
+            ok(['data' => []]);
+        }
         $sql = "SELECT po.*, s.supplier_name, s.phone AS supplier_phone,
                        (SELECT COUNT(*) FROM purchase_order_items WHERE po_id=po.id) AS item_count
                 FROM purchase_orders po
@@ -445,6 +454,9 @@ try {
     // HATCHERY
     // ─────────────────────────────────────────────────────────
     if ($action === 'list_hatchery') {
+        if (!tableExists($pdo, 'hatchery_batches')) {
+            ok(['data' => []]);
+        }
         ok(['data' => $pdo->query("SELECT * FROM hatchery_batches ORDER BY setting_date DESC LIMIT 200")->fetchAll(PDO::FETCH_ASSOC)]);
     }
     if ($action === 'add_hatch' && $method === 'POST') {

@@ -344,7 +344,17 @@ try {
     // STORES / RAW MATERIALS
     // ─────────────────────────────────────────────────────────
     if ($action === 'get_materials') {
-        $rows = $pdo->query("SELECT * FROM raw_materials ORDER BY category, material_name")->fetchAll(PDO::FETCH_ASSOC);
+        $rows = [];
+        if (tableExists($pdo, 'raw_materials')) {
+            $hasCategory = columnExists($pdo, 'raw_materials', 'category');
+            if ($hasCategory) {
+                $rows = $pdo->query("SELECT * FROM raw_materials ORDER BY category, material_name")->fetchAll(PDO::FETCH_ASSOC);
+            } else {
+                $rows = $pdo->query("SELECT * FROM raw_materials ORDER BY material_name")->fetchAll(PDO::FETCH_ASSOC);
+                foreach ($rows as &$r) { $r['category'] = 'feed_ingredient'; }
+                unset($r);
+            }
+        }
         api_ok(['data' => $rows]);
     }
     if ($action === 'save_material' && $method === 'POST') {
@@ -587,11 +597,11 @@ try {
         $kpis = [];
         $kpis['active_batches']   = (int)$pdo->query("SELECT COUNT(*) FROM batches WHERE status='active'")->fetchColumn();
         $kpis['total_birds']      = (int)$pdo->query("SELECT COALESCE(SUM(current_birds),0) FROM batches WHERE status='active'")->fetchColumn();
-        $kpis['eggs_today']       = (int)$pdo->query("SELECT COALESCE(SUM(total_eggs),0) FROM daily_batch_records WHERE record_date=CURDATE()")->fetchColumn();
-        $kpis['mortality_today']  = (int)$pdo->query("SELECT COALESCE(SUM(mortality),0) FROM daily_batch_records WHERE record_date=CURDATE()")->fetchColumn();
-        $kpis['sales_today']      = (float)$pdo->query("SELECT COALESCE(SUM(total_sales_amount),0) FROM daily_sales_reconciliation WHERE sale_date=CURDATE()")->fetchColumn();
+        $kpis['eggs_today']       = tableExists($pdo, 'daily_batch_records') ? (int)$pdo->query("SELECT COALESCE(SUM(total_eggs),0) FROM daily_batch_records WHERE record_date=CURDATE()")->fetchColumn() : 0;
+        $kpis['mortality_today']  = tableExists($pdo, 'daily_batch_records') ? (int)$pdo->query("SELECT COALESCE(SUM(mortality),0) FROM daily_batch_records WHERE record_date=CURDATE()")->fetchColumn() : 0;
+        $kpis['sales_today']      = tableExists($pdo, 'daily_sales_reconciliation') ? (float)$pdo->query("SELECT COALESCE(SUM(total_sales_amount),0) FROM daily_sales_reconciliation WHERE sale_date=CURDATE()")->fetchColumn() : 0;
         $kpis['pending_orders']   = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE status IN ('pending','paid','processing')")->fetchColumn();
-        $kpis['low_stock_items']  = (int)$pdo->query("SELECT COUNT(*) FROM raw_materials WHERE current_stock <= min_stock_level")->fetchColumn();
+        $kpis['low_stock_items']  = tableExists($pdo, 'raw_materials') ? (int)$pdo->query("SELECT COUNT(*) FROM raw_materials WHERE current_stock <= min_stock_level")->fetchColumn() : 0;
         $kpis['upcoming_vaccines']= (int)$pdo->query("SELECT COUNT(*) FROM health_records WHERE record_type='vaccination' AND status='scheduled' AND next_due_date >= CURDATE()")->fetchColumn();
         api_ok(['data' => $kpis]);
     }

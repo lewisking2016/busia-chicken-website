@@ -30,6 +30,9 @@ $pdoOptions = [
 // Connection String (DSN)
 $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
 
+// Auto-migration helper is safe to include repeatedly
+@require_once __DIR__ . '/auto_migrate.php';
+
 // Global PDO instance
 $pdo = null;
 
@@ -50,6 +53,15 @@ function getDatabaseConnection(): ?PDO {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
         ]);
+
+        if (function_exists('ensureBusiaSchema')) {
+            try {
+                ensureBusiaSchema($pdo);
+            } catch (Exception $e) {
+                @error_log('Auto schema ensure failed: ' . $e->getMessage());
+            }
+        }
+
         return $pdo;
     } catch (PDOException $e) {
         @error_log("Database connection failed: " . $e->getMessage());
@@ -57,6 +69,34 @@ function getDatabaseConnection(): ?PDO {
     } catch (Exception $e) {
         @error_log("Database connection exception: " . $e->getMessage());
         return null;
+    }
+}
+
+/**
+ * Check whether a table exists in the current database.
+ */
+function tableExists(PDO $pdo, string $table): bool {
+    try {
+        $stmt = $pdo->prepare('SHOW TABLES LIKE ?');
+        $stmt->execute([$table]);
+        return (bool)$stmt->fetchColumn();
+    } catch (Exception $e) {
+        @error_log("tableExists failed for {$table}: " . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Check whether a column exists on a table in the current database.
+ */
+function columnExists(PDO $pdo, string $table, string $column): bool {
+    try {
+        $stmt = $pdo->prepare("SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ? LIMIT 1");
+        $stmt->execute([$table, $column]);
+        return (bool)$stmt->fetchColumn();
+    } catch (Exception $e) {
+        @error_log("columnExists failed for {$table}.{$column}: " . $e->getMessage());
+        return false;
     }
 }
 

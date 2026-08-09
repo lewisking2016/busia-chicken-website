@@ -132,7 +132,16 @@ try {
 
 // Helper function to get PDO instance
 function getDB(): ?PDO {
-    return $GLOBALS['pdo'] ?? null;
+    if (!empty($GLOBALS['pdo'])) return $GLOBALS['pdo'];
+    $GLOBALS['pdo'] = getDatabaseConnection();
+    if (!empty($GLOBALS['pdo'])) {
+        // Auto-run new tables if missing — keeps the live site self-healing
+        @require_once __DIR__ . '/../../Backend/config/auto_migrate.php';
+        if (function_exists('ensureBusiaSchema')) {
+            ensureBusiaSchema($GLOBALS['pdo']);
+        }
+    }
+    return $GLOBALS['pdo'];
 }
 
 /**
