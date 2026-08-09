@@ -8,30 +8,33 @@ declare(strict_types=1);
 $cp   = basename($_SERVER['SCRIPT_NAME']);
 $tab  = $_GET['tab'] ?? '';
 
-$isOps       = $cp === 'hub_operations.php';
-$isFlock     = $cp === 'flocks.php' || $cp === 'production.php' || $cp === 'vaccinations.php';
-$isBatches   = $cp === 'batches.php';
-$isHealth    = $cp === 'health.php';
-$isInventory = $cp === 'hub_inventory.php';
-$isStores    = $cp === 'stores.php';
-$isFeed      = $cp === 'feed_production.php';
-$isEggGrade  = $cp === 'egg_grading.php';
-$isReports   = $cp === 'reports.php';
-$isProfit    = $cp === 'profit.php';
-$isCashbook  = $cp === 'cashbook.php';
-$isCredit    = $cp === 'credit.php';
-$isFeeding   = $cp === 'feeding.php';
-$isProcure   = $cp === 'purchase_orders.php';
-$isBroiler   = $cp === 'broiler.php';
-$isHatchery  = $cp === 'hatchery.php';
-$isExtras    = $cp === 'extras.php';
-$isFinance   = $cp === 'hub_finance.php';
-$isSales     = $cp === 'orders.php' || $cp === 'sales.php' || $cp === 'payments.php' || $cp === 'expenses.php' || $cp === 'reports.php';
-$isDaily     = $cp === 'daily_sales.php';
-$isBulk      = $cp === 'bulk_sales.php';
-$isPeople    = $cp === 'hub_people.php';
-$isSettings  = $cp === 'hub_settings.php';
-$isDash      = $cp === 'dashboard.php';
+$isOps        = $cp === 'hub_operations.php';
+$isFlock      = $cp === 'flocks.php' || $cp === 'production.php' || $cp === 'vaccinations.php';
+$isBatches    = $cp === 'batches.php';
+$isHealth     = $cp === 'health.php';
+$isInventory  = $cp === 'hub_inventory.php';
+$isStores     = $cp === 'stores.php';
+$isFeed       = $cp === 'feed_production.php';
+$isEggGrade   = $cp === 'egg_grading.php';
+$isBroiler    = $cp === 'broiler.php';
+$isHatchery   = $cp === 'hatchery.php';
+$isFeeding    = $cp === 'feeding.php';
+$isExtras     = $cp === 'extras.php';
+$isFinanceHub = $cp === 'hub_finance.php';
+$isProfit     = $cp === 'profit.php';
+$isCashbook   = $cp === 'cashbook.php';
+$isCredit     = $cp === 'credit.php';
+$isProcure    = $cp === 'purchase_orders.php';
+$isDaily      = $cp === 'daily_sales.php';
+$isBulk       = $cp === 'bulk_sales.php';
+$isAnalytics  = $cp === 'analytics.php';
+$isImport     = $cp === 'bulk_import_export.php';
+$isPeople     = $cp === 'hub_people.php';
+$isSettings   = $cp === 'hub_settings.php';
+$isDash       = $cp === 'dashboard.php';
+
+$isOperations = $isBatches || $isHealth || $isInventory || $isStores || $isFeed || $isEggGrade || $isBroiler || $isHatchery || $isFeeding || $isExtras;
+$isSalesFinance = $isFinanceHub || $isProfit || $isCashbook || $isCredit || $isProcure || $isDaily || $isBulk || $isAnalytics || $isImport;
 
 function navLinkWithSub(string $href, string $icon, string $label, bool $active, array $submodules, string $currentTab): string {
     $base = $active
@@ -49,15 +52,23 @@ function navLinkWithSub(string $href, string $icon, string $label, bool $active,
     </li>
 HTML;
 
-    if ($active && !empty($submodules)) {
+    if (!empty($submodules)) {
         $html .= '<ul style="list-style:none; padding-left:24px; margin:4px 0 8px 0; display:flex; flex-direction:column; gap:4px; border-left: 2px solid rgba(27,94,32,0.15);">';
-        foreach ($submodules as $tKey => $tName) {
-            $subActive = ($currentTab === $tKey);
+        foreach ($submodules as $tKey => $item) {
+            if (is_array($item) && isset($item['label'], $item['href'])) {
+                $linkHref = $item['href'];
+                $subLabel = $item['label'];
+                $subActive = basename($_SERVER['SCRIPT_NAME']) === basename(parse_url($linkHref, PHP_URL_PATH));
+            } else {
+                $linkHref = "{$href}?tab={$tKey}";
+                $subLabel = (string)$item;
+                $subActive = ($currentTab === $tKey);
+            }
             $subColor = $subActive ? 'color: var(--admin-primary); font-weight: 700;' : 'color: #64748b; font-weight: 500;';
             $html .= <<<HTML
             <li>
-                <a href="{$href}?tab={$tKey}" style="display:block; padding:6px 12px; font-size:0.82rem; text-decoration:none; border-radius:4px; transition: all 0.15s; {$subColor}" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
-                    • {$tName}
+                <a href="{$linkHref}" style="display:block; padding:6px 12px; font-size:0.82rem; text-decoration:none; border-radius:4px; transition: all 0.15s; {$subColor}" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                    • {$subLabel}
                 </a>
             </li>
 HTML;
@@ -138,36 +149,26 @@ HTML;
 
         <?= navLinkDirect('/Frontend/admin/feeding.php','utensils','Feeding Program',$isFeeding) ?>
 
-        <?= navLinkDirect('/Frontend/admin/profit.php','trending-up','Costs & Profit',$isProfit) ?>
-
-        <?= navLinkDirect('/Frontend/admin/cashbook.php','wallet','Cashbook',$isCashbook) ?>
-
-        <?= navLinkDirect('/Frontend/admin/credit.php','hand-coins','Customer Credit',$isCredit) ?>
-
-        <?= navLinkDirect('/Frontend/admin/purchase_orders.php','truck','Procurement (PO)',$isProcure) ?>
-
         <?= navLinkDirect('/Frontend/admin/extras.php','alert-circle','Losses & Quality',$isExtras) ?>
-
-        <?= navLinkDirect('/Frontend/admin/analytics.php','bar-chart-3','Analytics & Charts',$cp === 'analytics.php') ?>
 
         <?= navLinkWithSub(
             '/Frontend/admin/hub_finance.php',
             'trending-up',
             'Sales & Finance',
-            $isFinance,
+            $isSalesFinance,
             [
-                'orders'   => 'Online Orders',
-                'sales'    => 'Sales Register',
-                'payments' => 'Payments',
-                'expenses' => 'Expenses',
-                'reports'  => 'Reports'
+                'hub_finance' => ['label' => 'Sales & Finance Hub', 'href' => '/Frontend/admin/hub_finance.php'],
+                'profit'      => ['label' => 'Costs & Profit', 'href' => '/Frontend/admin/profit.php'],
+                'cashbook'    => ['label' => 'Cashbook', 'href' => '/Frontend/admin/cashbook.php'],
+                'credit'      => ['label' => 'Customer Credit', 'href' => '/Frontend/admin/credit.php'],
+                'po'          => ['label' => 'Procurement (PO)', 'href' => '/Frontend/admin/purchase_orders.php'],
+                'daily'       => ['label' => 'Daily Reconciliation', 'href' => '/Frontend/admin/daily_sales.php'],
+                'bulk'        => ['label' => 'Bulk Sales', 'href' => '/Frontend/admin/bulk_sales.php'],
+                'analytics'   => ['label' => 'Analytics & Charts', 'href' => '/Frontend/admin/analytics.php'],
+                'import'      => ['label' => 'Bulk Import/Export', 'href' => '/Frontend/admin/bulk_import_export.php']
             ],
-            $tab ?: 'orders'
+            $tab ?: 'hub_finance'
         ) ?>
-
-        <?= navLinkDirect('/Frontend/admin/daily_sales.php','calculator','Daily Reconciliation',$isDaily) ?>
-
-        <?= navLinkDirect('/Frontend/admin/bulk_sales.php','shopping-bag','Bulk Sales',$isBulk) ?>
 
         <?= navLinkWithSub(
             '/Frontend/admin/hub_people.php',
@@ -196,8 +197,6 @@ HTML;
             ],
             $tab ?: 'calendar'
         ) ?>
-
-        <?= navLinkDirect('/Frontend/admin/bulk_import_export.php','database','Bulk Import/Export',$cp === 'bulk_import_export.php') ?>
 
     </ul>
 
