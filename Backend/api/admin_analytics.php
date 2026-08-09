@@ -16,6 +16,28 @@ session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/queries.php';
 
+function safeFetchAll(PDO $pdo, string $sql, array $params = []): array {
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        @error_log('safeFetchAll failed: ' . $e->getMessage());
+        return [];
+    }
+}
+function safeFetchColumn(PDO $pdo, string $sql, array $params = [], $default = 0) {
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $value = $stmt->fetchColumn();
+        return $value === false ? $default : $value;
+    } catch (Exception $e) {
+        @error_log('safeFetchColumn failed: ' . $e->getMessage());
+        return $default;
+    }
+}
+
 $response = ['success' => false, 'data' => []];
 
 // Require admin session
@@ -29,34 +51,22 @@ try {
     $pdo = getDatabaseConnection();
 
     // Sales last 7 days
-    $salesStmt = $pdo->prepare("SELECT DATE(created_at) AS day, COALESCE(SUM(total_amount),0) AS total FROM orders WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(created_at) ORDER BY DATE(created_at)");
-    $salesStmt->execute();
-    $sales = $salesStmt->fetchAll(PDO::FETCH_ASSOC);
+    $sales = safeFetchAll($pdo, "SELECT DATE(created_at) AS day, COALESCE(SUM(total_amount),0) AS total FROM orders WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(created_at) ORDER BY DATE(created_at)");
 
     // Orders count last 7 days
-    $ordersStmt = $pdo->prepare("SELECT DATE(created_at) AS day, COUNT(*) AS cnt FROM orders WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(created_at) ORDER BY DATE(created_at)");
-    $ordersStmt->execute();
-    $orders = $ordersStmt->fetchAll(PDO::FETCH_ASSOC);
+    $orders = safeFetchAll($pdo, "SELECT DATE(created_at) AS day, COUNT(*) AS cnt FROM orders WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(created_at) ORDER BY DATE(created_at)");
 
     // Top products by quantity sold
-    $topStmt = $pdo->prepare("SELECT p.name, SUM(oi.quantity) AS qty FROM order_items oi JOIN products p ON oi.product_id = p.id GROUP BY oi.product_id ORDER BY qty DESC LIMIT 5");
-    $topStmt->execute();
-    $topProducts = $topStmt->fetchAll(PDO::FETCH_ASSOC);
+    $topProducts = safeFetchAll($pdo, "SELECT p.name, SUM(oi.quantity) AS qty FROM order_items oi JOIN products p ON oi.product_id = p.id GROUP BY oi.product_id ORDER BY qty DESC LIMIT 5");
 
     // Inventory levels (low stock)
-    $invStmt = $pdo->prepare("SELECT id, name, stock_quantity FROM products ORDER BY stock_quantity ASC LIMIT 10");
-    $invStmt->execute();
-    $inventory = $invStmt->fetchAll(PDO::FETCH_ASSOC);
+    $inventory = safeFetchAll($pdo, "SELECT id, name, stock_quantity FROM products ORDER BY stock_quantity ASC LIMIT 10");
 
     // Count of low stock alerts (stock <= 15)
-    $alertCountStmt = $pdo->prepare("SELECT COUNT(*) AS cnt FROM products WHERE stock_quantity <= 15");
-    $alertCountStmt->execute();
-    $alertCount = (int)($alertCountStmt->fetch(PDO::FETCH_ASSOC)['cnt'] ?? 0);
+    $alertCount = (int)safeFetchColumn($pdo, "SELECT COUNT(*) AS cnt FROM products WHERE stock_quantity <= 15");
 
     // Recent orders as system events/activity log
-    $recentStmt = $pdo->prepare("SELECT o.id, u.first_name, u.last_name, o.total_amount, o.created_at, o.status FROM orders o LEFT JOIN users u ON o.user_id = u.id ORDER BY o.created_at DESC LIMIT 5");
-    $recentStmt->execute();
-    $recentOrders = $recentStmt->fetchAll(PDO::FETCH_ASSOC);
+    $recentOrders = safeFetchAll($pdo, "SELECT o.id, u.first_name, u.last_name, o.total_amount, o.created_at, o.status FROM orders o LEFT JOIN users u ON o.user_id = u.id ORDER BY o.created_at DESC LIMIT 5");
 
     // ============================================================
     // EXTENDED ANALYTICS — for the dedicated Analytics page
@@ -198,13 +208,10 @@ try {
     $creditAging = $creditAgingStmt->fetch(PDO::FETCH_ASSOC);
 
     // Bird count trend (per active batch over time)
-    $birdTrendStmt = $pdo->prepare("
-        SELECT record_date AS day, SUM(closing_birds) AS birds
+    $birdTrend = safeFetchAll($pdo, "SELECT record_date AS day, SUM(closing_birds) AS birds
         FROM daily_batch_records
         WHERE record_date >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)
         GROUP BY record_date ORDER BY record_date");
-    $birdTrendStmt->execute();
-    $birdTrend = $birdTrendStmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Top debtors
     $topDebtorsStmt = $pdo->prepare("

@@ -170,9 +170,10 @@ try {
         // STORES / MOVEMENTS — mirrors "STORES TRACKING 2026"
         // ─────────────────────────────────────────────────────────
         case 'stores_movements':
+            $hasCategory = columnExists($pdo, 'raw_materials', 'category');
             $sql = "SELECT m.movement_date, m.movement_type, m.quantity_kg, m.balance_after,
                            m.unit_cost, m.total_cost, m.reference_no, m.description,
-                           r.material_name, r.material_code, r.unit, r.category
+                           r.material_name, r.material_code, r.unit" . ($hasCategory ? ", r.category" : "") . "
                     FROM raw_material_movements m
                     LEFT JOIN raw_materials r ON r.id=m.material_id
                     WHERE 1=1";
@@ -183,6 +184,10 @@ try {
             $stmt = $pdo->prepare($sql);
             $stmt->execute($p);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (!$hasCategory) {
+                foreach ($rows as &$r) { $r['category'] = 'feed_ingredient'; }
+                unset($r);
+            }
             $out = array_map(function($r) {
                 return [
                     'Date'          => $r['movement_date'],
@@ -207,7 +212,14 @@ try {
         // RAW MATERIALS MASTER (current stock snapshot)
         // ─────────────────────────────────────────────────────────
         case 'raw_materials':
-            $rows = $pdo->query("SELECT * FROM raw_materials ORDER BY category, material_name")->fetchAll(PDO::FETCH_ASSOC);
+            try {
+                $rows = $pdo->query("SELECT * FROM raw_materials ORDER BY category, material_name")->fetchAll(PDO::FETCH_ASSOC);
+            } catch (Exception $e) {
+                try {
+                    $rows = $pdo->query("SELECT * FROM raw_materials ORDER BY material_name")->fetchAll(PDO::FETCH_ASSOC);
+                    foreach ($rows as &$r) { if (!isset($r['category'])) $r['category'] = 'feed_ingredient'; }
+                } catch (Exception $e2) { $rows = []; }
+            }
             $out = array_map(function($r) {
                 return [
                     'Material'        => $r['material_name'],
