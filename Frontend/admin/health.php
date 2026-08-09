@@ -16,8 +16,12 @@ $tab = $_GET['tab'] ?? 'all';
 $validTabs = ['all','vaccination','mortality','treatment','checkup','deworming','vitamins','antibiotic','observation','schedule'];
 if (!in_array($tab, $validTabs, true)) $tab = 'all';
 
-$batches = $pdo ? $pdo->query("SELECT id, batch_name, batch_code FROM batches WHERE status='active' ORDER BY batch_name")->fetchAll(PDO::FETCH_ASSOC) : [];
-$flocks  = $pdo ? $pdo->query("SELECT id, flock_name FROM flocks WHERE status='active' ORDER BY flock_name")->fetchAll(PDO::FETCH_ASSOC) : [];
+$batches = [];
+$flocks = [];
+if ($pdo) {
+    $batches = safeQueryAll($pdo, "SELECT id, batch_name, batch_code FROM batches WHERE status='active' ORDER BY batch_name");
+    $flocks = safeQueryAll($pdo, "SELECT id, flock_name FROM flocks WHERE status='active' ORDER BY flock_name");
+}
 
 $tabs = [
     'all'         => ['icon'=>'activity',     'label'=>'All Records'],

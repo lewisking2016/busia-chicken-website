@@ -17,6 +17,8 @@ $pdo = getDB();
 $tab = $_GET['tab'] ?? 'ingredients';
 $validTabs = ['ingredients','drugs','movements','suppliers'];
 if (!in_array($tab, $validTabs, true)) $tab = 'ingredients';
+
+// Loadments will be fetched via safe API calls; protect against missing tables
 ?>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 

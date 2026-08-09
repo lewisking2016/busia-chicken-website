@@ -174,30 +174,44 @@ $raw_materials_list = [];
 if ($pdo) {
     try {
         // Sync system_dropdowns product_categories into categories table
-        $missingCats = $pdo->query("
-            SELECT sd.option_value AS slug, sd.option_label AS name
+        $missingCats = safeQueryAll($pdo,
+            "SELECT sd.option_value AS slug, sd.option_label AS name
             FROM system_dropdowns sd
             LEFT JOIN categories c ON c.slug COLLATE utf8mb4_unicode_ci = sd.option_value COLLATE utf8mb4_unicode_ci
-            WHERE sd.group_key = 'product_categories' AND c.id IS NULL
-        ")->fetchAll(PDO::FETCH_ASSOC);
+            WHERE sd.group_key = 'product_categories' AND c.id IS NULL"
+        );
         if (!empty($missingCats)) {
             $insertCat = $pdo->prepare("INSERT INTO categories (name, slug, category_type, description) VALUES (?, ?, 'chicken', '')");
             foreach ($missingCats as $mc) {
                 $insertCat->execute([$mc['name'], $mc['slug']]);
             }
         }
+    } catch (Exception $e) {
+        error_log("Admin products category sync error: " . $e->getMessage());
+    }
 
+    try {
         // Fetch categories for dropdowns
-        $categories = $pdo->query("
-            SELECT c.id, sd.option_label AS name, sd.option_value AS slug 
+        $categories = safeQueryAll($pdo,
+            "SELECT c.id, sd.option_label AS name, sd.option_value AS slug 
             FROM system_dropdowns sd
             JOIN categories c ON c.slug COLLATE utf8mb4_unicode_ci = sd.option_value COLLATE utf8mb4_unicode_ci
             WHERE sd.group_key = 'product_categories' AND sd.is_active = 1
-            ORDER BY sd.sort_order ASC, sd.option_label ASC
-        ")->fetchAll(PDO::FETCH_ASSOC);
-        // Fetch raw materials list
-        $raw_materials_list = $pdo->query("SELECT id, name, reserved_production_kg, stock_tons FROM raw_materials ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+            ORDER BY sd.sort_order ASC, sd.option_label ASC"
+        );
+    } catch (Exception $e) {
+        error_log('Admin products categories load error: ' . $e->getMessage());
+        $categories = [];
+    }
 
+    try {
+        $raw_materials_list = safeQueryAll($pdo, "SELECT id, name, reserved_production_kg, stock_tons FROM raw_materials ORDER BY name");
+    } catch (Exception $e) {
+        error_log('Admin products raw materials load error: ' . $e->getMessage());
+        $raw_materials_list = [];
+    }
+
+    try {
         // Build product query
         $query = "SELECT p.*, c.name as category_name, fr.id as recipe_id, rm.name as linked_raw_material_name, rm.reserved_production_kg, rm.stock_tons as raw_material_stock
                   FROM products p 
@@ -221,8 +235,9 @@ if ($pdo) {
         $stmt->execute($params);
         $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
-        error_log("Admin products error: " . $e->getMessage());
+        error_log("Admin products query error: " . $e->getMessage());
         $error_message = "Database query error: " . $e->getMessage();
+        $products = [];
     }
 }
 ?>

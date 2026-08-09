@@ -11,7 +11,10 @@ $page_title = 'Broiler Workflow - Admin';
 include __DIR__ . '/includes/admin_header.php';
 
 $pdo = getDB();
-$batches = $pdo ? $pdo->query("SELECT id, batch_name, batch_code, batch_type, current_birds, placement_date FROM batches WHERE batch_type='broiler' OR batch_type='dual_purpose' ORDER BY placement_date DESC")->fetchAll(PDO::FETCH_ASSOC) : [];
+$batches = [];
+if ($pdo) {
+    $batches = safeQueryAll($pdo, "SELECT id, batch_name, batch_code, batch_type, current_birds, placement_date FROM batches WHERE batch_type='broiler' OR batch_type='dual_purpose' ORDER BY placement_date DESC");
+}
 ?>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 

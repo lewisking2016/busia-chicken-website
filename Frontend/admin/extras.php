@@ -15,8 +15,12 @@ $tab = $_GET['tab'] ?? 'losses';
 $validTabs = ['losses','quality'];
 if (!in_array($tab, $validTabs, true)) $tab = 'losses';
 
-$batches = $pdo ? $pdo->query("SELECT id, batch_name, batch_code FROM batches ORDER BY batch_name")->fetchAll(PDO::FETCH_ASSOC) : [];
-$materials = $pdo ? $pdo->query("SELECT id, material_name, unit FROM raw_materials ORDER BY material_name")->fetchAll(PDO::FETCH_ASSOC) : [];
+$batches = [];
+$materials = [];
+if ($pdo) {
+    $batches = safeQueryAll($pdo, "SELECT id, batch_name, batch_code FROM batches ORDER BY batch_name");
+    $materials = safeQueryAll($pdo, "SELECT id, material_name, unit FROM raw_materials ORDER BY material_name");
+}
 ?>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
