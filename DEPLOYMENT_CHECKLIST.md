@@ -3,9 +3,9 @@
 ## Current Status
 - **Live URL**: https://new.decapoli.co.ke
 - **cPanel Path**: `/home/qymwtpra/new.kindcommoditiesltd.com` (folder name doesn't affect domain)
-- **Database**: `mrhzdunf_busiachicken`
-- **DB User**: `mrhzdunf_busia_user`
-- **DB Pass**: `busia_user`
+- **Database**: (set via `Backend/config/database.local.php` or `DB_NAME` env var)
+- **DB User**: (set via `Backend/config/database.local.php` or `DB_USER` env var)
+- **DB Pass**: (set via `Backend/config/database.local.php` or `DB_PASS` env var — never commit it)
 
 ## ✅ Step-by-Step Deployment
 
@@ -18,7 +18,14 @@ https://new.decapoli.co.ke/setup_production_database.php
 - **IMPORTANT**: Delete this file after running for security
 
 ### 2. Verify Database Connection
-- File `/Backend/config/database.php` already has production credentials
+- Credentials resolve in this order:
+  1. `Backend/config/database.local.php` (gitignored — never commit it)
+  2. `DB_HOST` / `DB_NAME` / `DB_USER` / `DB_PASS` environment variables
+  3. Legacy fallback inside `database.php` (kept ONLY so the live site
+     keeps connecting during migration — remove after rotating the password)
+- Recommended production setup: upload a `database.local.php` next to
+  `Backend/config/database.php` containing `$DB_HOST`, `$DB_NAME`,
+  `$DB_USER`, `$DB_PASS` (see `database.local.example.php`)
 - Test by visiting: `https://new.decapoli.co.ke/`
 - Should see products loading
 
@@ -105,11 +112,14 @@ All data from local `busia_chicken_db` has been migrated:
 - All tables created with proper relationships
 
 ## 🔐 Security Reminders
-1. ✅ Database credentials updated
-2. ⚠️ Delete `setup_production_database.php` after running
-3. ⚠️ Change admin password from default
-4. ✅ SSL certificate should be enabled
-5. ⚠️ Set strong passwords for cPanel and database
+1. ✅ Database credentials no longer the primary config — override file / env vars first
+2. ⚠️ **Rotate the cPanel database password**, then put the new credentials in
+   `database.local.php` or `DB_*` env vars and remove the legacy fallback block
+   from `Backend/config/database.php` (old credentials are visible in git history)
+3. ⚠️ Delete `setup_production_database.php` after running
+4. ⚠️ Change admin password from default
+5. ✅ SSL certificate should be enabled
+6. ⚠️ Set strong passwords for cPanel and database
 
 ## 🎯 Next Steps After Deployment
 1. Run setup_production_database.php

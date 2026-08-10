@@ -280,7 +280,9 @@ function openGuideModal() {
 function closeGuideModal() {
     const modal = document.getElementById('system-guide-modal');
     modal.style.opacity = '0';
-    modal.firstElementChild.style.transform = 'translateY(20px)';
+    if (modal.firstElementChild) {
+        modal.firstElementChild.style.transform = 'translateY(20px)';
+    }
     setTimeout(() => {
         modal.style.display = 'none';
     }, 300);
@@ -297,10 +299,22 @@ document.addEventListener('DOMContentLoaded', () => {
         closeBtn.addEventListener('click', closeGuideModal);
     }
 
-    // Auto-show walkthrough guide once on very first visit
-    if (!localStorage.getItem('system_walkthrough_seen')) {
-        setTimeout(openGuideModal, 1500);
-        localStorage.setItem('system_walkthrough_seen', 'true');
+    // Never auto-open the guide: it covers the whole admin panel and blocked
+    // every sidebar click. It stays available via the help button only.
+    const modal = document.getElementById('system-guide-modal');
+    if (modal) {
+        // Click the dimmed backdrop (outside the dialog) to dismiss
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeGuideModal();
+            }
+        });
+        // Escape key dismisses too
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.style.display !== 'none') {
+                closeGuideModal();
+            }
+        });
     }
 });
 </script>

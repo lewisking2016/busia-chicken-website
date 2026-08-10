@@ -59,6 +59,7 @@ error_log
 
 # Database config (keep template only)
 # Backend/config/database.php
+Backend/config/database.local.php
 
 # Sensitive files
 *secret*
