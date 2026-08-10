@@ -328,5 +328,40 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     </script>
+
+    <script>
+    /* Sidebar scroll persistence: keep the left nav exactly where the user left it
+       when navigating between modules, and bring the active module into view on
+       direct loads (bookmark / refresh) instead of resetting to the top. */
+    document.addEventListener('DOMContentLoaded', () => {
+        const nav = document.getElementById('admin-nav');
+        if (!nav) return;
+
+        const SKEY = 'busiaAdminNavScroll';
+
+        const saved = sessionStorage.getItem(SKEY);
+        if (saved !== null && saved !== '' && !isNaN(parseInt(saved, 10))) {
+            // Same sidebar markup on every admin page, so the saved offset maps 1:1.
+            nav.scrollTop = parseInt(saved, 10);
+        } else {
+            // Direct load: center the highlighted (active) module in the nav so it
+            // is visible instead of hidden above the fold.
+            const active = nav.querySelector('a.nav-item.active, a.nav-sub.active');
+            if (active) {
+                const navRect = nav.getBoundingClientRect();
+                const itemRect = active.getBoundingClientRect();
+                nav.scrollTop += (itemRect.top - navRect.top) - (navRect.height / 2) + (itemRect.height / 2);
+            }
+        }
+
+        // Remember the offset when a nav link is clicked so the next page restores it.
+        nav.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (link && link.href) {
+                sessionStorage.setItem(SKEY, String(nav.scrollTop));
+            }
+        });
+    });
+    </script>
 </body>
 </html>

@@ -41,9 +41,10 @@ function navLinkWithSub(string $href, string $icon, string $label, bool $active,
         ? 'background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;box-shadow:0 4px 14px rgba(27,94,32,0.22);'
         : 'color:#475569;';
     $subActiveStyle = $active ? 'transform: rotate(180deg);' : '';
+    $linkClass = 'nav-item' . ($active ? ' active' : '');
     $html = <<<HTML
     <li style="margin-bottom: 2px;">
-        <a href="{$href}"
+        <a href="{$href}" class="{$linkClass}"
            style="display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.18s cubic-bezier(0.4,0,0.2,1);border:1px solid transparent;{$base}">
             <i data-lucide="{$icon}" style="width:19px;height:19px;flex-shrink:0;"></i>
             <span style="flex-grow: 1;">{$label}</span>
@@ -65,9 +66,10 @@ HTML;
                 $subActive = ($currentTab === $tKey);
             }
             $subColor = $subActive ? 'color: var(--admin-primary); font-weight: 700;' : 'color: #64748b; font-weight: 500;';
+            $subClass = 'nav-sub' . ($subActive ? ' active' : '');
             $html .= <<<HTML
             <li>
-                <a href="{$linkHref}" style="display:block; padding:6px 12px; font-size:0.82rem; text-decoration:none; border-radius:4px; transition: all 0.15s; {$subColor}" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                <a href="{$linkHref}" class="{$subClass}" style="display:block; padding:6px 12px; font-size:0.82rem; text-decoration:none; border-radius:4px; transition: all 0.15s; {$subColor}" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
                     • {$subLabel}
                 </a>
             </li>
@@ -83,9 +85,10 @@ function navLinkDirect(string $href, string $icon, string $label, bool $active):
     $base = $active
         ? 'background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;box-shadow:0 4px 14px rgba(27,94,32,0.22);'
         : 'color:#475569;';
+    $linkClass = 'nav-item' . ($active ? ' active' : '');
     return <<<HTML
     <li style="margin-bottom: 2px;">
-        <a href="{$href}" style="display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.18s cubic-bezier(0.4,0,0.2,1);border:1px solid transparent;{$base}">
+        <a href="{$href}" class="{$linkClass}" style="display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.18s cubic-bezier(0.4,0,0.2,1);border:1px solid transparent;{$base}">
             <i data-lucide="{$icon}" style="width:19px;height:19px;flex-shrink:0;"></i>
             <span>{$label}</span>
         </a>
@@ -93,7 +96,7 @@ function navLinkDirect(string $href, string $icon, string $label, bool $active):
 HTML;
 }
 ?>
-<nav style="width:264px;background:#fff;border-right:1px solid rgba(203,213,225,0.7);padding:18px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;box-shadow:2px 0 16px rgba(15,23,42,0.03);box-sizing:border-box;z-index:100;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(27,94,32,0.15) transparent;flex-shrink:0;">
+<nav id="admin-nav" style="width:264px;background:#fff;border-right:1px solid rgba(203,213,225,0.7);padding:18px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;box-shadow:2px 0 16px rgba(15,23,42,0.03);box-sizing:border-box;z-index:100;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(27,94,32,0.15) transparent;flex-shrink:0;">
 
     <!-- Brand -->
     <div style="display:flex;align-items:center;gap:11px;margin-bottom:28px;padding:0 4px;">

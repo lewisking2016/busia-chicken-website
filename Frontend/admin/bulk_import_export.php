@@ -28,6 +28,15 @@ if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_ad
 
 $pdo = getDB();
 
+// Expected CSV columns per import type (also used for template downloads).
+$import_formats = [
+    'products'      => ['label' => 'Products',      'columns' => ['Name', 'Category', 'Type', 'Price', 'Stock', 'Description']],
+    'customers'     => ['label' => 'Customers',     'columns' => ['Username', 'Email', 'First Name', 'Last Name', 'Phone']],
+    'raw_materials' => ['label' => 'Raw Materials', 'columns' => ['Name', 'Stock (tons)', 'Price/ton', 'Min Stock Level']],
+    'flocks'        => ['label' => 'Flocks',        'columns' => ['Flock Name', 'Breed', 'Initial Count', 'Current Count', 'Hatch Date (YYYY-MM-DD)', 'Status']],
+    'expenses'      => ['label' => 'Expenses',      'columns' => ['Category', 'Description', 'Amount', 'Date (YYYY-MM-DD)', 'Payment Method']],
+];
+
 // ==================== EXPORT FUNCTIONS ====================
 
 function exportProducts($pdo) {
@@ -166,9 +175,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['export'])) {
     exit;
 }
 
+// Handle Template Downloads (headers-only CSV) - also before any HTML output.
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['template'])) {
+    $tpl_key = $_GET['template'];
+    if (!isset($import_formats[$tpl_key])) {
+        die('Invalid template type');
+    }
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . $tpl_key . '_template.csv"');
+    $out = fopen('php://output', 'w');
+    fputcsv($out, $import_formats[$tpl_key]['columns']);
+    fclose($out);
+    exit;
+}
+
 $success_message = '';
 $error_message = '';
 $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SESSION['csrf_token'] ?? '');
+
+// Live record counts for the export cards / stats row (never break the page
+// if a table is missing).
+$record_counts = [];
+$count_queries = [
+    'products'      => ['products',           "SELECT COUNT(*) FROM products"],
+    'orders'        => ['orders',             "SELECT COUNT(*) FROM orders"],
+    'customers'     => ['users',              "SELECT COUNT(*) FROM users WHERE role IN ('customer','demo')"],
+    'raw_materials' => ['raw_materials',      "SELECT COUNT(*) FROM raw_materials"],
+    'flocks'        => ['flocks',             "SELECT COUNT(*) FROM flocks"],
+    'expenses'      => ['financial_records',  "SELECT COUNT(*) FROM financial_records WHERE type='expense'"],
+];
+$existing_tables = ($pdo instanceof PDO) ? ($pdo->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN) ?: []) : [];
+foreach ($count_queries as $ckey => [$ctable, $csql]) {
+    try {
+        $record_counts[$ckey] = ($pdo instanceof PDO && in_array($ctable, $existing_tables, true)) ? (int)$pdo->query($csql)->fetchColumn() : null;
+    } catch (Exception $e) {
+        $record_counts[$ckey] = null;
+    }
+}
 
 // Handle Import Actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'import') {
@@ -425,213 +468,246 @@ function importExpenses($pdo, $file_path) {
 
 <!-- Alerts -->
 <?php if ($success_message): ?>
-<div style="padding: 12px 20px; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 4px; color: #15803d; font-size: 0.9rem; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
-    <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+<div style="display: flex; align-items: center; gap: 10px; padding: 14px 18px; background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #16a34a; border-radius: 6px; color: #166534; font-size: 0.9rem; font-weight: 500; margin-bottom: 24px;">
+    <i data-lucide="check-circle-2" style="width: 18px; height: 18px; color: #16a34a; flex-shrink: 0;"></i>
     <?php echo htmlspecialchars($success_message); ?>
 </div>
 <?php endif; ?>
 <?php if ($error_message): ?>
-<div style="padding: 12px 20px; background: #fee2e2; border: 1px solid #fecaca; border-radius: 4px; color: #b91c1c; font-size: 0.9rem; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
-    <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i>
+<div style="display: flex; align-items: center; gap: 10px; padding: 14px 18px; background: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #dc2626; border-radius: 6px; color: #991b1b; font-size: 0.9rem; font-weight: 500; margin-bottom: 24px;">
+    <i data-lucide="alert-octagon" style="width: 18px; height: 18px; color: #dc2626; flex-shrink: 0;"></i>
     <?php echo htmlspecialchars($error_message); ?>
 </div>
 <?php endif; ?>
 
+<style>
+    .bie-header-icon { width: 46px; height: 46px; border-radius: 10px; background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-light) 100%); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(27, 94, 32, 0.25); flex-shrink: 0; }
+    .bie-export-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    .bie-export-tile { display: flex; flex-direction: column; gap: 10px; padding: 18px; background: var(--admin-body-bg); border: 1px solid var(--admin-border); border-radius: 8px; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .bie-export-tile:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08); border-color: rgba(27, 94, 32, 0.35); }
+    .bie-icon-chip { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .bie-export-tile h4 { margin: 0; font-size: 0.98rem; font-weight: 700; color: var(--admin-text-heading); }
+    .bie-export-tile p { margin: 0; font-size: 0.8rem; color: #64748b; line-height: 1.5; flex-grow: 1; }
+    .file-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 26px 16px; border: 2px dashed #cbd5e1; border-radius: 8px; background: var(--admin-body-bg); cursor: pointer; transition: border-color .2s ease, background .2s ease; text-align: center; height: 100%; box-sizing: border-box; }
+    .file-drop:hover, .file-drop.dragover { border-color: var(--admin-primary); background: rgba(27, 94, 32, 0.04); }
+    .file-drop i { width: 28px; height: 28px; color: var(--admin-primary); }
+    .file-drop span { font-size: 0.85rem; color: #475569; font-weight: 500; }
+    .file-drop small { font-size: 0.75rem; color: #94a3b8; }
+    .fmt-chip { display: inline-block; padding: 4px 10px; margin: 0 6px 6px 0; background: #fff; border: 1px solid var(--admin-border); border-radius: 4px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace; font-size: 0.78rem; color: #334155; }
+    .section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .section-head h3 { margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: var(--admin-text-heading); }
+    .section-sub { margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b; }
+</style>
+
 <!-- Page Header -->
-<div style="margin-bottom: 32px;">
-    <h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.5rem; color: var(--admin-text-heading);">Bulk Import & Export</h2>
-    <p style="margin: 4px 0 0 0; font-size: 0.875rem; color: #475569;">Mass data operations for products, customers, orders, raw materials, flocks, and expenses.</p>
+<div style="margin-bottom: 28px; display: flex; align-items: center; gap: 16px;">
+    <div class="bie-header-icon">
+        <i data-lucide="arrow-left-right" style="width: 24px; height: 24px;"></i>
+    </div>
+    <div>
+        <h1 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.7rem; color: var(--admin-text-heading); letter-spacing: -0.5px;">Bulk Import & Export</h1>
+        <p style="margin: 3px 0 0 0; color: #64748b; font-size: 0.9rem;">Move your farm data in and out as CSV — backups, bulk edits, and recovery.</p>
+    </div>
+</div>
+
+<!-- Quick stats -->
+<?php $stat_defs = [
+    ['products', 'package', 'Products', ''],
+    ['orders', 'shopping-cart', 'Orders', 'accent'],
+    ['customers', 'users', 'Customers', 'info'],
+    ['flocks', 'bird', 'Flocks', ''],
+]; ?>
+<div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 28px;">
+    <?php foreach ($stat_defs as [$skey, $sicon, $slabel, $svariant]): ?>
+    <div class="stat-card">
+        <div class="stat-card-info">
+            <small><?php echo $slabel; ?></small>
+            <strong><?php echo isset($record_counts[$skey]) ? number_format((int)$record_counts[$skey]) : '—'; ?></strong>
+        </div>
+        <div class="stat-card-icon <?php echo $svariant; ?>">
+            <i data-lucide="<?php echo $sicon; ?>" style="width: 22px; height: 22px;"></i>
+        </div>
+    </div>
+    <?php endforeach; ?>
 </div>
 
 <!-- Export Section -->
-<div class="admin-card" style="margin-bottom: 32px;">
-    <div style="border-bottom: 1px solid var(--admin-border); padding-bottom: 16px; margin-bottom: 24px;">
-        <h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: var(--admin-text-heading); display: flex; align-items: center; gap: 8px;">
+<div class="admin-card" style="margin-bottom: 28px;">
+    <div style="border-bottom: 1px solid var(--admin-border); padding-bottom: 16px; margin-bottom: 22px;">
+        <div class="section-head">
             <i data-lucide="download" style="width: 20px; height: 20px; color: var(--admin-primary);"></i>
-            Export Data to CSV
-        </h3>
-        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Download current data as CSV files for backup or analysis in Excel.</p>
+            <h3>Export Data to CSV</h3>
+        </div>
+        <p class="section-sub">Download current data for backup, analysis in Excel, or as an import template reference.</p>
     </div>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <i data-lucide="package" style="width: 18px; height: 18px; color: var(--admin-primary);"></i>
-                    <h4 style="margin: 0; font-weight: 700; font-size: 0.95rem; color: var(--admin-text-heading);">Products</h4>
+
+    <?php $export_tiles = [
+        ['products', 'package', 'Products', 'All products with categories, pricing, and stock levels.', 'rgba(27,94,32,.08)', 'var(--admin-primary)'],
+        ['orders', 'shopping-cart', 'Orders', 'Complete order history with customer and payment details.', 'rgba(59,130,246,.1)', '#2563eb'],
+        ['customers', 'users', 'Customers', 'Customer database with contact information and accounts.', 'rgba(255,193,7,.14)', '#b45309'],
+        ['raw_materials', 'layers', 'Raw Materials', 'Ingredient stock levels and pricing data.', 'rgba(139,92,246,.1)', '#7c3aed'],
+        ['flocks', 'bird', 'Flocks', 'Poultry flock records with breeds, counts, and status.', 'rgba(22,163,74,.1)', '#15803d'],
+        ['expenses', 'dollar-sign', 'Expenses', 'Farm expenses with categories, vendors, and dates.', 'rgba(220,38,38,.08)', '#dc2626'],
+    ]; ?>
+    <div class="bie-export-grid">
+        <?php foreach ($export_tiles as [$ekey, $eicon, $etitle, $edesc, $echipBg, $echipColor]): ?>
+        <div class="bie-export-tile">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <div class="bie-icon-chip" style="background: <?php echo $echipBg; ?>; color: <?php echo $echipColor; ?>;">
+                    <i data-lucide="<?php echo $eicon; ?>" style="width: 20px; height: 20px;"></i>
                 </div>
-                <p style="margin: 0; font-size: 0.8rem; color: #64748b;">All products with categories, pricing, and stock levels.</p>
+                <?php if (isset($record_counts[$ekey]) && $record_counts[$ekey] !== null): ?>
+                <span class="badge-pill badge-pill-success"><?php echo number_format((int)$record_counts[$ekey]); ?> records</span>
+                <?php endif; ?>
             </div>
-            <a href="?export=products" class="btn btn-primary btn-sm" style="margin-top: 16px; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <h4><?php echo $etitle; ?></h4>
+            <p><?php echo $edesc; ?></p>
+            <a href="?export=<?php echo $ekey; ?>" class="btn btn-primary btn-sm" style="text-decoration: none; justify-content: center;">
                 <i data-lucide="download" style="width: 14px; height: 14px;"></i>
-                Export Products
+                Export <?php echo $etitle; ?>
             </a>
         </div>
-        
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <i data-lucide="shopping-cart" style="width: 18px; height: 18px; color: var(--admin-primary);"></i>
-                    <h4 style="margin: 0; font-weight: 700; font-size: 0.95rem; color: var(--admin-text-heading);">Orders</h4>
-                </div>
-                <p style="margin: 0; font-size: 0.8rem; color: #64748b;">Complete order history with customer details and payment info.</p>
-            </div>
-            <a href="?export=orders" class="btn btn-primary btn-sm" style="margin-top: 16px; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                <i data-lucide="download" style="width: 14px; height: 14px;"></i>
-                Export Orders
-            </a>
-        </div>
-        
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <i data-lucide="users" style="width: 18px; height: 18px; color: var(--admin-primary);"></i>
-                    <h4 style="margin: 0; font-weight: 700; font-size: 0.95rem; color: var(--admin-text-heading);">Customers</h4>
-                </div>
-                <p style="margin: 0; font-size: 0.8rem; color: #64748b;">Customer database with contact information and accounts.</p>
-            </div>
-            <a href="?export=customers" class="btn btn-primary btn-sm" style="margin-top: 16px; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                <i data-lucide="download" style="width: 14px; height: 14px;"></i>
-                Export Customers
-            </a>
-        </div>
-        
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <i data-lucide="layers" style="width: 18px; height: 18px; color: var(--admin-primary);"></i>
-                    <h4 style="margin: 0; font-weight: 700; font-size: 0.95rem; color: var(--admin-text-heading);">Raw Materials</h4>
-                </div>
-                <p style="margin: 0; font-size: 0.8rem; color: #64748b;">Ingredient stock levels and pricing data.</p>
-            </div>
-            <a href="?export=raw_materials" class="btn btn-primary btn-sm" style="margin-top: 16px; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                <i data-lucide="download" style="width: 14px; height: 14px;"></i>
-                Export Raw Materials
-            </a>
-        </div>
-        
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <i data-lucide="bird" style="width: 18px; height: 18px; color: var(--admin-primary);"></i>
-                    <h4 style="margin: 0; font-weight: 700; font-size: 0.95rem; color: var(--admin-text-heading);">Flocks</h4>
-                </div>
-                <p style="margin: 0; font-size: 0.8rem; color: #64748b;">Poultry flock records with breeds, counts, and locations.</p>
-            </div>
-            <a href="?export=flocks" class="btn btn-primary btn-sm" style="margin-top: 16px; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                <i data-lucide="download" style="width: 14px; height: 14px;"></i>
-                Export Flocks
-            </a>
-        </div>
-        
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <i data-lucide="dollar-sign" style="width: 18px; height: 18px; color: var(--admin-primary);"></i>
-                    <h4 style="margin: 0; font-weight: 700; font-size: 0.95rem; color: var(--admin-text-heading);">Expenses</h4>
-                </div>
-                <p style="margin: 0; font-size: 0.8rem; color: #64748b;">Farm expenses with categories, vendors, and dates.</p>
-            </div>
-            <a href="?export=expenses" class="btn btn-primary btn-sm" style="margin-top: 16px; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                <i data-lucide="download" style="width: 14px; height: 14px;"></i>
-                Export Expenses
-            </a>
-        </div>
+        <?php endforeach; ?>
     </div>
 </div>
 
 <!-- Import Section -->
-<div class="admin-card">
-    <div style="border-bottom: 1px solid var(--admin-border); padding-bottom: 16px; margin-bottom: 24px;">
-        <h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: var(--admin-text-heading); display: flex; align-items: center; gap: 8px;">
+<div class="admin-card" style="margin-bottom: 28px;">
+    <div style="border-bottom: 1px solid var(--admin-border); padding-bottom: 16px; margin-bottom: 22px;">
+        <div class="section-head">
             <i data-lucide="upload" style="width: 20px; height: 20px; color: var(--admin-primary);"></i>
-            Import Data from CSV
-        </h3>
-        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">Upload CSV files to bulk import data. Download export templates to see required format.</p>
+            <h3>Import Data from CSV</h3>
+        </div>
+        <p class="section-sub">Pick a data type, choose your CSV file, and import. Duplicate handling is explained below.</p>
     </div>
-    
-    <form method="POST" enctype="multipart/form-data" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 28px; border-radius: 4px;">
+
+    <form method="POST" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8'); ?>">
         <input type="hidden" name="action" value="import">
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
-            <div class="admin-form-group">
-                <label class="admin-form-label" style="margin-bottom: 8px; display: block; font-weight: 600;">Import Type</label>
-                <select name="import_type" required class="admin-form-control" style="width: 100%;">
+
+        <div style="display: grid; grid-template-columns: 320px 1fr; gap: 20px; margin-bottom: 22px;">
+            <div class="admin-form-group" style="margin-bottom: 0;">
+                <label class="admin-form-label" for="import_type">Import Type</label>
+                <select name="import_type" id="import_type" required class="admin-form-control">
                     <option value="">Select Data Type...</option>
-                    <option value="products">Products</option>
-                    <option value="customers">Customers</option>
-                    <option value="raw_materials">Raw Materials</option>
-                    <option value="flocks">Flocks</option>
-                    <option value="expenses">Expenses</option>
+                    <?php foreach ($import_formats as $fkey => $ffmt): ?>
+                    <option value="<?php echo $fkey; ?>"><?php echo $ffmt['label']; ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
-            
-            <div class="admin-form-group">
-                <label class="admin-form-label" style="margin-bottom: 8px; display: block; font-weight: 600;">CSV File</label>
-                <input type="file" name="import_file" accept=".csv" required class="admin-form-control" style="width: 100%;">
+
+            <div class="admin-form-group" style="margin-bottom: 0;">
+                <label class="admin-form-label" for="import_file">CSV File</label>
+                <label class="file-drop" for="import_file" id="file-drop">
+                    <i data-lucide="file-up"></i>
+                    <span id="file-name">Click to choose a CSV file, or drag &amp; drop</span>
+                    <small>.csv only — up to <?php echo htmlspecialchars((string)ini_get('upload_max_filesize')); ?></small>
+                    <input type="file" name="import_file" id="import_file" accept=".csv" required hidden>
+                </label>
             </div>
         </div>
-        
-        <button type="submit" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px;">
-            <i data-lucide="upload" style="width: 18px; height: 18px;"></i>
-            Upload & Import Data
-        </button>
+
+        <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="upload" style="width: 18px; height: 18px;"></i>
+                Upload & Import Data
+            </button>
+            <span style="font-size: 0.8rem; color: #94a3b8;">Not sure of the format? Download the <a href="?template=products" id="format-template" style="color: var(--admin-primary); font-weight: 600;">CSV template</a> for the selected type.</span>
+        </div>
     </form>
-    
-    <!-- Import Instructions -->
-    <div style="margin-top: 32px; padding: 20px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 4px;">
-        <div style="display: flex; align-items: start; gap: 12px;">
-            <i data-lucide="info" style="width: 20px; height: 20px; color: #d97706; flex-shrink: 0; margin-top: 2px;"></i>
-            <div>
-                <h4 style="margin: 0 0 12px 0; font-size: 0.9rem; font-weight: 700; color: #92400e;">CSV Format Requirements</h4>
-                <ul style="margin: 0; padding-left: 20px; font-size: 0.85rem; color: #b45309; line-height: 1.8;">
-                    <li><strong>Products:</strong> Name, Category, Type, Price, Stock, Description</li>
-                    <li><strong>Customers:</strong> Username, Email, First Name, Last Name, Phone</li>
-                    <li><strong>Raw Materials:</strong> Name, Stock (tons), Price/ton, Min Stock Level</li>
-                    <li><strong>Flocks:</strong> Flock Name, Breed, Initial Count, Current Count, Hatch Date (YYYY-MM-DD), Status</li>
-                    <li><strong>Expenses:</strong> Category, Description, Amount, Date (YYYY-MM-DD), Payment Method</li>
-                </ul>
-                <p style="margin: 12px 0 0 0; font-size: 0.8rem; color: #92400e; font-weight: 600;">
-                    <i data-lucide="lightbulb" style="width: 14px; height: 14px; display: inline-block; margin-right: 4px;"></i>
-                    TIP: Export existing data first to get the exact CSV format template.
-                </p>
-            </div>
+
+    <!-- Live format panel -->
+    <div id="format-panel" style="display: none; margin-top: 24px; padding: 18px 20px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <i data-lucide="info" style="width: 18px; height: 18px; color: #d97706;"></i>
+            <h4 id="format-title" style="margin: 0; font-size: 0.9rem; font-weight: 700; color: #92400e;">CSV columns</h4>
         </div>
+        <div id="format-columns" style="line-height: 1;"></div>
+        <p style="margin: 8px 0 0 0; font-size: 0.78rem; color: #92400e;">
+            <i data-lucide="lightbulb" style="width: 13px; height: 13px; display: inline-block; margin-right: 4px; vertical-align: -2px;"></i>
+            TIP: The first row is the header — it is skipped automatically during import.
+        </p>
     </div>
 </div>
 
-<!-- Advanced Import Options -->
-<div class="admin-card" style="margin-top: 32px;">
-    <div style="border-bottom: 1px solid var(--admin-border); padding-bottom: 16px; margin-bottom: 24px;">
-        <h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: var(--admin-text-heading); display: flex; align-items: center; gap: 8px;">
+<!-- Import Behavior -->
+<div class="admin-card">
+    <div style="border-bottom: 1px solid var(--admin-border); padding-bottom: 16px; margin-bottom: 22px;">
+        <div class="section-head">
             <i data-lucide="settings" style="width: 20px; height: 20px; color: var(--admin-primary);"></i>
-            Import Behavior
-        </h3>
-        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">How the system handles duplicate records during import.</p>
+            <h3>Import Behavior</h3>
+        </div>
+        <p class="section-sub">How the system handles duplicate records during import.</p>
     </div>
-    
+
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-        <div style="background: #f0fdf4; border: 1px solid #dcfce7; padding: 20px; border-radius: 4px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                <i data-lucide="check-circle" style="width: 18px; height: 18px; color: #16a34a;"></i>
+        <div style="background: #f0fdf4; border: 1px solid #dcfce7; padding: 20px; border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                <i data-lucide="refresh-cw" style="width: 18px; height: 18px; color: #16a34a;"></i>
                 <h4 style="margin: 0; font-weight: 700; font-size: 0.95rem; color: #166534;">Products, Raw Materials, Customers</h4>
             </div>
             <p style="margin: 0; font-size: 0.85rem; color: #15803d; line-height: 1.6;">
-                <strong>UPDATE ON DUPLICATE:</strong> If a product/customer with the same name/email exists, it will be updated with new data.
+                <strong>UPDATE ON DUPLICATE:</strong> if a product or customer with the same name/email already exists, its data is updated instead of creating a new row.
             </p>
         </div>
-        
-        <div style="background: #fef3c7; border: 1px solid #fde68a; padding: 20px; border-radius: 4px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+
+        <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 20px; border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
                 <i data-lucide="plus-circle" style="width: 18px; height: 18px; color: #d97706;"></i>
                 <h4 style="margin: 0; font-weight: 700; font-size: 0.95rem; color: #92400e;">Flocks, Expenses</h4>
             </div>
             <p style="margin: 0; font-size: 0.85rem; color: #b45309; line-height: 1.6;">
-                <strong>ALWAYS INSERT:</strong> Every row creates a new record. Good for historical data that doesn't need deduplication.
+                <strong>ALWAYS INSERT:</strong> every row creates a new record — ideal for historical data that doesn't need deduplication.
             </p>
         </div>
     </div>
 </div>
+
+<script>
+(function () {
+    var FORMATS = <?php echo json_encode($import_formats, JSON_UNESCAPED_UNICODE); ?>;
+    var sel = document.getElementById('import_type');
+    var panel = document.getElementById('format-panel');
+    var title = document.getElementById('format-title');
+    var cols = document.getElementById('format-columns');
+    var tpl = document.getElementById('format-template');
+    var fileInput = document.getElementById('import_file');
+    var fileName = document.getElementById('file-name');
+    var drop = document.getElementById('file-drop');
+
+    function renderFormat() {
+        var fmt = FORMATS[sel.value];
+        if (!fmt) { panel.style.display = 'none'; return; }
+        title.textContent = fmt.label + ' — required CSV columns';
+        cols.innerHTML = fmt.columns.map(function (c) {
+            return '<span class="fmt-chip">' + c + '</span>';
+        }).join('');
+        tpl.href = '?template=' + encodeURIComponent(sel.value);
+        panel.style.display = 'block';
+    }
+
+    sel.addEventListener('change', renderFormat);
+
+    fileInput.addEventListener('change', function () {
+        if (fileInput.files.length) {
+            fileName.textContent = fileInput.files[0].name;
+            drop.style.borderColor = 'var(--admin-primary)';
+        }
+    });
+
+    ['dragover', 'dragenter'].forEach(function (ev) {
+        drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('dragover'); });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+        drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('dragover'); });
+    });
+    drop.addEventListener('drop', function (e) {
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            fileName.textContent = fileInput.files[0].name;
+        }
+    });
+})();
+</script>
 
 <?php include __DIR__ . '/includes/admin_footer.php'; ?>
