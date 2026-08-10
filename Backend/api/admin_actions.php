@@ -38,6 +38,7 @@ try {
             } catch (Exception $e) {
                 // ignore
             }
+            logActivity($pdo, 'clear', 'system', 'Cleared application cache');
             echo json_encode(['success' => true, 'message' => 'Cache cleared']);
             break;
 
@@ -120,6 +121,7 @@ try {
 
             // remove pending token and leave backup file in temp for download/restore
             unset($_SESSION['pending_delete']);
+            logActivity($pdo, 'delete', 'system', 'Deleted all non-admin data (backup taken)');
             echo json_encode(['success' => true, 'message' => 'All non-admin data deleted']);
             break;
         case 'export_orders':
@@ -185,6 +187,7 @@ try {
             if (!$id) throw new Exception('ID required');
             if (!in_array($status, $valid, true)) throw new Exception('Invalid status');
             execute($pdo, "UPDATE orders SET status=? WHERE id=?", [$status, $id]);
+            logActivity($pdo, 'update', 'orders', "Order #{$id} → {$status}", $id, 'order');
             echo json_encode(['success' => true, 'message' => 'Status updated']);
             break;
 

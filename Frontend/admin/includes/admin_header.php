@@ -267,6 +267,7 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
             margin: 0 auto;
             width: 100%;
             box-sizing: border-box;
+            min-width: 0; /* let the content column shrink beside the fixed sidebar */
         }
 
         /* Top utility bar */
@@ -674,6 +675,84 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
             align-items: center;
             gap: 5px;
         }
+
+        /* ═══════════════════════════════════════════
+           RESPONSIVE — collapsible sidebar drawer
+        ═══════════════════════════════════════════ */
+        .admin-nav-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--admin-primary);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .admin-nav-toggle:hover {
+            background: rgba(27, 94, 32, 0.06);
+            border-color: var(--admin-primary);
+        }
+        .admin-nav-backdrop {
+            display: none;
+        }
+
+        /* Tablet and below: sidebar becomes a slide-in drawer */
+        @media (max-width: 1023px) {
+            .admin-nav-toggle { display: inline-flex; }
+
+            .admin-nav-backdrop {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.45);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.25s ease;
+                z-index: 1090;
+            }
+            body.nav-open .admin-nav-backdrop { opacity: 1; pointer-events: auto; }
+            body.nav-open { overflow: hidden; }
+
+            #admin-nav {
+                position: fixed !important;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                transform: translateX(-105%);
+                transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 1100;
+                box-shadow: 4px 0 28px rgba(15, 23, 42, 0.18);
+            }
+            #admin-nav.open { transform: translateX(0); }
+
+            .admin-content { padding: 14px; }
+
+            /* Collapse the common inline card grids so nothing clips on tablets */
+            .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+            div[style*="repeat(4,1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
+            div[style*="repeat(3,1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
+        /* Phones: single-column everything, stack the top bar */
+        @media (max-width: 640px) {
+            .admin-content { padding: 12px; }
+            .admin-top-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .admin-top-bar > div:last-child { justify-content: flex-end; }
+            .dashboard-hero { flex-direction: column; }
+            .stat-grid { grid-template-columns: 1fr !important; }
+            div[style*="repeat(4,1fr)"],
+            div[style*="repeat(3,1fr)"],
+            div[style*="repeat(2,1fr)"],
+            div[style*="2fr 1fr"] { grid-template-columns: 1fr !important; }
+        }
     </style>
     <script>
         // Dynamically hide sidebar and topbar elements if loaded inside an iframe
@@ -691,10 +770,14 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
     window.BusiaAdmin.csrfToken = <?php echo json_encode($csrf_token); ?>;
 </script>
 <div class="admin-shell">
+    <div id="admin-nav-backdrop" class="admin-nav-backdrop"></div>
     <?php include __DIR__ . '/admin_sidebar.php'; ?>
     <div class="admin-content">
         <!-- Top utility bar -->
         <div class="admin-top-bar">
+            <button id="admin-nav-toggle" class="admin-nav-toggle" aria-label="Open menu" title="Menu">
+                <i data-lucide="menu" style="width: 22px; height: 22px;"></i>
+            </button>
             <div class="welcome-message">
                 <h2>Hello, <?php echo htmlspecialchars($_SESSION['first_name'] ?? $_SESSION['username'] ?? 'Admin'); ?></h2>
                 <p>Welcome back to your dashboard portal.</p>

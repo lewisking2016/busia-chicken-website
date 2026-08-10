@@ -38,6 +38,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
                     $pdo->prepare('INSERT INTO settings (setting_key,setting_value) VALUES (?,?)')->execute([$key,$value]);
                 }
                 $message = 'Setting saved.';
+                if (function_exists('logActivity')) {
+                    logActivity($pdo, 'save', 'settings', "Setting saved: {$key}", null, 'setting');
+                }
             } catch (Exception $e) { $error_message = $e->getMessage(); }
         }
         $tab = 'settings';

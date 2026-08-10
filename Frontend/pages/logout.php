@@ -10,6 +10,15 @@ if (is_writable($temp_dir)) {
 }
 session_start();
 
+// Record who is leaving (before the session is wiped)
+if (!empty($_SESSION['user_id'])) {
+    require_once __DIR__ . '/../../Backend/config/database.php';
+    $logoutPdo = getDatabaseConnection();
+    if ($logoutPdo) {
+        logActivity($logoutPdo, 'logout', 'auth', ($_SESSION['username'] ?? '') . ' logged out', (int)$_SESSION['user_id'], 'user');
+    }
+}
+
 // Clear session data
 $_SESSION = [];
 

@@ -416,7 +416,9 @@ try {
         } else {
             $pdo->prepare("INSERT INTO raw_materials (material_name, material_code, unit, opening_balance, current_stock, current_price_per_unit, min_stock_level, category) VALUES (?,?,?,?,?,?,?,?)")
                 ->execute([$name, $code, $unit, $opening, $opening, $price, $min, $cat]);
+            $id = (int)$pdo->lastInsertId();
         }
+        logActivity($pdo, 'save', 'stores', "Material saved: {$name} ({$unit}, opening {$opening})", $id > 0 ? $id : null, 'raw_material');
         api_ok(['message' => 'Material saved']);
     }
     if ($action === 'get_movements') {
@@ -465,6 +467,7 @@ try {
             $pdo->prepare("UPDATE raw_materials SET current_stock=?, current_price_per_unit=? WHERE id=?")
                 ->execute([$new_bal, $cost, $mat_id]);
             $pdo->commit();
+            logActivity($pdo, 'add', 'stores', "Stock {$type}: {$delta} {$unit} on material #{$mat_id} (balance {$new_bal})", $mat_id, 'raw_material');
             api_ok(['message' => 'Movement recorded', 'new_balance' => $new_bal]);
         } catch (Exception $e) {
             $pdo->rollBack();

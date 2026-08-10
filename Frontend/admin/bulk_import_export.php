@@ -247,6 +247,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 }
                 
                 $success_message = $result['success'] . ' records imported successfully. ' . ($result['errors'] > 0 ? $result['errors'] . ' errors.' : '');
+                if (function_exists('logActivity')) {
+                    logActivity($pdo, 'import', 'bulk_import_export', "Imported {$result['success']} {$import_type} records" . ($result['errors'] > 0 ? " ({$result['errors']} errors)" : ''));
+                }
             } catch (Exception $e) {
                 $error_message = 'Import failed: ' . $e->getMessage();
             }
@@ -466,6 +469,12 @@ function importExpenses($pdo, $file_path) {
 
 ?>
 
+<?php
+// Render the standard admin shell (sidebar + design system). This MUST come
+// after the export/import handlers above so CSV downloads never carry HTML.
+include __DIR__ . '/includes/admin_header.php';
+?>
+
 <!-- Alerts -->
 <?php if ($success_message): ?>
 <div style="display: flex; align-items: center; gap: 10px; padding: 14px 18px; background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #16a34a; border-radius: 6px; color: #166534; font-size: 0.9rem; font-weight: 500; margin-bottom: 24px;">
@@ -497,6 +506,10 @@ function importExpenses($pdo, $file_path) {
     .section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
     .section-head h3 { margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: var(--admin-text-heading); }
     .section-sub { margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b; }
+    /* Narrow windows: stack the import-type/file row instead of overflowing */
+    @media (max-width: 1000px) {
+        div[style*="320px 1fr"] { grid-template-columns: 1fr !important; }
+    }
 </style>
 
 <!-- Page Header -->

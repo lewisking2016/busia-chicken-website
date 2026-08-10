@@ -11,7 +11,9 @@ $page_title = 'Customer Credit (Owed) - Admin';
 include __DIR__ . '/includes/admin_header.php';
 
 $pdo = getDB();
-$customers = $pdo ? $pdo->query("SELECT id, customer_name, phone, customer_type FROM walk_in_customers ORDER BY customer_name")->fetchAll(PDO::FETCH_ASSOC) : [];
+$customers = ($pdo && tableExists($pdo, 'walk_in_customers'))
+    ? $pdo->query("SELECT id, customer_name, phone, customer_type FROM walk_in_customers ORDER BY customer_name")->fetchAll(PDO::FETCH_ASSOC)
+    : [];
 ?>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
