@@ -117,9 +117,11 @@ function getDatabaseConnection(): ?PDO {
  */
 function tableExists(PDO $pdo, string $table): bool {
     try {
-        $stmt = $pdo->prepare('SHOW TABLES LIKE ?');
+        // information_schema supports bound parameters on MySQL AND MariaDB
+        // (SHOW TABLES LIKE ? is rejected by MariaDB's prepared statements).
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?');
         $stmt->execute([$table]);
-        return (bool)$stmt->fetchColumn();
+        return (int)$stmt->fetchColumn() > 0;
     } catch (Exception $e) {
         @error_log("tableExists failed for {$table}: " . $e->getMessage());
         return false;
