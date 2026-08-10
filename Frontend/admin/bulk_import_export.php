@@ -113,9 +113,12 @@ function exportFlocks($pdo) {
 }
 
 function exportExpenses($pdo) {
+    // Older databases lack financial_records.payment_method; the auto-migration
+    // adds it, but degrade gracefully regardless so the export never fails.
+    $hasPayment = function_exists('columnExists') && columnExists($pdo, 'financial_records', 'payment_method');
     $stmt = $pdo->query("
-        SELECT id, category, description, amount, transaction_date, 
-               payment_method, created_at
+        SELECT id, category, description, amount, transaction_date,
+               " . ($hasPayment ? 'payment_method' : "'cash' AS payment_method") . ", created_at
         FROM financial_records
         WHERE type = 'expense'
         ORDER BY transaction_date DESC
