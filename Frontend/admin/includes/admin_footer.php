@@ -381,6 +381,35 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') setNavOpen(false);
         });
+
+        /* Collapsible nav groups: the active section is open by default; other
+           sections stay collapsed and remember their open/closed state. */
+        nav.querySelectorAll('li.nav-group').forEach(group => {
+            const ul = group.querySelector('.nav-subs');
+            const chevron = group.querySelector('.nav-chevron');
+            if (!ul || !chevron) return;
+            const link = group.querySelector('a');
+            const key = 'busiaNavOpen:' + (chevron.dataset.navGroupKey || (link ? link.getAttribute('href') : '') || '');
+            const isActive = !!group.querySelector('a.nav-item.active');
+            const apply = (open) => {
+                ul.style.display = open ? 'flex' : 'none';
+                group.classList.toggle('nav-group-open', open);
+            };
+            if (isActive) {
+                apply(true);
+            } else {
+                const stored = sessionStorage.getItem(key);
+                if (stored === '1') apply(true);
+                else if (stored === '0') apply(false);
+            }
+            chevron.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const open = ul.style.display !== 'none';
+                apply(!open);
+                sessionStorage.setItem(key, open ? '0' : '1');
+            });
+        });
     });
     </script>
 </body>

@@ -122,6 +122,20 @@ function reconcileLegacySchema(PDO $pdo): void
         $pdo->exec('ALTER TABLE suppliers ADD COLUMN supplier_name VARCHAR(150) NULL AFTER id');
         $pdo->exec("UPDATE suppliers SET supplier_name = name WHERE supplier_name IS NULL OR supplier_name = ''");
     }
+
+    // ── financial_records (expenses) ──
+    if (tableExists($pdo, 'financial_records')) {
+        $add = [];
+        if (!columnExists($pdo, 'financial_records', 'payment_method')) {
+            $add[] = "ADD COLUMN payment_method VARCHAR(50) DEFAULT 'cash'";
+        }
+        if (!columnExists($pdo, 'financial_records', 'payment_status')) {
+            $add[] = "ADD COLUMN payment_status ENUM('Pending','Approved','Failed','Completed') DEFAULT 'Completed'";
+        }
+        if ($add) {
+            $pdo->exec('ALTER TABLE financial_records ' . implode(', ', $add));
+        }
+    }
 }
 
 /**

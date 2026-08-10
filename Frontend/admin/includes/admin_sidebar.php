@@ -8,75 +8,65 @@ declare(strict_types=1);
 $cp   = basename($_SERVER['SCRIPT_NAME']);
 $tab  = $_GET['tab'] ?? '';
 
-$isOps        = $cp === 'hub_operations.php';
-$isFlock      = $cp === 'flocks.php' || $cp === 'production.php' || $cp === 'vaccinations.php';
-$isBatches    = $cp === 'batches.php';
-$isHealth     = $cp === 'health.php';
-$isInventory  = $cp === 'hub_inventory.php';
-$isStores     = $cp === 'stores.php';
-$isFeed       = $cp === 'feed_production.php';
-$isEggGrade   = $cp === 'egg_grading.php';
-$isBroiler    = $cp === 'broiler.php';
-$isHatchery   = $cp === 'hatchery.php';
-$isFeeding    = $cp === 'feeding.php';
-$isExtras     = $cp === 'extras.php';
-$isFinanceHub = $cp === 'hub_finance.php';
-$isProfit     = $cp === 'profit.php';
-$isCashbook   = $cp === 'cashbook.php';
-$isCredit     = $cp === 'credit.php';
-$isProcure    = $cp === 'purchase_orders.php';
-$isDaily      = $cp === 'daily_sales.php';
-$isBulk       = $cp === 'bulk_sales.php';
-$isAnalytics  = $cp === 'analytics.php';
-$isImport     = $cp === 'bulk_import_export.php';
+$isDash       = $cp === 'dashboard.php';
+$isPoultry    = in_array($cp, ['hub_operations.php','flocks.php','production.php','vaccinations.php','batches.php','health.php','broiler.php','hatchery.php','feeding.php','extras.php'], true);
+$isInventory  = in_array($cp, ['hub_inventory.php','stores.php','feed_production.php','egg_grading.php'], true);
+$isSalesFinance = in_array($cp, ['hub_finance.php','profit.php','cashbook.php','credit.php','purchase_orders.php','daily_sales.php','bulk_sales.php'], true);
+$isReports    = in_array($cp, ['analytics.php','bulk_import_export.php'], true);
 $isPeople     = $cp === 'hub_people.php';
 $isSettings   = $cp === 'hub_settings.php';
-$isDash       = $cp === 'dashboard.php';
-
-$isOperations = $isBatches || $isHealth || $isInventory || $isStores || $isFeed || $isEggGrade || $isBroiler || $isHatchery || $isFeeding || $isExtras;
-$isSalesFinance = $isFinanceHub || $isProfit || $isCashbook || $isCredit || $isProcure || $isDaily || $isBulk || $isAnalytics || $isImport;
 
 function navLinkWithSub(string $href, string $icon, string $label, bool $active, array $submodules, string $currentTab): string {
     $base = $active
         ? 'background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;box-shadow:0 4px 14px rgba(27,94,32,0.22);'
         : 'color:#475569;';
-    $subActiveStyle = $active ? 'transform: rotate(180deg);' : '';
     $linkClass = 'nav-item' . ($active ? ' active' : '');
+    // Only the active group is expanded by default; the rest stay collapsed
+    // (chevron toggles them client-side, and the state is remembered).
+    $groupClass = $active ? ' nav-group-open' : '';
+    $subsDisplay = $active ? 'flex' : 'none';
+    $chevronColor = $active ? 'rgba(255,255,255,0.9)' : '#94a3b8';
     $html = <<<HTML
-    <li style="margin-bottom: 2px;">
-        <a href="{$href}" class="{$linkClass}"
-           style="display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.18s cubic-bezier(0.4,0,0.2,1);border:1px solid transparent;{$base}">
-            <i data-lucide="{$icon}" style="width:19px;height:19px;flex-shrink:0;"></i>
-            <span style="flex-grow: 1;">{$label}</span>
-            <i data-lucide="chevron-down" style="width:14px;height:14px;transition: transform 0.2s; {$subActiveStyle}"></i>
-        </a>
-    </li>
+    <li class="nav-group{$groupClass}" style="margin-bottom: 2px;">
+        <div style="display:flex;align-items:center;">
+            <a href="{$href}" class="{$linkClass}"
+               style="display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.18s cubic-bezier(0.4,0,0.2,1);border:1px solid transparent;flex-grow:1;{$base}">
+                <i data-lucide="{$icon}" style="width:19px;height:19px;flex-shrink:0;"></i>
+                <span style="flex-grow: 1;">{$label}</span>
+            </a>
+            <button type="button" class="nav-chevron" data-nav-group-key="{$href}" aria-label="Toggle {$label} section"
+                    style="background:none;border:none;cursor:pointer;padding:13px 12px 13px 2px;color:{$chevronColor};line-height:0;">
+                <i data-lucide="chevron-down" style="width:15px;height:15px;display:block;"></i>
+            </button>
+        </div>
+        <ul class="nav-subs" style="list-style:none;padding-left:24px;margin:2px 0 8px 0;flex-direction:column;gap:4px;border-left:2px solid rgba(27,94,32,0.15);display:{$subsDisplay};">
 HTML;
 
-    if (!empty($submodules)) {
-        $html .= '<ul style="list-style:none; padding-left:24px; margin:4px 0 8px 0; display:flex; flex-direction:column; gap:4px; border-left: 2px solid rgba(27,94,32,0.15);">';
-        foreach ($submodules as $tKey => $item) {
-            if (is_array($item) && isset($item['label'], $item['href'])) {
-                $linkHref = $item['href'];
-                $subLabel = $item['label'];
-                $subActive = basename($_SERVER['SCRIPT_NAME']) === basename(parse_url($linkHref, PHP_URL_PATH));
-            } else {
-                $linkHref = "{$href}?tab={$tKey}";
-                $subLabel = (string)$item;
-                $subActive = ($currentTab === $tKey);
-            }
-            $subColor = $subActive ? 'color: var(--admin-primary); font-weight: 700;' : 'color: #64748b; font-weight: 500;';
-            $subClass = 'nav-sub' . ($subActive ? ' active' : '');
-            $html .= <<<HTML
+    foreach ($submodules as $tKey => $item) {
+        if (is_array($item) && isset($item['label'], $item['href'])) {
+            $linkHref = $item['href'];
+            $subLabel = $item['label'];
+            $subActive = basename($_SERVER['SCRIPT_NAME']) === basename(parse_url($linkHref, PHP_URL_PATH));
+        } else {
+            $linkHref = "{$href}?tab={$tKey}";
+            $subLabel = (string)$item;
+            // String (hub-tab) items are only active when we are actually on
+            // their hub page — otherwise e.g. "Flocks" would stay highlighted
+            // on every other page inside the same group.
+            $isHubPage = basename($_SERVER['SCRIPT_NAME']) === basename(parse_url($href, PHP_URL_PATH));
+            $subActive = $isHubPage && $currentTab === $tKey;
+        }
+        $subColor = $subActive ? 'color: var(--admin-primary); font-weight: 700;' : 'color: #64748b; font-weight: 500;';
+        $subClass = 'nav-sub' . ($subActive ? ' active' : '');
+        $html .= <<<HTML
             <li>
                 <a href="{$linkHref}" class="{$subClass}" style="display:block; padding:6px 12px; font-size:0.82rem; text-decoration:none; border-radius:4px; transition: all 0.15s; {$subColor}" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
                     • {$subLabel}
                 </a>
             </li>
 HTML;
-        }
-        $html .= '</ul>';
     }
+    $html .= '</ul></li>';
 
     return $html;
 }
@@ -96,6 +86,11 @@ function navLinkDirect(string $href, string $icon, string $label, bool $active):
 HTML;
 }
 ?>
+<style>
+    .nav-chevron svg { transition: transform 0.2s ease; }
+    .nav-group-open .nav-chevron svg { transform: rotate(180deg); }
+    .nav-subs { transition: opacity 0.15s ease; }
+</style>
 <nav id="admin-nav" style="width:264px;background:#fff;border-right:1px solid rgba(203,213,225,0.7);padding:18px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;box-shadow:2px 0 16px rgba(15,23,42,0.03);box-sizing:border-box;z-index:100;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(27,94,32,0.15) transparent;flex-shrink:0;">
 
     <!-- Brand -->
@@ -115,44 +110,35 @@ HTML;
         <?= navLinkWithSub(
             '/Frontend/admin/hub_operations.php',
             'bird',
-            'Farm Operations',
-            $isOps || $isFlock,
+            'Poultry Operations',
+            $isPoultry,
             [
                 'flocks'       => 'Flocks',
                 'production'   => 'Daily Production',
-                'vaccinations' => 'Vaccinations'
+                'vaccinations' => 'Vaccinations',
+                'batches'      => ['label' => 'Batches & Houses', 'href' => '/Frontend/admin/batches.php'],
+                'health'       => ['label' => 'Health & Vet', 'href' => '/Frontend/admin/health.php'],
+                'broiler'      => ['label' => 'Broiler Workflow', 'href' => '/Frontend/admin/broiler.php'],
+                'hatchery'     => ['label' => 'Hatchery (DOC)', 'href' => '/Frontend/admin/hatchery.php'],
+                'feeding'      => ['label' => 'Feeding Program', 'href' => '/Frontend/admin/feeding.php'],
+                'extras'       => ['label' => 'Losses & Quality', 'href' => '/Frontend/admin/extras.php']
             ],
             $tab ?: 'flocks'
         ) ?>
 
-        <?= navLinkDirect('/Frontend/admin/batches.php','package-2','Batches & Houses',$isBatches) ?>
-
-        <?= navLinkDirect('/Frontend/admin/health.php','heart-pulse','Health & Vet',$isHealth) ?>
-
         <?= navLinkWithSub(
             '/Frontend/admin/hub_inventory.php',
             'package',
-            'Inventory',
+            'Inventory & Stores',
             $isInventory,
             [
-                'products' => 'Products Catalog'
+                'products' => 'Products Catalog',
+                'stores'   => ['label' => 'Stores & Stock', 'href' => '/Frontend/admin/stores.php'],
+                'feed'     => ['label' => 'Feed Production', 'href' => '/Frontend/admin/feed_production.php'],
+                'eggs'     => ['label' => 'Egg Grading', 'href' => '/Frontend/admin/egg_grading.php']
             ],
             $tab ?: 'products'
         ) ?>
-
-        <?= navLinkDirect('/Frontend/admin/stores.php','warehouse','Stores & Stock',$isStores) ?>
-
-        <?= navLinkDirect('/Frontend/admin/feed_production.php','flask-conical','Feed Production',$isFeed) ?>
-
-        <?= navLinkDirect('/Frontend/admin/egg_grading.php','egg','Egg Grading',$isEggGrade) ?>
-
-        <?= navLinkDirect('/Frontend/admin/broiler.php','drumstick','Broiler Workflow',$isBroiler) ?>
-
-        <?= navLinkDirect('/Frontend/admin/hatchery.php','baby','Hatchery (DOC)',$isHatchery) ?>
-
-        <?= navLinkDirect('/Frontend/admin/feeding.php','utensils','Feeding Program',$isFeeding) ?>
-
-        <?= navLinkDirect('/Frontend/admin/extras.php','alert-circle','Losses & Quality',$isExtras) ?>
 
         <?= navLinkWithSub(
             '/Frontend/admin/hub_finance.php',
@@ -166,11 +152,21 @@ HTML;
                 'credit'      => ['label' => 'Customer Credit', 'href' => '/Frontend/admin/credit.php'],
                 'po'          => ['label' => 'Procurement (PO)', 'href' => '/Frontend/admin/purchase_orders.php'],
                 'daily'       => ['label' => 'Daily Reconciliation', 'href' => '/Frontend/admin/daily_sales.php'],
-                'bulk'        => ['label' => 'Bulk Sales', 'href' => '/Frontend/admin/bulk_sales.php'],
-                'analytics'   => ['label' => 'Analytics & Charts', 'href' => '/Frontend/admin/analytics.php'],
-                'import'      => ['label' => 'Bulk Import/Export', 'href' => '/Frontend/admin/bulk_import_export.php']
+                'bulk'        => ['label' => 'Bulk Sales', 'href' => '/Frontend/admin/bulk_sales.php']
             ],
             $tab ?: 'hub_finance'
+        ) ?>
+
+        <?= navLinkWithSub(
+            '/Frontend/admin/analytics.php',
+            'bar-chart-2',
+            'Reports & Tools',
+            $isReports,
+            [
+                'analytics' => ['label' => 'Analytics & Charts', 'href' => '/Frontend/admin/analytics.php'],
+                'import'    => ['label' => 'Bulk Import/Export', 'href' => '/Frontend/admin/bulk_import_export.php']
+            ],
+            $tab ?: 'analytics'
         ) ?>
 
         <?= navLinkWithSub(
