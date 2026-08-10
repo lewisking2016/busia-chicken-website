@@ -20,15 +20,17 @@ try {
     echo "[1/2] Connected to database successfully.\n\n";
 
     echo "[2/2] Running complete poultry migration...\n\n";
-    $sql = file_get_contents(__DIR__ . '/Backend/config/migration_poultry_complete.sql');
-    if ($sql === false) throw new Exception('Could not read migration file');
+    $poultrySql = file_get_contents(__DIR__ . '/Backend/config/migration_poultry_complete.sql');
+    if ($poultrySql === false) throw new Exception('Could not read migration file');
 
-    $sql .= "\n\n" . file_get_contents(__DIR__ . '/Backend/config/migration_v2_business.sql');
-    if ($sql === false) throw new Exception('Could not read v2 migration file');
+    $businessSql = file_get_contents(__DIR__ . '/Backend/config/migration_v2_business.sql');
+    if ($businessSql === false) throw new Exception('Could not read v2 migration file');
 
-    $statements = array_filter(
-        array_map('trim', explode(';', $sql)),
-        fn($s) => $s && !str_starts_with($s, '--')
+    // Poultry tables must run FIRST — the business tables FK-reference them.
+    // splitMigrationSql strips comment banners so statements aren't dropped.
+    $statements = array_merge(
+        splitMigrationSql($poultrySql),
+        splitMigrationSql($businessSql)
     );
 
     $success = 0; $failed = 0;

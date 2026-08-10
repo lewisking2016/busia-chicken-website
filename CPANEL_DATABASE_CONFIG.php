@@ -9,8 +9,8 @@ declare(strict_types=1);
 // Database Configuration
 const DB_HOST = 'localhost';
 const DB_NAME = 'mrhzdunf_busiachicken';
-const DB_USER = 'mrhzdunf_busia_user';
-const DB_PASS = 'busia_user';
+const DB_USER = 'YOUR_CPANEL_DB_USER';
+const DB_PASS = 'YOUR_CPANEL_DB_PASSWORD';
 const DB_CHARSET = 'utf8mb4';
 
 // PDO Options

@@ -37,7 +37,7 @@ Busia Chicken Farm is a modern, production-ready website for a premium poultry b
 - Vanilla JavaScript (ES6+)
 - Premium animations and transitions
 - Security: CSRF tokens, input validation, bcrypt hashing
-- Database: 13 normalized tables with foreign keys
+- Database: 60 normalized tables with foreign keys (auto-migrated on connection)
 
 ## 📦 Installation
 
@@ -65,13 +65,16 @@ php setup_database.php
 ```
 
 3. **Configure database connection**
-Edit `Backend/config/database.php` with your credentials:
+Copy `Backend/config/database.local.example.php` to `Backend/config/database.local.php`
+and set your credentials (this file is gitignored — never commit real credentials):
 ```php
-const DB_HOST = 'localhost';
-const DB_NAME = 'busia_chicken_db';
-const DB_USER = 'root';
-const DB_PASS = 'your_password';
+$DB_HOST = 'localhost';
+$DB_NAME = 'busia_chicken_db';
+$DB_USER = 'root';
+$DB_PASS = 'your_password';
 ```
+Credentials resolve in this order: `database.local.php` → `DB_*` environment
+variables → environment defaults in `Backend/config/database.php`.
 
 4. **Start development server**
 ```bash
@@ -98,11 +101,15 @@ busia-chicken-website/
 │       ├── schema.sql          # Database schema
 │       └── security.php        # Security functions
 ├── Frontend/
-│   ├── admin/                  # Admin panel pages
-│   │   ├── orders.php
-│   │   ├── products.php
-│   │   ├── reports.php
-│   │   └── settings.php
+│   ├── admin/                  # Admin panel — 46 module pages
+│   │   ├── dashboard.php / analytics.php (hubs: operations, finance, inventory, people, settings)
+│   │   ├── products.php / orders.php / bulk_import_export.php
+│   │   ├── flocks.php / batches.php / hatchery.php / broiler.php / egg_grading.php
+│   │   ├── feeding.php / feed_production.php / health.php / vaccinations.php
+│   │   ├── sales.php / daily_sales.php / bulk_sales.php / credit.php / payments.php
+│   │   ├── cashbook.php / expenses.php / profit.php / purchase_orders.php
+│   │   ├── incoming_stock.php / stores.php / staff.php / messages.php / dropdowns.php
+│   │   └── (full module list in the admin sidebar)
 │   ├── assets/                 # Static assets
 │   │   ├── css/
 │   │   │   ├── style.css           # Design system
@@ -167,16 +174,17 @@ busia-chicken-website/
 
 ## 📊 Database Schema
 
-13 tables including:
+60 tables (base DDL in `Backend/config/schema.sql`, module migrations in
+`Backend/config/migration_*.sql`, applied automatically via `auto_migrate.php`),
+including:
 - `users` - Authentication and user data
-- `products` - Product catalog
-- `categories` - Product categories
-- `orders` - Order management
-- `order_items` - Order line items
-- `flocks` - Poultry flock tracking
+- `products` / `categories` - Product catalog
+- `orders` / `order_items` - Order management
+- `flocks` / `batches` / `hatchery_records` - Poultry flock tracking
 - `production_records` - Daily production logs
 - `vaccinations` - Vaccination scheduling
 - `financial_records` - Expense/income tracking
+- `system_dropdowns` - Configurable dropdown master data
 - And more...
 
 ## 🚀 Deployment (cPanel)
@@ -184,7 +192,8 @@ busia-chicken-website/
 1. Upload files to `public_html/`
 2. Create MySQL database via cPanel
 3. Import schema: `php setup_database.php`
-4. Update `Backend/config/database.php` with live credentials
+4. Create `Backend/config/database.local.php` (or set `DB_*` env vars) with the
+   cPanel credentials — never commit them to the repo
 5. Set up SSL certificate
 6. Configure `.htaccess` for URL rewriting
 

@@ -5,102 +5,28 @@
  */
 declare(strict_types=1);
 
-$temp_dir = sys_get_temp_dir();
-if (is_writable($temp_dir)) {
-    session_save_path($temp_dir);
+// Start session safely (never warn if already started)
+if (session_status() === PHP_SESSION_NONE) {
+    $temp_dir = sys_get_temp_dir();
+    if (is_writable($temp_dir)) {
+        session_save_path($temp_dir);
+    }
+    session_start();
 }
-session_start();
 
 $path_prefix = '../../';
 $page_title = 'Bulk Import/Export - Admin';
 
-include __DIR__ . '/includes/admin_header.php';
-require_once __DIR__ . '/../../Backend/api/dropdowns.php';
+// Load shared config (getDB, verifyCSRFToken, security helpers) BEFORE any output
+require_once __DIR__ . '/../includes/config.php';
 
-// Check admin access
+// Check admin access before producing any output (downloads must not leak HTML)
 if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager'], true)) {
-    echo "<script>window.location.href = '/busiaadmin';</script>";
+    header('Location: /busiaadmin');
     exit;
 }
 
 $pdo = getDB();
-$success_message = '';
-$error_message = '';
-$csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SESSION['csrf_token'] ?? '');
-
-// Handle Export Actions
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['export'])) {
-    $export_type = $_GET['export'];
-    
-    try {
-        switch ($export_type) {
-            case 'products':
-                exportProducts($pdo);
-                break;
-            case 'orders':
-                exportOrders($pdo);
-                break;
-            case 'customers':
-                exportCustomers($pdo);
-                break;
-            case 'raw_materials':
-                exportRawMaterials($pdo);
-                break;
-            case 'flocks':
-                exportFlocks($pdo);
-                break;
-            case 'expenses':
-                exportExpenses($pdo);
-                break;
-            default:
-                die('Invalid export type');
-        }
-    } catch (Exception $e) {
-        die('Export failed: ' . $e->getMessage());
-    }
-    exit;
-}
-
-// Handle Import Actions
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'import') {
-    if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-        $error_message = 'Security token expired. Please refresh and try again.';
-    } else {
-        $import_type = $_POST['import_type'] ?? '';
-        
-        if (!isset($_FILES['import_file']) || $_FILES['import_file']['error'] !== UPLOAD_ERR_OK) {
-            $error_message = 'Please select a valid CSV file to upload.';
-        } else {
-            try {
-                $file_path = $_FILES['import_file']['tmp_name'];
-                
-                switch ($import_type) {
-                    case 'products':
-                        $result = importProducts($pdo, $file_path);
-                        break;
-                    case 'customers':
-                        $result = importCustomers($pdo, $file_path);
-                        break;
-                    case 'raw_materials':
-                        $result = importRawMaterials($pdo, $file_path);
-                        break;
-                    case 'flocks':
-                        $result = importFlocks($pdo, $file_path);
-                        break;
-                    case 'expenses':
-                        $result = importExpenses($pdo, $file_path);
-                        break;
-                    default:
-                        throw new Exception('Invalid import type');
-                }
-                
-                $success_message = $result['success'] . ' records imported successfully. ' . ($result['errors'] > 0 ? $result['errors'] . ' errors.' : '');
-            } catch (Exception $e) {
-                $error_message = 'Import failed: ' . $e->getMessage();
-            }
-        }
-    }
-}
 
 // ==================== EXPORT FUNCTIONS ====================
 
@@ -137,7 +63,7 @@ function exportOrders($pdo) {
 function exportCustomers($pdo) {
     $stmt = $pdo->query("
         SELECT id, username, email, first_name, last_name, phone_number, role, 
-               is_active, created_at
+               created_at
         FROM users
         WHERE role IN ('customer', 'demo')
         ORDER BY created_at DESC
@@ -145,7 +71,7 @@ function exportCustomers($pdo) {
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     outputCSV('customers_export', [
-        'ID', 'Username', 'Email', 'First Name', 'Last Name', 'Phone', 'Role', 'Active', 'Registered'
+        'ID', 'Username', 'Email', 'First Name', 'Last Name', 'Phone', 'Role', 'Registered'
     ], $rows);
 }
 
@@ -204,6 +130,85 @@ function outputCSV($filename, $headers, $rows) {
     }
     
     fclose($output);
+}
+
+// Handle Export Actions - MUST run before any HTML is sent, otherwise the
+// CSV gets embedded inside the page and the download is corrupt.
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['export'])) {
+    $export_type = $_GET['export'];
+    
+    try {
+        switch ($export_type) {
+            case 'products':
+                exportProducts($pdo);
+                break;
+            case 'orders':
+                exportOrders($pdo);
+                break;
+            case 'customers':
+                exportCustomers($pdo);
+                break;
+            case 'raw_materials':
+                exportRawMaterials($pdo);
+                break;
+            case 'flocks':
+                exportFlocks($pdo);
+                break;
+            case 'expenses':
+                exportExpenses($pdo);
+                break;
+            default:
+                die('Invalid export type');
+        }
+    } catch (Exception $e) {
+        die('Export failed: ' . $e->getMessage());
+    }
+    exit;
+}
+
+$success_message = '';
+$error_message = '';
+$csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SESSION['csrf_token'] ?? '');
+
+// Handle Import Actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'import') {
+    if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+        $error_message = 'Security token expired. Please refresh and try again.';
+    } else {
+        $import_type = $_POST['import_type'] ?? '';
+        
+        if (!isset($_FILES['import_file']) || $_FILES['import_file']['error'] !== UPLOAD_ERR_OK) {
+            $error_message = 'Please select a valid CSV file to upload.';
+        } else {
+            try {
+                $file_path = $_FILES['import_file']['tmp_name'];
+                
+                switch ($import_type) {
+                    case 'products':
+                        $result = importProducts($pdo, $file_path);
+                        break;
+                    case 'customers':
+                        $result = importCustomers($pdo, $file_path);
+                        break;
+                    case 'raw_materials':
+                        $result = importRawMaterials($pdo, $file_path);
+                        break;
+                    case 'flocks':
+                        $result = importFlocks($pdo, $file_path);
+                        break;
+                    case 'expenses':
+                        $result = importExpenses($pdo, $file_path);
+                        break;
+                    default:
+                        throw new Exception('Invalid import type');
+                }
+                
+                $success_message = $result['success'] . ' records imported successfully. ' . ($result['errors'] > 0 ? $result['errors'] . ' errors.' : '');
+            } catch (Exception $e) {
+                $error_message = 'Import failed: ' . $e->getMessage();
+            }
+        }
+    }
 }
 
 // ==================== IMPORT FUNCTIONS ====================
@@ -280,8 +285,8 @@ function importCustomers($pdo, $file_path) {
                 $password_hash = password_hash('password123', PASSWORD_DEFAULT);
                 
                 $stmt = $pdo->prepare("
-                    INSERT INTO users (username, email, password_hash, first_name, last_name, phone_number, role, is_active)
-                    VALUES (?, ?, ?, ?, ?, ?, 'customer', 1)
+                    INSERT INTO users (username, email, password_hash, first_name, last_name, phone_number, role)
+                    VALUES (?, ?, ?, ?, ?, ?, 'customer')
                     ON DUPLICATE KEY UPDATE 
                     first_name = VALUES(first_name), last_name = VALUES(last_name), phone_number = VALUES(phone_number)
                 ");

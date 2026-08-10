@@ -5,18 +5,58 @@
  */
 declare(strict_types=1);
 
-// Detect local development environment
+// ---------------------------------------------------------------------
+// Database Configuration
+//
+// Credentials are resolved in this order:
+//   1. Backend/config/database.local.php  (gitignored — never commit this)
+//   2. Environment variables DB_HOST / DB_NAME / DB_USER / DB_PASS
+//   3. Local development defaults (root / empty password / busia_chicken_db)
+//   4. Legacy production fallback (kept ONLY so the live site keeps
+//      connecting during migration — see note below)
+//
+// Recommended production setup (cPanel): set the DB_* environment variables
+// or drop a database.local.php next to this file containing, e.g.:
+//     $DB_HOST = 'localhost';
+//     $DB_NAME = 'your_cpanel_db_name';
+//     $DB_USER = 'your_cpanel_db_user';
+//     $DB_PASS = 'your_cpanel_db_password';
+//
+// SECURITY NOTE: the production fallback below is legacy and must be
+// removed after rotating the cPanel database password. Rotating the
+// password invalidates the old credentials everywhere (including git
+// history), then move the new credentials into database.local.php or
+// DB_* env vars and delete the fallback block.
+// ---------------------------------------------------------------------
+$localConfigFile = __DIR__ . '/database.local.php';
+if (is_file($localConfigFile)) {
+    @include $localConfigFile;
+}
+
+$dbEnv = function (string $key): ?string {
+    $value = $_ENV[$key] ?? getenv($key);
+    return ($value === false || $value === '') ? null : (string)$value;
+};
+
+// Local-environment detection (CLI, localhost host, or local docroot).
 $isCli = (php_sapi_name() === 'cli');
 $isLocalhost = $isCli
-    || in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost:8000', 'localhost', '127.0.0.1'], true) 
+    || in_array($_SERVER['HTTP_HOST'] ?? '', ['localhost:8000', 'localhost', '127.0.0.1'], true)
     || ($_ENV['DB_HOST'] ?? getenv('DB_HOST')) === 'localhost'
-    || !empty($_SERVER['DOCUMENT_ROOT']) && (str_contains($_SERVER['DOCUMENT_ROOT'], 'Users') || str_contains($_SERVER['DOCUMENT_ROOT'], 'Desktop'));
+    || (!empty($_SERVER['DOCUMENT_ROOT'])
+        && (str_contains($_SERVER['DOCUMENT_ROOT'], 'Users') || str_contains($_SERVER['DOCUMENT_ROOT'], 'Desktop')));
 
-// Database Configuration - Production/Local Auto-switch
-define('DB_HOST', $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: 'localhost');
-define('DB_NAME', $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: ($isLocalhost ? 'busia_chicken_db' : 'mrhzdunf_busiachicken'));
-define('DB_USER', $_ENV['DB_USER'] ?? getenv('DB_USER') ?: ($isLocalhost ? 'root' : 'mrhzdunf_busia_user'));
-define('DB_PASS', $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?: ($isLocalhost ? '' : 'busia_user'));
+// Per-environment defaults. The production values are the legacy fallback
+// that keeps the LIVE site (new.decapoli.co.ke) connected — rotate the
+// password and move them out of this file when possible (see note above).
+$defaults = $isLocalhost
+    ? ['localhost', 'busia_chicken_db', 'root', '']
+    : ['localhost', 'mrhzdunf_busiachicken', 'mrhzdunf_busia_user', 'busia_user'];
+
+define('DB_HOST', $DB_HOST ?? $dbEnv('DB_HOST') ?? $defaults[0]);
+define('DB_NAME', $DB_NAME ?? $dbEnv('DB_NAME') ?? $defaults[1]);
+define('DB_USER', $DB_USER ?? $dbEnv('DB_USER') ?? $defaults[2]);
+define('DB_PASS', $DB_PASS ?? $dbEnv('DB_PASS') ?? $defaults[3]);
 define('DB_CHARSET', $_ENV['DB_CHARSET'] ?? getenv('DB_CHARSET') ?: 'utf8mb4');
 
 // PDO Options
