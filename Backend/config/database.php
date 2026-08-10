@@ -240,4 +240,31 @@ function checkDatabaseHealth(PDO $pdo): bool {
     }
 }
 
+/**
+ * Record an entry in the activity log (feeds Settings → System Activity Logs).
+ * Best-effort: never throws, silently no-ops if the table is missing.
+ */
+function logActivity(PDO $pdo, string $action, string $module, string $details = '', ?int $entityId = null, string $entityType = ''): void {
+    try {
+        if (!tableExists($pdo, 'activity_logs')) {
+            return;
+        }
+        $stmt = $pdo->prepare(
+            'INSERT INTO activity_logs (user_id, username, action, module, entity_type, entity_id, details, ip_address) VALUES (?,?,?,?,?,?,?,?)'
+        );
+        $stmt->execute([
+            (int)($_SESSION['user_id'] ?? 0),
+            (string)($_SESSION['username'] ?? ($_SESSION['first_name'] ?? 'system')),
+            substr($action, 0, 100),
+            substr($module, 0, 50),
+            substr($entityType, 0, 50),
+            $entityId !== null ? (int)$entityId : null,
+            substr((string)$details, 0, 500),
+            (string)($_SERVER['REMOTE_ADDR'] ?? ''),
+        ]);
+    } catch (Exception $e) {
+        // Never break the caller over a log write
+    }
+}
+
 ?>

@@ -32,6 +32,26 @@ include __DIR__ . '/includes/admin_header.php';
     box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
     transform: translateY(-2px);
 }
+/* Grid items must be allowed to shrink below their content width, or the
+   2fr/1fr chart rows and 4-col KPI rows overflow the page and push cards
+   off-screen (min-content of a canvas is its fixed pixel width). */
+.chart-card,
+.stat-card { min-width: 0; }
+.chart-box,
+.chart-box-sm,
+.chart-box-lg { min-width: 0; }
+.chart-box canvas,
+.chart-box-sm canvas,
+.chart-box-lg canvas { max-width: 100%; }
+/* On narrower windows, collapse the 4-across and 2-across grids so every
+   card stays fully visible (inline styles are overridden deliberately). */
+@media (max-width: 1150px) {
+    div[style*="repeat(4,1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 640px) {
+    div[style*="repeat(4,1fr)"] { grid-template-columns: 1fr !important; }
+    div[style*="2fr 1fr"] { grid-template-columns: 1fr !important; }
+}
 .chart-card-title {
     display: flex;
     align-items: center;

@@ -359,7 +359,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const link = e.target.closest('a');
             if (link && link.href) {
                 sessionStorage.setItem(SKEY, String(nav.scrollTop));
+                // Mobile drawer: close after choosing a module.
+                setNavOpen(false);
             }
+        });
+
+        /* Mobile sidebar drawer: hamburger opens/closes the nav as an overlay. */
+        const backdrop = document.getElementById('admin-nav-backdrop');
+        const toggle = document.getElementById('admin-nav-toggle');
+        const setNavOpen = (open) => {
+            nav.classList.toggle('open', open);
+            document.body.classList.toggle('nav-open', open);
+            if (toggle) toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        };
+        if (toggle) {
+            toggle.addEventListener('click', () => setNavOpen(!nav.classList.contains('open')));
+        }
+        if (backdrop) {
+            backdrop.addEventListener('click', () => setNavOpen(false));
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') setNavOpen(false);
         });
     });
     </script>

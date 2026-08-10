@@ -99,6 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
             }
 
             $success_message = 'Product added successfully.';
+            logActivity($pdo, 'add', 'products', "Added product: " . trim($_POST['name'] ?? ''), (int)$pdo->lastInsertId(), 'product');
         } catch (Exception $e) {
             $error_message = 'Failed to add product: ' . $e->getMessage();
         }
@@ -137,6 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
             }
 
             $success_message = 'Product updated successfully.';
+            logActivity($pdo, 'update', 'products', "Updated product: " . trim($_POST['name'] ?? ''), (int)($_POST['product_id'] ?? 0), 'product');
         } catch (Exception $e) {
             $error_message = 'Failed to update product: ' . $e->getMessage();
         }
@@ -147,6 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
             $stmt = $pdo->prepare("DELETE FROM products WHERE id = ?");
             $stmt->execute([(int)$_POST['product_id']]);
             $success_message = 'Product deleted successfully.';
+            logActivity($pdo, 'delete', 'products', "Deleted product #" . (int)$_POST['product_id'], (int)$_POST['product_id'], 'product');
         } catch (Exception $e) {
             $error_message = 'Failed to delete product: ' . $e->getMessage();
         }
@@ -157,6 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
             $stmt = $pdo->prepare("UPDATE products SET is_active = NOT is_active WHERE id = ?");
             $stmt->execute([(int)$_POST['product_id']]);
             $success_message = 'Product status toggled.';
+            logActivity($pdo, 'update', 'products', "Toggled visibility of product #" . (int)$_POST['product_id'], (int)$_POST['product_id'], 'product');
         } catch (Exception $e) {
             $error_message = 'Failed to toggle status.';
         }

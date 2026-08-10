@@ -53,6 +53,7 @@ try {
                 $stmt->execute([$flock_name, $breed, $initial_count, $initial_count, $hatch_date, $status]);
                 $msg = 'Flock created';
             }
+            logActivity($pdo, 'save', 'flocks', "{$msg}: {$flock_name} ({$breed}, {$initial_count} birds)", $id > 0 ? $id : (int)$pdo->lastInsertId(), 'flock');
             echo json_encode(['success' => true, 'message' => $msg]);
             break;
 
@@ -61,6 +62,7 @@ try {
             $id = (int)($_POST['id'] ?? 0);
             $stmt = $pdo->prepare("DELETE FROM flocks WHERE id = ?");
             $stmt->execute([$id]);
+            logActivity($pdo, 'delete', 'flocks', "Deleted flock #{$id}", $id, 'flock');
             echo json_encode(['success' => true, 'message' => 'Flock deleted']);
             break;
 
@@ -121,13 +123,14 @@ try {
                 }
                 $msg = 'Production record logged';
             }
+            logActivity($pdo, 'save', 'production', "{$msg}: {$eggs_collected} eggs, {$mortality} mortality, flock #{$flock_id}", $id > 0 ? $id : (int)$pdo->lastInsertId(), 'production_record');
             echo json_encode(['success' => true, 'message' => $msg]);
             break;
 
         case 'delete_production':
             if ($method !== 'POST') throw new Exception('Invalid request method');
             $id = (int)($_POST['id'] ?? 0);
-            
+
             // Revert mortality count back to flock before deleting
             $old = $pdo->prepare("SELECT flock_id, mortality FROM production_records WHERE id = ?");
             $old->execute([$id]);
@@ -139,6 +142,7 @@ try {
 
             $stmt = $pdo->prepare("DELETE FROM production_records WHERE id = ?");
             $stmt->execute([$id]);
+            logActivity($pdo, 'delete', 'production', "Deleted production record #{$id}", $id, 'production_record');
             echo json_encode(['success' => true, 'message' => 'Record deleted']);
             break;
 
@@ -179,6 +183,7 @@ try {
                 $stmt->execute([$flock_id, $vaccine_name, $scheduled_date, $administered_date, $status, $administered_by]);
                 $msg = 'Vaccination scheduled';
             }
+            logActivity($pdo, 'save', 'vaccinations', "{$msg}: {$vaccine_name} for flock #{$flock_id}", $id > 0 ? $id : (int)$pdo->lastInsertId(), 'vaccination');
             echo json_encode(['success' => true, 'message' => $msg]);
             break;
 
@@ -187,6 +192,7 @@ try {
             $id = (int)($_POST['id'] ?? 0);
             $stmt = $pdo->prepare("DELETE FROM vaccinations WHERE id = ?");
             $stmt->execute([$id]);
+            logActivity($pdo, 'delete', 'vaccinations', "Deleted vaccination #{$id}", $id, 'vaccination');
             echo json_encode(['success' => true, 'message' => 'Vaccination schedule deleted']);
             break;
 
@@ -218,6 +224,7 @@ try {
                 $stmt->execute([$category, $amount, $transaction_date, $description]);
                 $msg = 'Expense logged';
             }
+            logActivity($pdo, 'save', 'expenses', "{$msg}: {$category} KES {$amount} ({$transaction_date})", $id > 0 ? $id : (int)$pdo->lastInsertId(), 'financial_record');
             echo json_encode(['success' => true, 'message' => $msg]);
             break;
 
@@ -226,6 +233,7 @@ try {
             $id = (int)($_POST['id'] ?? 0);
             $stmt = $pdo->prepare("DELETE FROM financial_records WHERE id = ? AND type = 'expense'");
             $stmt->execute([$id]);
+            logActivity($pdo, 'delete', 'expenses', "Deleted expense record #{$id}", $id, 'financial_record');
             echo json_encode(['success' => true, 'message' => 'Expense record deleted']);
             break;
 

@@ -74,6 +74,57 @@ function migrationTableNames(string $file): array
 }
 
 /**
+ * Reconcile legacy column shapes with the schema the code expects.
+ *
+ * The raw_materials / suppliers tables in older databases use an older shape
+ * (name, stock_tons, current_price_per_ton, feed_type) while the migration
+ * files and every current module read (material_name, current_stock,
+ * current_price_per_unit, unit, category) and (supplier_name). Adding columns
+ * and back-filling from the legacy ones lets both old and new code read the
+ * table, without touching or dropping any existing data. Idempotent.
+ */
+function reconcileLegacySchema(PDO $pdo): void
+{
+    // ── raw_materials ──
+    if (tableExists($pdo, 'raw_materials')) {
+        $add = [];
+        if (!columnExists($pdo, 'raw_materials', 'material_name'))   $add[] = 'ADD COLUMN material_name VARCHAR(100) NULL AFTER id';
+        if (!columnExists($pdo, 'raw_materials', 'material_code'))   $add[] = 'ADD COLUMN material_code VARCHAR(50) NULL';
+        if (!columnExists($pdo, 'raw_materials', 'unit'))            $add[] = "ADD COLUMN unit VARCHAR(20) NOT NULL DEFAULT 'kg'";
+        if (!columnExists($pdo, 'raw_materials', 'opening_balance')) $add[] = 'ADD COLUMN opening_balance DECIMAL(12,3) NOT NULL DEFAULT 0';
+        if (!columnExists($pdo, 'raw_materials', 'current_stock'))   $add[] = 'ADD COLUMN current_stock DECIMAL(12,3) NOT NULL DEFAULT 0';
+        if (!columnExists($pdo, 'raw_materials', 'current_price_per_unit')) $add[] = 'ADD COLUMN current_price_per_unit DECIMAL(10,2) NOT NULL DEFAULT 0';
+        if (!columnExists($pdo, 'raw_materials', 'category'))        $add[] = "ADD COLUMN category VARCHAR(50) NOT NULL DEFAULT 'feed_ingredient'";
+        if (!columnExists($pdo, 'raw_materials', 'supplier_id'))     $add[] = 'ADD COLUMN supplier_id INT NULL';
+        if (!columnExists($pdo, 'raw_materials', 'notes'))           $add[] = 'ADD COLUMN notes TEXT NULL';
+        if ($add) {
+            $pdo->exec('ALTER TABLE raw_materials ' . implode(', ', $add));
+        }
+
+        // Back-fill from the legacy columns when they exist. The legacy stock
+        // is stored in TONS (old code converts kg -> tons), the current schema
+        // is in KG — so convert 1:1000 and price per ton -> per kg.
+        if (columnExists($pdo, 'raw_materials', 'name')) {
+            $pdo->exec("UPDATE raw_materials SET material_name = name WHERE material_name IS NULL OR material_name = ''");
+            if (columnExists($pdo, 'raw_materials', 'stock_tons')) {
+                $pdo->exec('UPDATE raw_materials SET current_stock = stock_tons * 1000, opening_balance = stock_tons * 1000 WHERE stock_tons IS NOT NULL AND (current_stock = 0 OR current_stock IS NULL)');
+            }
+            if (columnExists($pdo, 'raw_materials', 'current_price_per_ton')) {
+                $pdo->exec('UPDATE raw_materials SET current_price_per_unit = current_price_per_ton / 1000 WHERE current_price_per_ton IS NOT NULL AND (current_price_per_unit = 0 OR current_price_per_unit IS NULL)');
+            }
+        }
+    }
+
+    // ── suppliers ──
+    if (tableExists($pdo, 'suppliers')
+        && !columnExists($pdo, 'suppliers', 'supplier_name')
+        && columnExists($pdo, 'suppliers', 'name')) {
+        $pdo->exec('ALTER TABLE suppliers ADD COLUMN supplier_name VARCHAR(150) NULL AFTER id');
+        $pdo->exec("UPDATE suppliers SET supplier_name = name WHERE supplier_name IS NULL OR supplier_name = ''");
+    }
+}
+
+/**
  * Ensure all module tables exist. No-op when everything is present.
  */
 function ensureBusiaSchema(PDO $pdo): void
@@ -83,6 +134,11 @@ function ensureBusiaSchema(PDO $pdo): void
     $checked = true;
 
     try {
+        // Always reconcile legacy column shapes first (idempotent, cheap) so
+        // existing databases get the columns the current modules read even
+        // when every table already exists.
+        reconcileLegacySchema($pdo);
+
         $configDir = __DIR__;
         $poultryFile = $configDir . '/migration_poultry_complete.sql';
         $businessFile = $configDir . '/migration_v2_business.sql';

@@ -83,11 +83,13 @@ try {
         // Auto-create cashbook entry for the expense
         $pdo->prepare("INSERT INTO cashbook_entries (entry_date, direction, money_source, amount, paid_through, supplier_name, reference_no, description, recorded_by) VALUES (?, 'out', ?, ?, ?, ?, ?, ?, ?)")
             ->execute([$date, $type, $total, $paid_from === 'cash' ? 'cash' : ($paid_from === 'mpesa' ? 'mpesa' : 'bank'), null, $ref, "[Batch cost #$id] $desc", $user_id]);
+        logActivity($pdo, 'save', 'costs', "Batch cost KES {$total} ($desc)", $id, 'batch_cost');
         ok(['message' => 'Cost saved', 'id' => $id]);
     }
     if ($action === 'delete_cost' && $method === 'POST') {
         $id = (int)($_POST['id'] ?? 0);
         $pdo->prepare("DELETE FROM batch_costs WHERE id=?")->execute([$id]);
+        logActivity($pdo, 'delete', 'costs', "Deleted batch cost #{$id}", $id, 'batch_cost');
         ok(['message' => 'Cost deleted']);
     }
     if ($action === 'batch_profit' && $method === 'GET') {
@@ -148,6 +150,7 @@ try {
         if ($amount <= 0) err('Enter amount received');
         $pdo->prepare("INSERT INTO cashbook_entries (entry_date, direction, money_source, amount, paid_through, customer_name, reference_no, description, recorded_by) VALUES (?, 'in', ?, ?, ?, ?, ?, ?, ?)")
             ->execute([$date, $source, $amount, $paid, $customer, $ref, $desc, $user_id]);
+        logActivity($pdo, 'add', 'cashbook', "Money in KES {$amount} ($source)", (int)$pdo->lastInsertId(), 'cashbook_entry');
         ok(['message' => 'Money in recorded', 'id' => $pdo->lastInsertId()]);
     }
     if ($action === 'add_money_out' && $method === 'POST') {
@@ -161,11 +164,13 @@ try {
         if ($amount <= 0) err('Enter amount paid');
         $pdo->prepare("INSERT INTO cashbook_entries (entry_date, direction, money_source, amount, paid_through, supplier_name, reference_no, description, recorded_by) VALUES (?, 'out', ?, ?, ?, ?, ?, ?, ?)")
             ->execute([$date, $source, $amount, $paid, $supplier, $ref, $desc, $user_id]);
+        logActivity($pdo, 'add', 'cashbook', "Money out KES {$amount} ($source)", (int)$pdo->lastInsertId(), 'cashbook_entry');
         ok(['message' => 'Money out recorded', 'id' => $pdo->lastInsertId()]);
     }
     if ($action === 'delete_cashbook' && $method === 'POST') {
         $id = (int)($_POST['id'] ?? 0);
         $pdo->prepare("DELETE FROM cashbook_entries WHERE id=?")->execute([$id]);
+        logActivity($pdo, 'delete', 'cashbook', "Deleted cashbook entry #{$id}", $id, 'cashbook_entry');
         ok(['message' => 'Entry deleted']);
     }
     if ($action === 'cashbook_summary' && $method === 'GET') {
@@ -190,6 +195,9 @@ try {
     // CUSTOMER CREDIT
     // ─────────────────────────────────────────────────────────
     if ($action === 'list_credit') {
+        if (!tableExists($pdo, 'customer_credits')) {
+            ok(['data' => []]);
+        }
         $status = $_GET['status'] ?? null;
         $sql = "SELECT c.*, (SELECT COALESCE(SUM(amount),0) FROM credit_payments WHERE credit_id=c.id) AS total_paid FROM customer_credits c WHERE 1=1";
         $p = [];
@@ -219,6 +227,7 @@ try {
             $pdo->prepare("INSERT INTO credit_payments (credit_id, payment_date, amount, paid_through, received_by, notes) VALUES (?,?,?,?,?,?)")
                 ->execute([$id, $date, $paid, 'cash', $user_id, 'Initial payment']);
         }
+        logActivity($pdo, 'add', 'credit', "Credit sale KES {$total} to {$name} (balance KES {$balance})", $id, 'customer_credit');
         ok(['message' => 'Credit saved', 'id' => $id, 'balance' => $balance]);
     }
     if ($action === 'add_credit_payment' && $method === 'POST') {
@@ -240,10 +249,14 @@ try {
             $pdo->prepare("INSERT INTO cashbook_entries (entry_date, direction, money_source, amount, paid_through, customer_name, reference_no, description, recorded_by) VALUES (?, 'in', 'credit_payment', ?, ?, ?, ?, ?, ?)")
                 ->execute([$date, $amount, $paid, $cust['customer_name'] ?? '', $ref, "Credit payment #$credit_id", $user_id]);
             $pdo->commit();
+            logActivity($pdo, 'add', 'credit', "Credit payment KES {$amount} on credit #{$credit_id}", $credit_id, 'credit_payment');
             ok(['message' => 'Payment recorded']);
         } catch (Exception $e) { $pdo->rollBack(); err('Failed: ' . $e->getMessage()); }
     }
     if ($action === 'credit_summary' && $method === 'GET') {
+        if (!tableExists($pdo, 'customer_credits')) {
+            ok(['data' => ['total_owed' => 0, 'overdue' => 0, 'top_debtors' => []]]);
+        }
         $totalOwed = (float)$pdo->query("SELECT COALESCE(SUM(balance),0) FROM customer_credits WHERE status IN ('unpaid','partial')")->fetchColumn();
         $overdue = (float)$pdo->query("SELECT COALESCE(SUM(balance),0) FROM customer_credits WHERE status IN ('unpaid','partial') AND due_date < CURDATE()")->fetchColumn();
         $byCustomer = $pdo->query("SELECT customer_name, SUM(balance) AS total FROM customer_credits WHERE status IN ('unpaid','partial') GROUP BY customer_name ORDER BY total DESC LIMIT 10")->fetchAll(PDO::FETCH_ASSOC);
@@ -272,6 +285,7 @@ try {
             $pdo->prepare("INSERT INTO feeding_standards (bird_type, week_number, feed_per_bird_per_day_grams, feed_type, notes) VALUES (?,?,?,?,?)")
                 ->execute([$type, $week, $g, $feed, $notes]);
         }
+        logActivity($pdo, 'save', 'feeding', "Feeding standard: {$type} week {$week} — {$g}g/bird/day");
         ok(['message' => 'Standard saved']);
     }
     if ($action === 'list_feed_allocations') {
@@ -294,6 +308,7 @@ try {
         if ($batch_id === 0 || $kg <= 0) err('Batch and kg required');
         $pdo->prepare("INSERT INTO feed_allocations (batch_id, allocation_date, feed_type, kg_fed, notes, recorded_by) VALUES (?,?,?,?,?,?)")
             ->execute([$batch_id, $date, $feed, $kg, $notes, $user_id]);
+        logActivity($pdo, 'add', 'feeding', "Feed allocation: {$kg}kg {$feed} to batch #{$batch_id}", $batch_id, 'batch');
         ok(['message' => 'Feed allocation saved']);
     }
     if ($action === 'fcr_report' && $method === 'GET') {
@@ -372,6 +387,7 @@ try {
                 $ins->execute([$id, (int)$i['material_id'], $q, $i['unit'] ?? 'kg', $p, $q*$p]);
             }
             $pdo->commit();
+            logActivity($pdo, 'save', 'purchase_orders', "Purchase order saved (KES {$total})", $id, 'purchase_order');
             ok(['message' => 'Purchase order saved', 'id' => $id, 'po_number' => $id > 0 ? null : null]);
         } catch (Exception $e) { $pdo->rollBack(); err('Save failed: ' . $e->getMessage()); }
     }
@@ -398,6 +414,7 @@ try {
             $pdo->prepare("INSERT INTO cashbook_entries (entry_date, direction, money_source, amount, paid_through, supplier_name, reference_no, description, recorded_by) VALUES (?, 'out', 'raw_material_purchase', ?, ?, ?, ?, ?, ?)")
                 ->execute([$today, $supplier['total_amount'], 'cash', $supplier['supplier_name'], $supplier['po_number'], "PO #$id received", $user_id]);
             $pdo->commit();
+            logActivity($pdo, 'receive', 'purchase_orders', "PO #{$id} received, stock updated", $id, 'purchase_order');
             ok(['message' => 'PO received and stock updated']);
         } catch (Exception $e) { $pdo->rollBack(); err('Receive failed: ' . $e->getMessage()); }
     }
@@ -420,7 +437,9 @@ try {
         } else {
             $pdo->prepare("INSERT INTO suppliers (supplier_name, contact_name, phone, email, address, lead_time_days, notes) VALUES (?,?,?,?,?,?,?)")
                 ->execute([$name, $contact, $phone, $email, $address, $lead, $notes]);
+            $id = (int)$pdo->lastInsertId();
         }
+        logActivity($pdo, 'save', 'suppliers', "Supplier: {$name}", $id > 0 ? $id : null, 'supplier');
         ok(['message' => 'Supplier saved']);
     }
 
@@ -447,6 +466,7 @@ try {
         if ($batch_id === 0 || $day === 0 || $avg === 0) err('Batch, day, and weight required');
         $pdo->prepare("INSERT INTO broiler_weighings (batch_id, weigh_date, day_number, sample_size, avg_weight_kg, notes, recorded_by) VALUES (?,?,?,?,?,?,?)")
             ->execute([$batch_id, $date, $day, $sample, $avg, $notes, $user_id]);
+        logActivity($pdo, 'add', 'broiler', "Weighing batch #{$batch_id} day {$day}: {$avg}kg avg", $batch_id, 'batch');
         ok(['message' => 'Weighing recorded']);
     }
 
@@ -480,6 +500,7 @@ try {
                 ->execute([$set, $expected, $actual, $breed, $eggs, $fertile, $hatched, $hatchPct, $dest, $cost, $notes]);
             $id = (int)$pdo->lastInsertId();
         }
+        logActivity($pdo, 'save', 'hatchery', "Hatchery batch: {$eggs} eggs set, {$hatched} hatched", $id, 'hatchery_batch');
         ok(['message' => 'Hatchery record saved', 'id' => $id]);
     }
 
@@ -499,6 +520,7 @@ try {
         $reason = trim($_POST['reason'] ?? '');
         $pdo->prepare("INSERT INTO egg_losses (loss_date, batch_id, loss_type, quantity, estimated_value, reason, recorded_by) VALUES (?,?,?,?,?,?,?)")
             ->execute([$date, $batch, $type, $qty, $value, $reason, $user_id]);
+        logActivity($pdo, 'add', 'egg_grading', "Egg loss: {$qty} {$type} (KES {$value})", $batch, 'batch');
         ok(['message' => 'Loss recorded']);
     }
 
@@ -521,6 +543,7 @@ try {
         if ($mat === 0) err('Material required');
         $pdo->prepare("INSERT INTO quality_tests (material_id, test_date, test_type, result_value, unit, pass_fail, tested_by, notes) VALUES (?,?,?,?,?,?,?,?)")
             ->execute([$mat, $date, $type, $val, $unit, $pf, $tester, $notes]);
+        logActivity($pdo, 'add', 'quality', "Quality test on material #{$mat}: {$pf}", $mat, 'raw_material');
         ok(['message' => 'Test recorded']);
     }
 

@@ -68,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_login'])) {
                     $_SESSION['username'] = $user['username'];
                     $_SESSION['role'] = $user['role'];
                     $_SESSION['first_name'] = $user['first_name'];
+                    logActivity($pdo, 'login', 'auth', "{$user['username']} logged in", (int)$user['id'], 'user');
 
                     $next = $_GET['next'] ?? '/Frontend/admin/products.php';
                     if (!isSafeAdminRedirect($next)) {
