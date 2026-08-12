@@ -11,12 +11,34 @@ $tab  = $_GET['tab'] ?? '';
 $isDash       = $cp === 'dashboard.php';
 $isPoultry    = in_array($cp, ['hub_operations.php','flocks.php','production.php','vaccinations.php','batches.php','health.php','broiler.php','hatchery.php','feeding.php','extras.php'], true);
 $isInventory  = in_array($cp, ['hub_inventory.php','stores.php','feed_production.php','egg_grading.php'], true);
-$isSalesFinance = in_array($cp, ['hub_finance.php','profit.php','cashbook.php','credit.php','purchase_orders.php','daily_sales.php','bulk_sales.php'], true);
+$isSalesFinance = in_array($cp, ['hub_finance.php','profit.php','cashbook.php','credit.php','purchase_orders.php','daily_sales.php','bulk_sales.php','lpo.php'], true);
 $isReports    = in_array($cp, ['analytics.php','bulk_import_export.php'], true);
 $isPeople     = $cp === 'hub_people.php';
 $isSettings   = $cp === 'hub_settings.php';
 
 function navLinkWithSub(string $href, string $icon, string $label, bool $active, array $submodules, string $currentTab): string {
+    // Permission filtering: hide sub-modules the current role cannot view.
+    $visible = [];
+    foreach ($submodules as $tKey => $item) {
+        if (is_array($item)) {
+            $permKey = $item['perm'] ?? '';
+            if ($permKey === '' && function_exists('busiaModuleKeyForScript')) {
+                $permKey = busiaModuleKeyForScript(basename(parse_url($item['href'] ?? '', PHP_URL_PATH)));
+            }
+            if ($permKey === '') $permKey = (string)$tKey;
+        } else {
+            $permKey = (string)$tKey;
+        }
+        if (function_exists('busiaCanView') && !busiaCanView($permKey)) {
+            continue; // role has no view permission for this sub-module
+        }
+        $visible[$tKey] = $item;
+    }
+    if (empty($visible) && !$active) {
+        return ''; // nothing viewable — hide the whole group
+    }
+    $submodules = $visible;
+
     $base = $active
         ? 'background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;box-shadow:0 4px 14px rgba(27,94,32,0.22);'
         : 'color:#475569;';
@@ -150,6 +172,7 @@ HTML;
                 'profit'      => ['label' => 'Costs & Profit', 'href' => '/Frontend/admin/profit.php'],
                 'cashbook'    => ['label' => 'Cashbook', 'href' => '/Frontend/admin/cashbook.php'],
                 'credit'      => ['label' => 'Customer Credit', 'href' => '/Frontend/admin/credit.php'],
+                'lpo'         => ['label' => 'LPO & Invoicing', 'href' => '/Frontend/admin/lpo.php'],
                 'po'          => ['label' => 'Procurement (PO)', 'href' => '/Frontend/admin/purchase_orders.php'],
                 'daily'       => ['label' => 'Daily Reconciliation', 'href' => '/Frontend/admin/daily_sales.php'],
                 'bulk'        => ['label' => 'Bulk Sales', 'href' => '/Frontend/admin/bulk_sales.php']
@@ -192,7 +215,8 @@ HTML;
                 'calendar'  => 'Calendar',
                 'dropdowns' => 'Dropdowns',
                 'settings'  => 'App Settings',
-                'logs'      => 'Activity Logs'
+                'logs'      => 'Activity Logs',
+                'permissions' => ['label' => 'Roles & Permissions', 'href' => '/Frontend/admin/permissions.php']
             ],
             $tab ?: 'calendar'
         ) ?>

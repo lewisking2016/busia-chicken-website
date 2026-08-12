@@ -276,6 +276,7 @@ CREATE TABLE IF NOT EXISTS egg_losses (
     loss_date DATE NOT NULL,
     batch_id INT,
     loss_type ENUM('broken', 'cracked', 'stolen', 'eaten_staff', 'fed_to_animals', 'expired', 'other') NOT NULL,
+    stage ENUM('collection', 'transport', 'storage', 'other') NOT NULL DEFAULT 'collection',
     quantity INT NOT NULL,
     estimated_value DECIMAL(10,2) DEFAULT 0,
     reason VARCHAR(255),
@@ -336,4 +337,58 @@ CREATE TABLE IF NOT EXISTS system_alerts (
     dismissed_at DATETIME,
     INDEX idx_alert_date (alert_date),
     INDEX idx_alert_read (is_read, is_dismissed)
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────────────────────
+-- 14. LPO DOCUMENTS — Local Purchase Orders, Quotations & Invoices
+--     One module: create a quotation, accept an LPO, issue an invoice.
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS lpo_documents (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    doc_number VARCHAR(30) NOT NULL UNIQUE,
+    doc_type ENUM('quotation', 'lpo', 'invoice') NOT NULL DEFAULT 'quotation',
+    status ENUM('draft', 'sent', 'accepted', 'invoiced', 'paid', 'cancelled') NOT NULL DEFAULT 'draft',
+    customer_name VARCHAR(150) NOT NULL,
+    customer_phone VARCHAR(30),
+    customer_email VARCHAR(150),
+    customer_address VARCHAR(255),
+    issue_date DATE NOT NULL,
+    due_date DATE,
+    subtotal DECIMAL(12,2) NOT NULL DEFAULT 0,
+    tax_rate DECIMAL(5,2) NOT NULL DEFAULT 0,
+    tax_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    discount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    total_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_lpo_date (issue_date),
+    INDEX idx_lpo_type (doc_type),
+    INDEX idx_lpo_status (status)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS lpo_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    doc_id INT NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    quantity DECIMAL(10,2) NOT NULL DEFAULT 1,
+    unit VARCHAR(20) DEFAULT 'pcs',
+    unit_price DECIMAL(10,2) NOT NULL DEFAULT 0,
+    line_total DECIMAL(12,2) NOT NULL DEFAULT 0,
+    FOREIGN KEY (doc_id) REFERENCES lpo_documents(id) ON DELETE CASCADE,
+    INDEX idx_lpo_item_doc (doc_id)
+) ENGINE=InnoDB;
+
+-- ─────────────────────────────────────────────────────────────
+-- 15. ROLE PERMISSIONS — per-role module access matrix
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS role_permissions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    role VARCHAR(50) NOT NULL,
+    module_key VARCHAR(50) NOT NULL,
+    can_view TINYINT(1) NOT NULL DEFAULT 0,
+    can_edit TINYINT(1) NOT NULL DEFAULT 0,
+    UNIQUE KEY unique_role_module (role, module_key)
 ) ENGINE=InnoDB;

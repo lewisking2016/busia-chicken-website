@@ -35,8 +35,8 @@ function isSafeAdminRedirect(string $path): bool
 }
 
 // Redirect if already logged in as admin
-if (!empty($_SESSION['user_id']) && in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager'], true)) {
-    header('Location: /Frontend/admin/products.php');
+if (!empty($_SESSION['user_id']) && in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager','stock_manager','sales_staff'], true)) {
+    header('Location: /Frontend/admin/dashboard.php');
     exit;
 }
 
@@ -61,8 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_login'])) {
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($user && password_verify($password, $user['password_hash'])) {
-                if (!in_array($user['role'], ['super_admin','farm_manager'], true)) {
-                    $errors[] = 'Access denied. Administrator privileges required.';
+                if (!in_array($user['role'], ['super_admin','farm_manager','stock_manager','sales_staff'], true)) {
+                    $errors[] = 'Access denied. You do not have permission to use the admin panel.';
                 } else {
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['username'] = $user['username'];

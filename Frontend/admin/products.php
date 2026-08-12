@@ -18,7 +18,7 @@ include __DIR__ . '/includes/admin_header.php';
 require_once __DIR__ . '/../../Backend/api/dropdowns.php';
 
 // Check admin access
-if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager'], true)) {
+if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager','sales_staff'], true)) {
     echo "<script>window.location.href = '/busiaadmin';</script>";
     exit;
 }

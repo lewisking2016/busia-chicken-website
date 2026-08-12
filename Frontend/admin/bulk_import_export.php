@@ -21,7 +21,7 @@ $page_title = 'Bulk Import/Export - Admin';
 require_once __DIR__ . '/../includes/config.php';
 
 // Check admin access before producing any output (downloads must not leak HTML)
-if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager'], true)) {
+if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager','sales_staff'], true)) {
     header('Location: /busiaadmin');
     exit;
 }

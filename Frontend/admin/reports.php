@@ -17,7 +17,7 @@ $page_title = 'Reports & Analytics - Admin';
 include __DIR__ . '/includes/admin_header.php';
 
 // Check admin access
-if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager'], true)) {
+if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager','sales_staff'], true)) {
     echo "<script>window.location.href = '/Frontend/admin/login.php';</script>";
     exit;
 }

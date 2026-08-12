@@ -9,7 +9,7 @@ if (is_writable($temp_dir)) session_save_path($temp_dir);
 session_start();
 
 // Admin access check
-if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager', 'stock_manager'], true)) {
+if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager', 'stock_manager', 'sales_staff'], true)) {
     echo "<script>window.location.href = '/busiaadmin';</script>";
     exit;
 }
@@ -17,7 +17,16 @@ if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_ad
 $path_prefix = '../../';
 $page_title = 'Admin Dashboard';
 include __DIR__ . '/includes/admin_header.php';
+
+$deniedModule = isset($_GET['denied']) ? 'that module' : '';
 ?>
+
+<?php if (isset($_GET['denied'])): ?>
+<div style="padding:13px 18px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;color:#92400e;margin-bottom:18px;display:flex;align-items:center;gap:10px;">
+    <i data-lucide="shield-alert" style="width:18px;height:18px;flex-shrink:0;"></i>
+    <span>Your role doesn't have permission to open that module. Ask the Super Admin to grant access under <strong>Settings → Roles &amp; Permissions</strong>.</span>
+</div>
+<?php endif; ?>
 
 <div class="admin-dashboard-wrapper" style="margin: 0; padding: 0;">
     <style>

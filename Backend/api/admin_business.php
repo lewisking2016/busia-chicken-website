@@ -515,12 +515,17 @@ try {
         $date = $_POST['loss_date'] ?? $today;
         $batch = (int)($_POST['batch_id'] ?? 0) ?: null;
         $type = $_POST['loss_type'] ?? 'broken';
+        $stage = $_POST['stage'] ?? 'collection';
+        if (!in_array($stage, ['collection', 'transport', 'storage', 'other'], true)) $stage = 'collection';
         $qty = (int)($_POST['quantity'] ?? 0);
         $value = (float)($_POST['estimated_value'] ?? 0);
         $reason = trim($_POST['reason'] ?? '');
-        $pdo->prepare("INSERT INTO egg_losses (loss_date, batch_id, loss_type, quantity, estimated_value, reason, recorded_by) VALUES (?,?,?,?,?,?,?)")
-            ->execute([$date, $batch, $type, $qty, $value, $reason, $user_id]);
-        logActivity($pdo, 'add', 'egg_grading', "Egg loss: {$qty} {$type} (KES {$value})", $batch, 'batch');
+        if (!columnExists($pdo, 'egg_losses', 'stage')) {
+            $stage = 'collection'; // very old DB before the auto-migrate ran
+        }
+        $pdo->prepare("INSERT INTO egg_losses (loss_date, batch_id, loss_type, stage, quantity, estimated_value, reason, recorded_by) VALUES (?,?,?,?,?,?,?,?)")
+            ->execute([$date, $batch, $type, $stage, $qty, $value, $reason, $user_id]);
+        logActivity($pdo, 'add', 'egg_grading', "Egg loss: {$qty} {$type} during {$stage} (KES {$value})", $batch, 'batch');
         ok(['message' => 'Loss recorded']);
     }
 
@@ -545,6 +550,99 @@ try {
             ->execute([$mat, $date, $type, $val, $unit, $pf, $tester, $notes]);
         logActivity($pdo, 'add', 'quality', "Quality test on material #{$mat}: {$pf}", $mat, 'raw_material');
         ok(['message' => 'Test recorded']);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // LPO DOCUMENTS — Quotations, Local Purchase Orders & Invoices
+    // ─────────────────────────────────────────────────────────
+    if ($action === 'list_lpo_documents') {
+        if (!tableExists($pdo, 'lpo_documents')) err('LPO module not ready yet — refresh and try again', 500);
+        $type = $_GET['type'] ?? '';
+        $q = "SELECT d.*, u.username AS created_by_name FROM lpo_documents d LEFT JOIN users u ON u.id=d.created_by WHERE 1=1";
+        $p = [];
+        if (in_array($type, ['quotation', 'lpo', 'invoice'], true)) { $q .= ' AND d.doc_type=?'; $p[] = $type; }
+        $q .= ' ORDER BY d.issue_date DESC, d.id DESC LIMIT 500';
+        $stmt = $pdo->prepare($q);
+        $stmt->execute($p);
+        ok(['data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+    }
+    if ($action === 'get_lpo_document') {
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id <= 0) err('Document id required');
+        $doc = $pdo->prepare('SELECT * FROM lpo_documents WHERE id=?');
+        $doc->execute([$id]);
+        $d = $doc->fetch(PDO::FETCH_ASSOC);
+        if (!$d) err('Document not found', 404);
+        $items = $pdo->prepare('SELECT * FROM lpo_items WHERE doc_id=? ORDER BY id');
+        $items->execute([$id]);
+        $d['items'] = $items->fetchAll(PDO::FETCH_ASSOC);
+        ok(['data' => $d]);
+    }
+    if ($action === 'save_lpo_document' && $method === 'POST') {
+        $id = (int)($_POST['id'] ?? 0);
+        $docType = $_POST['doc_type'] ?? 'quotation';
+        if (!in_array($docType, ['quotation', 'lpo', 'invoice'], true)) err('Invalid document type');
+        $status = $_POST['status'] ?? 'draft';
+        if (!in_array($status, ['draft', 'sent', 'accepted', 'invoiced', 'paid', 'cancelled'], true)) err('Invalid status');
+        $custName = trim($_POST['customer_name'] ?? '');
+        if ($custName === '') err('Customer name is required');
+        $issueDate = $_POST['issue_date'] ?? $today;
+        $dueDate = trim($_POST['due_date'] ?? '') ?: null;
+        $taxRate = (float)($_POST['tax_rate'] ?? 0);
+        $discount = (float)($_POST['discount'] ?? 0);
+        $notes = trim($_POST['notes'] ?? '');
+
+        // Items: JSON array [{description, quantity, unit, unit_price}]
+        $itemsJson = $_POST['items'] ?? '[]';
+        $items = json_decode($itemsJson, true);
+        if (!is_array($items)) err('Invalid items');
+        $items = array_values(array_filter($items, fn($it) => trim((string)($it['description'] ?? '')) !== '' && (float)($it['quantity'] ?? 0) > 0));
+        if (empty($items)) err('Add at least one item');
+
+        $subtotal = 0.0;
+        foreach ($items as &$it) {
+            $it['quantity'] = (float)($it['quantity'] ?? 1);
+            $it['unit_price'] = (float)($it['unit_price'] ?? 0);
+            $it['line_total'] = round($it['quantity'] * $it['unit_price'], 2);
+            $subtotal += $it['line_total'];
+        }
+        unset($it);
+        $taxAmount = round($subtotal * $taxRate / 100, 2);
+        $total = round($subtotal + $taxAmount - $discount, 2);
+
+        if ($id > 0) {
+            $pdo->prepare('UPDATE lpo_documents SET doc_type=?, status=?, customer_name=?, customer_phone=?, customer_email=?, customer_address=?, issue_date=?, due_date=?, subtotal=?, tax_rate=?, tax_amount=?, discount=?, total_amount=?, notes=? WHERE id=?')
+                ->execute([$docType, $status, $custName, trim($_POST['customer_phone'] ?? ''), trim($_POST['customer_email'] ?? ''), trim($_POST['customer_address'] ?? ''), $issueDate, $dueDate, $subtotal, $taxRate, $taxAmount, $discount, $total, $notes, $id]);
+            $pdo->prepare('DELETE FROM lpo_items WHERE doc_id=?')->execute([$id]);
+        } else {
+            $prefix = ['quotation' => 'QT', 'lpo' => 'LPO', 'invoice' => 'INV'][$docType];
+            $docNumber = $prefix . '-' . date('Y') . '-' . strtoupper(substr(uniqid(), -5));
+            $pdo->prepare('INSERT INTO lpo_documents (doc_number, doc_type, status, customer_name, customer_phone, customer_email, customer_address, issue_date, due_date, subtotal, tax_rate, tax_amount, discount, total_amount, notes, created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
+                ->execute([$docNumber, $docType, $status, $custName, trim($_POST['customer_phone'] ?? ''), trim($_POST['customer_email'] ?? ''), trim($_POST['customer_address'] ?? ''), $issueDate, $dueDate, $subtotal, $taxRate, $taxAmount, $discount, $total, $notes, $user_id]);
+            $id = (int)$pdo->lastInsertId();
+        }
+
+        $ins = $pdo->prepare('INSERT INTO lpo_items (doc_id, description, quantity, unit, unit_price, line_total) VALUES (?,?,?,?,?,?)');
+        foreach ($items as $it) {
+            $ins->execute([$id, trim($it['description']), $it['quantity'], trim($it['unit'] ?? 'pcs') ?: 'pcs', $it['unit_price'], $it['line_total']]);
+        }
+        logActivity($pdo, 'save', 'lpo', "{$docType} document for {$custName} saved (KES {$total})", $id, 'lpo_document');
+        ok(['message' => 'Document saved', 'id' => $id]);
+    }
+    if ($action === 'set_lpo_status' && $method === 'POST') {
+        $id = (int)($_POST['id'] ?? 0);
+        $status = $_POST['status'] ?? '';
+        if (!in_array($status, ['draft', 'sent', 'accepted', 'invoiced', 'paid', 'cancelled'], true)) err('Invalid status');
+        $pdo->prepare('UPDATE lpo_documents SET status=? WHERE id=?')->execute([$status, $id]);
+        logActivity($pdo, 'update', 'lpo', "LPO document #{$id} marked as {$status}", $id, 'lpo_document');
+        ok(['message' => 'Status updated']);
+    }
+    if ($action === 'delete_lpo_document' && $method === 'POST') {
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id <= 0) err('Invalid id');
+        $pdo->prepare('DELETE FROM lpo_documents WHERE id=?')->execute([$id]); // items cascade
+        logActivity($pdo, 'delete', 'lpo', "LPO document #{$id} deleted", null, 'lpo_document');
+        ok(['message' => 'Document deleted']);
     }
 
     // ─────────────────────────────────────────────────────────

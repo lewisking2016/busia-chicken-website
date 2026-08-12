@@ -11,7 +11,7 @@ session_start();
 $page_title = 'Messages - Admin';
 include __DIR__ . '/includes/admin_header.php';
 
-if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'stock_manager'], true)) {
+if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'stock_manager', 'sales_staff'], true)) {
     header('Location: /busiaadmin');
     exit;
 }
