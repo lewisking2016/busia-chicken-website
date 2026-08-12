@@ -18,7 +18,7 @@ include __DIR__ . '/includes/admin_header.php';
 require_once __DIR__ . '/../../Backend/api/dropdowns.php';
 
 // Check admin access
-if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager'], true)) {
+if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'sales_staff'], true)) {
     header("Location: /busiaadmin");
     exit;
 }
@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
 
         if ($target_user_id === $current_admin_id) {
             $error_message = "You cannot modify your own role from this panel.";
-        } elseif (in_array($new_role, ['super_admin', 'farm_manager', 'stock_manager', 'customer'], true)) {
+        } elseif (in_array($new_role, ['super_admin', 'farm_manager', 'stock_manager', 'sales_staff', 'customer'], true)) {
             try {
                 $stmt = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
                 $stmt->execute([$new_role, $target_user_id]);
@@ -409,6 +409,7 @@ if ($pdo) {
                 <label class="admin-form-label">Assigned Role</label>
                 <select name="role" class="admin-form-control">
                     <option value="customer">Customer</option>
+                    <option value="sales_staff">Sales Staff (Sales &amp; Finance)</option>
                     <option value="stock_manager">Stock Manager (Limited to Stock)</option>
                     <option value="farm_manager">Farm Manager (Full Access)</option>
                     <option value="super_admin">Super Admin (System Owner)</option>

@@ -150,12 +150,17 @@ CREATE TABLE IF NOT EXISTS daily_egg_grading (
     INDEX idx_grade_date (record_date)
 ) ENGINE=InnoDB;
 
--- Seed default grades
+-- Seed default grades (incl. standard market sizes: Small/Medium/Large)
 INSERT IGNORE INTO egg_grades (id, grade_code, grade_name, weight_min_grams, weight_max_grams, pieces_per_crate) VALUES
 (1, 'XL',  'Extra Large',  70, 999, 30),
 (2, 'B14', 'Grade B14',     60, 69,  30),
 (3, 'B15', 'Grade B15',     50, 59,  30),
-(4, 'CRK', 'Cracked',       0,  49,  30);
+(4, 'CRK', 'Cracked',       0,  49,  30),
+(5, 'PW',  'Peewee',        1,  41,  30),
+(6, 'S',   'Small',        42,  49,  30),
+(7, 'M',   'Medium',       50,  55,  30),
+(8, 'L',   'Large',        56,  64,  30),
+(9, 'J',   'Jumbo',        71, 999,  30);
 
 -- ─────────────────────────────────────────────────────────────
 -- 6. DAILY SALES RECONCILIATION — mirrors BATCH 16 spreadsheet

@@ -601,6 +601,47 @@ try {
             break;
 
         // ─────────────────────────────────────────────────────────
+        // LPO DOCUMENTS — quotations, LPOs & invoices
+        // ─────────────────────────────────────────────────────────
+        case 'lpo_documents':
+            $sql = "SELECT d.*, u.username AS created_by_name FROM lpo_documents d LEFT JOIN users u ON u.id=d.created_by WHERE 1=1";
+            $p = [];
+            if ($from) { $sql .= " AND d.issue_date>=?"; $p[] = $from; }
+            if ($to) { $sql .= " AND d.issue_date<=?"; $p[] = $to; }
+            $sql .= " ORDER BY d.issue_date DESC";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($p);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $out = [];
+            foreach ($rows as $r) {
+                $items = $pdo->prepare('SELECT description, quantity, unit, unit_price, line_total FROM lpo_items WHERE doc_id=?');
+                $items->execute([$r['id']]);
+                $itemText = implode(' | ', array_map(fn($it) => $it['description'] . ' x' . $it['quantity'] . $it['unit'], $items->fetchAll(PDO::FETCH_ASSOC)));
+                $out[] = [
+                    'Doc Number'   => $r['doc_number'],
+                    'Type'         => $r['doc_type'],
+                    'Status'       => $r['status'],
+                    'Customer'     => $r['customer_name'],
+                    'Phone'        => $r['customer_phone'],
+                    'Email'        => $r['customer_email'],
+                    'Address'      => $r['customer_address'],
+                    'Issue Date'   => $r['issue_date'],
+                    'Due Date'     => $r['due_date'],
+                    'Subtotal'     => $r['subtotal'],
+                    'Tax Rate %'   => $r['tax_rate'],
+                    'Tax'          => $r['tax_amount'],
+                    'Discount'     => $r['discount'],
+                    'Total (KES)'  => $r['total_amount'],
+                    'Items'        => $itemText,
+                    'Notes'        => $r['notes'],
+                    'Created By'   => $r['created_by_name'],
+                ];
+            }
+            csv_send('lpo_documents_' . $today . '.csv',
+                ['Doc Number','Type','Status','Customer','Phone','Email','Address','Issue Date','Due Date','Subtotal','Tax Rate %','Tax','Discount','Total (KES)','Items','Notes','Created By'], $out);
+            break;
+
+        // ─────────────────────────────────────────────────────────
         // BROILER WEIGHINGS
         // ─────────────────────────────────────────────────────────
         case 'weighings':
@@ -700,7 +741,7 @@ try {
 
         default:
             http_response_code(400);
-            die('Unknown module: ' . htmlspecialchars($module) . '. Valid modules: orders, daily_sales, bulk_sales, stores_movements, raw_materials, health, batches, daily_records, egg_grades, feed_production, flocks, customers, batch_costs, cashbook, credit, feed_allocations, purchase_orders, weighings, hatchery, egg_losses, quality_tests.');
+            die('Unknown module: ' . htmlspecialchars($module) . '. Valid modules: orders, daily_sales, bulk_sales, stores_movements, raw_materials, health, batches, daily_records, egg_grades, feed_production, flocks, customers, batch_costs, cashbook, credit, feed_allocations, purchase_orders, weighings, hatchery, egg_losses, quality_tests, lpo_documents.');
     }
 } catch (Exception $e) {
     http_response_code(500);

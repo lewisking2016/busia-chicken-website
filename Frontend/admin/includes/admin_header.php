@@ -14,7 +14,7 @@ if (!defined('BASE_URL')) {
 
 if (!isset($page_title)) $page_title = 'Admin Console';
 // Admin access check (Basic authentication for ANY admin area)
-if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'stock_manager'], true)) {
+if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'stock_manager', 'sales_staff'], true)) {
     // Redirect to login if not authorized
     header('Location: /busiaadmin');
     exit;
@@ -22,6 +22,132 @@ if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_ad
 
 // Authorization logic for specific roles
 $isAdmin = in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager'], true);
+
+/* ── Role-based module permissions ────────────────────────────────
+   The role_permissions matrix is seeded automatically (see
+   auto_migrate.php). super_admin is always allowed; every other role
+   is checked against the matrix for the module they are opening, and
+   the sidebar hides entries the role cannot view. */
+$busia_current_module = function_exists('busiaModuleKeyForScript') ? busiaModuleKeyForScript(basename($_SERVER['SCRIPT_NAME'])) : '';
+$busia_perms = function_exists('busiaRolePermissions') ? busiaRolePermissions(null) : [];
+$busia_role_perms = $busia_perms[$_SESSION['role'] ?? ''] ?? [];
+$GLOBALS['_busia_role_perms'] = $busia_role_perms;
+if (!function_exists('busiaCanView')) {
+    function busiaCanView(string $module): bool {
+        if (($_SESSION['role'] ?? '') === 'super_admin') return true;
+        $perms = $GLOBALS['_busia_role_perms'] ?? [];
+        return (bool)($perms[$module]['view'] ?? 0);
+    }
+    function busiaCanEdit(string $module): bool {
+        if (($_SESSION['role'] ?? '') === 'super_admin') return true;
+        $perms = $GLOBALS['_busia_role_perms'] ?? [];
+        return (bool)($perms[$module]['edit'] ?? 0);
+    }
+}
+// Block modules the role has no view permission for.
+if ($busia_current_module !== '' && $busia_current_module !== 'dashboard' && !busiaCanView($busia_current_module)) {
+    header('Location: /Frontend/admin/dashboard.php?denied=1');
+    exit;
+}
+
+/* ── Quick Actions dropdown (per-page shortcuts) ──────────────────
+   Every admin page gets a "Quick Actions" menu in the top bar with
+   shortcuts to that page's main add/edit forms. Pages may override by
+   setting $quickActions before including this header. */
+if (!function_exists('busiaDefaultQuickActions')) {
+    function busiaDefaultQuickActions(string $script): array {
+        $map = [
+            'dashboard.php' => [
+                ['label' => 'New Customer Order', 'icon' => 'shopping-bag', 'href' => '/Frontend/admin/orders.php'],
+                ['label' => 'Analytics & Charts', 'icon' => 'bar-chart-2', 'href' => '/Frontend/admin/analytics.php'],
+                ['label' => 'Bulk Import / Export', 'icon' => 'upload', 'href' => '/Frontend/admin/bulk_import_export.php'],
+                ['label' => 'LPO & Invoicing', 'icon' => 'file-text', 'href' => '/Frontend/admin/lpo.php'],
+            ],
+            'products.php' => [
+                ['label' => 'Add Product', 'icon' => 'package-plus', 'click' => 'Add Product', 'href' => '/Frontend/admin/products.php'],
+                ['label' => 'Export Products CSV', 'icon' => 'download', 'href' => '/Backend/api/export.php?module=products'],
+            ],
+            'orders.php' => [['label' => 'New Order', 'icon' => 'plus-circle', 'click' => 'New Order', 'href' => '/Frontend/admin/orders.php']],
+            'flocks.php' => [['label' => 'Hatch New Flock', 'icon' => 'plus', 'click' => 'Hatch New Flock', 'href' => '/Frontend/admin/flocks.php']],
+            'production.php' => [['label' => 'Log Daily Yield', 'icon' => 'plus', 'click' => 'Log Daily Yield', 'href' => '/Frontend/admin/production.php']],
+            'vaccinations.php' => [['label' => 'Schedule Vaccine', 'icon' => 'plus', 'click' => 'Schedule Vaccine', 'href' => '/Frontend/admin/vaccinations.php']],
+            'batches.php' => [
+                ['label' => 'New Batch', 'icon' => 'plus', 'click' => 'New Batch', 'href' => '/Frontend/admin/batches.php'],
+                ['label' => 'Log Today\'s Record', 'icon' => 'clipboard', 'click' => 'Log Today\'s Record', 'href' => '/Frontend/admin/batches.php'],
+            ],
+            'health.php' => [['label' => 'New Health Record', 'icon' => 'plus', 'click' => 'Add Health Record', 'href' => '/Frontend/admin/health.php']],
+            'broiler.php' => [['label' => 'Record Weigh-In', 'icon' => 'plus', 'click' => 'Record Weigh-In', 'href' => '/Frontend/admin/broiler.php']],
+            'hatchery.php' => [['label' => 'New Hatch Record', 'icon' => 'plus', 'click' => 'New Hatch Record', 'href' => '/Frontend/admin/hatchery.php']],
+            'feeding.php' => [['label' => 'Record Feeding', 'icon' => 'plus', 'click' => 'Record Feeding', 'href' => '/Frontend/admin/feeding.php']],
+            'extras.php' => [
+                ['label' => 'Record Egg Loss', 'icon' => 'alert-circle', 'click' => 'Record Loss', 'href' => '/Frontend/admin/extras.php?tab=losses'],
+                ['label' => 'New Quality Test', 'icon' => 'flask-conical', 'click' => 'New Test', 'href' => '/Frontend/admin/extras.php?tab=quality'],
+            ],
+            'egg_grading.php' => [['label' => 'New Grading', 'icon' => 'plus', 'click' => 'New Grading', 'href' => '/Frontend/admin/egg_grading.php']],
+            'stores.php' => [['label' => 'Record Movement', 'icon' => 'arrow-down-circle', 'click' => 'Record Movement', 'href' => '/Frontend/admin/stores.php']],
+            'feed_production.php' => [['label' => 'Produce Feed', 'icon' => 'plus', 'click' => 'Produce Feed', 'href' => '/Frontend/admin/feed_production.php']],
+            'lpo.php' => [['label' => 'New LPO / Quotation / Invoice', 'icon' => 'plus', 'click' => 'New Document', 'href' => '/Frontend/admin/lpo.php']],
+            'credit.php' => [['label' => 'Record Credit Sale', 'icon' => 'plus', 'click' => 'Record Credit Sale', 'href' => '/Frontend/admin/credit.php']],
+            'bulk_sales.php' => [['label' => 'New Bulk Sale', 'icon' => 'plus', 'click' => 'New Sale', 'href' => '/Frontend/admin/bulk_sales.php']],
+            'profit.php' => [['label' => 'Add Cost', 'icon' => 'plus', 'click' => 'Add Cost', 'href' => '/Frontend/admin/profit.php']],
+            'daily_sales.php' => [['label' => 'Record Daily Sales', 'icon' => 'plus', 'click' => 'Record Daily Sales', 'href' => '/Frontend/admin/daily_sales.php']],
+            'purchase_orders.php' => [['label' => 'New Purchase Order', 'icon' => 'plus', 'click' => 'New Order', 'href' => '/Frontend/admin/purchase_orders.php']],
+            'staff.php' => [['label' => 'Add Staff', 'icon' => 'user-plus', 'href' => '/Frontend/admin/staff.php?action=add']],
+            'users.php' => [['label' => 'Create User Account', 'icon' => 'user-plus', 'click' => 'Add User', 'href' => '/Frontend/admin/users.php']],
+            'hub_settings.php' => [
+                ['label' => 'System Dropdowns', 'icon' => 'list', 'href' => '/Frontend/admin/dropdowns.php'],
+                ['label' => 'Permissions & Roles', 'icon' => 'shield', 'href' => '/Frontend/admin/permissions.php'],
+                ['label' => 'Activity Logs', 'icon' => 'history', 'href' => '/Frontend/admin/logs.php'],
+            ],
+            'calendar.php' => [['label' => 'Add Calendar Event', 'icon' => 'plus', 'click' => 'Add Event', 'href' => '/Frontend/admin/calendar.php']],
+            'dropdowns.php' => [['label' => 'Add Dropdown Option', 'icon' => 'plus', 'click' => 'Add Option', 'href' => '/Frontend/admin/dropdowns.php']],
+            'logs.php' => [['label' => 'View Activity Logs', 'icon' => 'history', 'href' => '/Frontend/admin/logs.php']],
+            'permissions.php' => [['label' => 'Edit Roles & Permissions', 'icon' => 'shield', 'href' => '/Frontend/admin/permissions.php']],
+            // Hub pages — shortcut to the hub's main sub-modules
+            'hub_finance.php' => [
+                ['label' => 'Cashbook', 'icon' => 'book', 'href' => '/Frontend/admin/cashbook.php'],
+                ['label' => 'LPO & Invoicing', 'icon' => 'file-text', 'href' => '/Frontend/admin/lpo.php'],
+                ['label' => 'Customer Credit', 'icon' => 'credit-card', 'href' => '/Frontend/admin/credit.php'],
+                ['label' => 'Bulk Sales', 'icon' => 'shopping-cart', 'href' => '/Frontend/admin/bulk_sales.php'],
+            ],
+            'hub_inventory.php' => [
+                ['label' => 'Products Catalog', 'icon' => 'package', 'href' => '/Frontend/admin/products.php'],
+                ['label' => 'Stores & Stock', 'icon' => 'warehouse', 'href' => '/Frontend/admin/stores.php'],
+                ['label' => 'Egg Grading', 'icon' => 'egg', 'href' => '/Frontend/admin/egg_grading.php'],
+            ],
+            'hub_operations.php' => [
+                ['label' => 'Hatch New Flock', 'icon' => 'plus', 'click' => 'Add Flock', 'href' => '/Frontend/admin/hub_operations.php'],
+                ['label' => 'Log Today\'s Production', 'icon' => 'clipboard', 'click' => 'Log Today\'s Production', 'href' => '/Frontend/admin/hub_operations.php'],
+                ['label' => 'Flocks', 'icon' => 'bird', 'href' => '/Frontend/admin/flocks.php'],
+            ],
+            'hub_people.php' => [
+                ['label' => 'Add Staff Member', 'icon' => 'user-plus', 'click' => 'Add Staff Member', 'href' => '/Frontend/admin/hub_people.php'],
+                ['label' => 'Tasks', 'icon' => 'check-square', 'href' => '/Frontend/admin/tasks.php'],
+                ['label' => 'Messages', 'icon' => 'message-square', 'href' => '/Frontend/admin/messages.php'],
+            ],
+            'bulk_import_export.php' => [
+                ['label' => 'Export Products CSV', 'icon' => 'download', 'href' => '/Backend/api/export.php?module=products'],
+                ['label' => 'Export Raw Materials CSV', 'icon' => 'download', 'href' => '/Backend/api/export.php?module=raw_materials'],
+                ['label' => 'Export Flocks CSV', 'icon' => 'download', 'href' => '/Backend/api/export.php?module=flocks'],
+                ['label' => 'Export LPO Documents CSV', 'icon' => 'download', 'href' => '/Backend/api/export.php?module=lpo_documents'],
+            ],
+            'sales.php' => [['label' => 'Sales & Finance Hub', 'icon' => 'trending-up', 'href' => '/Frontend/admin/hub_finance.php']],
+            'payments.php' => [['label' => 'Sales & Finance Hub', 'icon' => 'trending-up', 'href' => '/Frontend/admin/hub_finance.php']],
+            'expenses.php' => [['label' => 'Sales & Finance Hub', 'icon' => 'trending-up', 'href' => '/Frontend/admin/hub_finance.php']],
+            'reports.php' => [['label' => 'Analytics & Charts', 'icon' => 'bar-chart-2', 'href' => '/Frontend/admin/analytics.php']],
+            'orders.php' => [['label' => 'Sales & Finance Hub', 'icon' => 'trending-up', 'href' => '/Frontend/admin/hub_finance.php']],
+            'operations.php' => [['label' => 'Poultry Operations Hub', 'icon' => 'bird', 'href' => '/Frontend/admin/hub_operations.php']],
+            'incoming_stock.php' => [['label' => 'Stores & Stock', 'icon' => 'warehouse', 'href' => '/Frontend/admin/stores.php']],
+            'settings.php' => [['label' => 'App Settings Hub', 'icon' => 'settings', 'href' => '/Frontend/admin/hub_settings.php']],
+            'messages.php' => [['label' => 'Team & Messages Hub', 'icon' => 'users', 'href' => '/Frontend/admin/hub_people.php']],
+            'tasks.php' => [['label' => 'Assign Task', 'icon' => 'plus', 'click' => 'Assign Task', 'href' => '/Frontend/admin/tasks.php']],
+        ];
+        return $map[$script] ?? [];
+    }
+}
+if (!isset($quickActions)) {
+    $quickActions = busiaDefaultQuickActions(basename($_SERVER['SCRIPT_NAME']));
+}
 
 $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SESSION['csrf_token'] ?? '');
 ?>
@@ -783,6 +909,35 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
                 <p>Welcome back to your dashboard portal.</p>
             </div>
             <div style="display: flex; align-items: center; gap: 16px;">
+                <?php if (!empty($quickActions)): ?>
+                <div class="quick-actions-wrap" style="position: relative;">
+                    <button id="quick-actions-toggle" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; font-size: 0.85rem; border-radius: 8px;">
+                        <i data-lucide="zap" style="width: 15px; height: 15px;"></i> Quick Actions
+                        <i data-lucide="chevron-down" style="width: 13px; height: 13px; transition: transform 0.2s ease;"></i>
+                    </button>
+                    <div id="quick-actions-menu" style="display: none; position: absolute; right: 0; top: calc(100% + 8px); min-width: 250px; background: #fff; border: 1px solid var(--admin-border); border-radius: 10px; box-shadow: 0 16px 40px rgba(15,23,42,0.14); padding: 7px; z-index: 1300;">
+                        <div style="padding: 8px 12px 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8;">This page</div>
+                        <?php foreach ($quickActions as $qa): ?>
+                            <?php if (isset($qa['href']) && isset($qa['click'])): ?>
+                                <a href="<?= htmlspecialchars($qa['href'], ENT_QUOTES, 'UTF-8') ?>" data-quick-click="<?= htmlspecialchars($qa['click'], ENT_QUOTES, 'UTF-8') ?>" style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 7px; text-decoration: none; color: #1e293b; font-size: 0.88rem; font-weight: 600; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                    <i data-lucide="<?= htmlspecialchars($qa['icon'] ?? 'arrow-right', ENT_QUOTES, 'UTF-8') ?>" style="width: 16px; height: 16px; color: var(--admin-primary); flex-shrink: 0;"></i>
+                                    <?= htmlspecialchars($qa['label'], ENT_QUOTES, 'UTF-8') ?>
+                                </a>
+                            <?php elseif (isset($qa['href'])): ?>
+                                <a href="<?= htmlspecialchars($qa['href'], ENT_QUOTES, 'UTF-8') ?>" style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 7px; text-decoration: none; color: #1e293b; font-size: 0.88rem; font-weight: 600; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                    <i data-lucide="<?= htmlspecialchars($qa['icon'] ?? 'arrow-right', ENT_QUOTES, 'UTF-8') ?>" style="width: 16px; height: 16px; color: var(--admin-primary); flex-shrink: 0;"></i>
+                                    <?= htmlspecialchars($qa['label'], ENT_QUOTES, 'UTF-8') ?>
+                                </a>
+                            <?php else: ?>
+                                <button type="button" data-quick-click="<?= htmlspecialchars($qa['click'] ?? '', ENT_QUOTES, 'UTF-8') ?>" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; border: none; background: none; border-radius: 7px; color: #1e293b; font-size: 0.88rem; font-weight: 600; text-align: left; cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                                    <i data-lucide="<?= htmlspecialchars($qa['icon'] ?? 'arrow-right', ENT_QUOTES, 'UTF-8') ?>" style="width: 16px; height: 16px; color: var(--admin-primary); flex-shrink: 0;"></i>
+                                    <?= htmlspecialchars($qa['label'], ENT_QUOTES, 'UTF-8') ?>
+                                </a>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
                 <button id="open-system-guide" title="System Walkthrough Guide" style="background: none; border: none; cursor: pointer; color: var(--admin-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; background: rgba(27, 94, 32, 0.08); transition: all 0.2s; outline: none;" onmouseover="this.style.background='rgba(27, 94, 32, 0.15)'" onmouseout="this.style.background='rgba(27, 94, 32, 0.08)'">
                     <i data-lucide="help-circle" style="width: 22px; height: 22px; stroke-width: 2.2;"></i>
                 </button>

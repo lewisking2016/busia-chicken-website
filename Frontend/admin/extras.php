@@ -47,9 +47,9 @@ if ($pdo) {
     </div>
     <div class="table-responsive">
         <table class="admin-table">
-            <thead><tr><th>Date</th><th>Batch</th><th>Type</th><th>Quantity</th><th>Value (KES)</th><th>Reason</th></tr></thead>
+            <thead><tr><th>Date</th><th>Batch</th><th>Type</th><th>Where it happened</th><th>Quantity</th><th>Value (KES)</th><th>Reason</th></tr></thead>
             <tbody id="loss-body">
-                <tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -98,6 +98,14 @@ if ($pdo) {
                         <option value="eaten_staff">Eaten by staff</option>
                         <option value="fed_to_animals">Fed to animals</option>
                         <option value="expired">Expired (old)</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="admin-form-group"><label class="admin-form-label">Where it happened *</label>
+                    <select class="admin-form-control" id="lo-stage" required>
+                        <option value="collection">During collection</option>
+                        <option value="transport">On route (transport)</option>
+                        <option value="storage">At storage / farm</option>
                         <option value="other">Other</option>
                     </select>
                 </div>
@@ -164,22 +172,25 @@ const currentTab = '<?= $tab ?>';
 async function loadLosses() {
     const tbody = document.getElementById('loss-body');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
     try {
         const res = await fetch('/Backend/api/admin_business.php?action=list_egg_losses');
         const r = await res.json();
-        if (!r.success) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
+        if (!r.success) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;">No losses recorded yet.</td></tr>'; return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">No losses recorded yet.</td></tr>'; return; }
+        const stageMap = {collection:'During collection', transport:'On route (transport)', storage:'At storage / farm', other:'Other'};
+        const stagePill = {collection:'badge-pill-warning', transport:'badge-pill-danger', storage:'badge-pill-info', other:'badge-pill-warning'};
         tbody.innerHTML = data.map(l => `<tr>
             <td>${l.loss_date}</td>
             <td>${escapeHtml(l.batch_name||'—')}</td>
             <td><span class="badge-pill badge-pill-warning">${l.loss_type.replace('_',' ')}</span></td>
+            <td><span class="badge-pill ${stagePill[l.stage]||'badge-pill-warning'}">${stageMap[l.stage]||l.stage||'—'}</span></td>
             <td><strong>${parseInt(l.quantity).toLocaleString()}</strong> eggs</td>
             <td>KES ${parseFloat(l.estimated_value||0).toFixed(2)}</td>
             <td>${escapeHtml(l.reason||'')}</td>
         </tr>`).join('');
-    } catch (e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#dc2626;">Network error</td></tr>'; }
+    } catch (e) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#dc2626;">Network error</td></tr>'; }
 }
 
 function openLossModal() { document.getElementById('loss-modal').style.display = 'flex'; }
@@ -190,6 +201,7 @@ document.getElementById('loss-form').addEventListener('submit', async e => {
     fd.append('loss_date', document.getElementById('lo-date').value);
     fd.append('batch_id', document.getElementById('lo-batch').value);
     fd.append('loss_type', document.getElementById('lo-type').value);
+    fd.append('stage', document.getElementById('lo-stage').value);
     fd.append('quantity', document.getElementById('lo-qty').value);
     fd.append('estimated_value', document.getElementById('lo-value').value);
     fd.append('reason', document.getElementById('lo-reason').value);

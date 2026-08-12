@@ -11,7 +11,7 @@ session_start();
 $page_title = 'Staff - Admin';
 include __DIR__ . '/includes/admin_header.php';
 
-if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager'], true)) {
+if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'sales_staff'], true)) {
     header('Location: /busiaadmin');
     exit;
 }
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_staff'])) {
 $users = [];
 if ($pdo) {
     try {
-        $stmt = $pdo->query('SELECT * FROM users WHERE role IN ("super_admin", "farm_manager", "stock_manager") ORDER BY created_at DESC');
+        $stmt = $pdo->query('SELECT * FROM users WHERE role IN ("super_admin", "farm_manager", "stock_manager", "sales_staff") ORDER BY created_at DESC');
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
         $error_message = 'Database error: ' . $e->getMessage();
@@ -193,7 +193,7 @@ function renderInput(string $label, string $name, string $value = '', string $ty
             <div class="admin-form-group">
                 <label class="admin-form-label">Role</label>
                 <select class="admin-form-control" name="role">
-                    <?php foreach (['super_admin','farm_manager','stock_manager'] as $roleOption): ?>
+                    <?php foreach (['super_admin','farm_manager','stock_manager','sales_staff'] as $roleOption): ?>
                         <option value="<?php echo htmlspecialchars($roleOption, ENT_QUOTES, 'UTF-8'); ?>" <?php echo $formValues['role'] === $roleOption ? 'selected' : ''; ?>><?php echo htmlspecialchars(ucwords(str_replace('_', ' ', $roleOption)), ENT_QUOTES, 'UTF-8'); ?></option>
                     <?php endforeach; ?>
                 </select>
