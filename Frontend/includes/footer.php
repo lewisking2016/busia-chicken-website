@@ -87,12 +87,12 @@ $site_address = function_exists('getSetting') ? getSetting('farm_address', 'Nasi
     </footer>
 
     <!-- Vendor Scripts -->
-    <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/vendor/gsap/gsap.min.js"></script>
-    <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/vendor/swiper/swiper-bundle.min.js"></script>
-    <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/vendor/lucide/lucide.min.js"></script>
+    <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/vendor/gsap/gsap.min.js<?php echo assetVer('assets/vendor/gsap/gsap.min.js'); ?>"></script>
+    <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/vendor/swiper/swiper-bundle.min.js<?php echo assetVer('assets/vendor/swiper/swiper-bundle.min.js'); ?>"></script>
+    <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/vendor/lucide/lucide.min.js<?php echo assetVer('assets/vendor/lucide/lucide.min.js'); ?>"></script>
 
     <!-- App Scripts -->
-    <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/js/main.js" defer></script>
-    <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/js/premium.js" defer></script>
+    <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/js/main.js<?php echo assetVer('assets/js/main.js'); ?>" defer></script>
+    <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/js/premium.js<?php echo assetVer('assets/js/premium.js'); ?>" defer></script>
 </body>
 </html>

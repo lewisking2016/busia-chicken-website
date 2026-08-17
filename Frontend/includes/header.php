@@ -30,6 +30,16 @@ function navActive(string $page, string $current): string {
     return ($page === $current) ? ' active' : '';
 }
 
+/**
+ * Cache-busting: append a version derived from the file's mtime so that
+ * phones and browsers never serve stale CSS/JS after a deploy.
+ */
+function assetVer(string $path): string {
+    $full = __DIR__ . '/../' . ltrim($path, '/');
+    $mtime = @filemtime($full);
+    return '?v=' . ($mtime ?: '1');
+}
+
 // Determine login state for public site (only customer role shows on website)
 $is_customer_logged_in = !empty($_SESSION['user_id']) && ($_SESSION['role'] ?? '') === 'customer';
 
@@ -49,14 +59,14 @@ $is_home = ($currentPage === 'home');
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&display=swap" rel="stylesheet">
 
     <!-- Swiper CSS -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/vendor/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/vendor/swiper/swiper-bundle.min.css<?php echo assetVer('assets/vendor/swiper/swiper-bundle.min.css'); ?>">
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/components.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/animations.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/responsive.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/premium.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css<?php echo assetVer('assets/css/style.css'); ?>">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/components.css<?php echo assetVer('assets/css/components.css'); ?>">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/animations.css<?php echo assetVer('assets/css/animations.css'); ?>">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/responsive.css<?php echo assetVer('assets/css/responsive.css'); ?>">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/premium.css<?php echo assetVer('assets/css/premium.css'); ?>">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/Frontend/images/busia logo.png">
