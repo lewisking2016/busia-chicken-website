@@ -1,7 +1,7 @@
 <?php
 /**
- * Homepage - Busia Chicken Farm
- * Premium Minimalist Redesign
+ * Homepage — Busia Chicken Farm
+ * Premium redesign: motion, storytelling, editorial polish.
  */
 declare(strict_types=1);
 
@@ -11,154 +11,186 @@ include 'includes/header.php';
 $pdo = getDB();
 ?>
 
-<!-- Swiper Hero Slider Section -->
-<section style="padding: 0; position: relative; overflow: hidden; height: 90vh;">
-    <div class="swiper hero-swiper" style="height: 100%;">
-        <div class="swiper-wrapper">
-            <!-- Slide 1: Farm Overview -->
-            <div class="swiper-slide" style="position: relative;">
-                <img src="/Frontend/images/download (8).png" alt="Farm Overview" style="width: 100%; height: 100%; object-fit: cover;">
-                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0,0,0,0.7), transparent); display: flex; align-items: center; padding: 0 var(--space-xl);">
-                    <div class="container hero-content" style="color: white; max-width: 800px;">
-                        <div style="display: inline-block; padding: 0.5rem 1rem; background: var(--primary); color: white; font-weight: 600; font-size: 0.875rem; border-radius: var(--radius-pill); margin-bottom: var(--space-lg);">
-                            Welcome to Busia Chicken Farm
-                        </div>
-                        <h1 style="color: white;">Quality Poultry for East Africa</h1>
-                        <p style="font-size: 1.25rem; margin-bottom: var(--space-2xl); color: rgba(255,255,255,0.9);">
-                            Providing high-grade broilers, layers, and day-old chicks with sustainable farming excellence.
-                        </p>
-                        <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;">
-                            <a href="/Frontend/pages/shop.php" class="btn btn-primary">Explore Products</a>
-                            <a href="/Frontend/pages/about.php" class="btn btn-outline" style="color: white; border-color: white;">Our Story</a>
-                        </div>
+<!-- ═══════════════ HERO SLIDER ═══════════════ -->
+<section class="hero-swiper" aria-label="Featured highlights">
+    <div class="swiper-wrapper">
+
+        <!-- Slide 1 -->
+        <div class="swiper-slide hero-slide">
+            <img src="/Frontend/images/download (8).png" alt="Busia Chicken Farm — poultry farm overview" fetchpriority="high">
+            <div class="hero-scrim"></div>
+            <div class="container">
+                <div class="hero-content">
+                    <span class="hero-badge hero-anim"><span class="dot"></span> Welcome to Busia Chicken Farm</span>
+                    <h1 class="hero-title hero-anim">Quality Poultry for <em>East Africa</em></h1>
+                    <p class="hero-sub hero-anim">Premium broilers, layers and day-old chicks — raised with care, delivered with confidence, and backed by a decade of sustainable farming excellence.</p>
+                    <div class="hero-cta hero-anim">
+                        <a href="/Frontend/pages/shop.php" class="btn btn-primary" data-magnetic>Explore Products</a>
+                        <a href="/Frontend/pages/about.php" class="btn btn-outline">Our Story</a>
                     </div>
-                </div>
-            </div>
-            <!-- Slide 2: Egg Production -->
-            <div class="swiper-slide" style="position: relative;">
-                <img src="/Frontend/images/download (4).png" alt="Egg Production" style="width: 100%; height: 100%; object-fit: cover;">
-                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0,0,0,0.8), transparent); display: flex; align-items: center; padding: 0 var(--space-xl);">
-                    <div class="container hero-content" style="color: white; max-width: 800px;">
-                        <div style="display: inline-block; padding: 0.5rem 1rem; background: var(--accent); color: var(--dark); font-weight: 600; font-size: 0.875rem; border-radius: var(--radius-pill); margin-bottom: var(--space-lg);">
-                            Premium Egg Production
-                        </div>
-                        <h1 style="color: white;">The Egg People</h1>
-                        <p style="font-size: 1.25rem; margin-bottom: var(--space-2xl); color: rgba(255,255,255,0.9);">
-                            State-of-the-art facilities ensuring the freshest, most nutritious eggs for your family.
-                        </p>
-                        <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;">
-                            <a href="/Frontend/pages/shop.php?category=eggs" class="btn btn-primary">Order Fresh Eggs</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Slide 3: Our Team -->
-            <div class="swiper-slide" style="position: relative;">
-                <img src="/Frontend/images/download (2).png" alt="Our Team" style="width: 100%; height: 100%; object-fit: cover;">
-                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0,0,0,0.8), transparent); display: flex; align-items: center; padding: 0 var(--space-xl);">
-                    <div class="container hero-content" style="color: white; max-width: 800px;">
-                        <div style="display: inline-block; padding: 0.5rem 1rem; background: var(--primary); color: white; font-weight: 600; font-size: 0.875rem; border-radius: var(--radius-pill); margin-bottom: var(--space-lg);">
-                            Expert Farm Management
-                        </div>
-                        <h1 style="color: white;">Trusted by Thousands</h1>
-                        <p style="font-size: 1.25rem; margin-bottom: var(--space-2xl); color: rgba(255,255,255,0.9);">
-                            Our dedicated team ensures the highest standards of poultry health and quality.
-                        </p>
-                        <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;">
-                            <a href="/Frontend/pages/contact.php" class="btn btn-primary">Partner With Us</a>
-                        </div>
+                    <div class="hero-stats hero-anim">
+                        <div class="hero-stat"><b><span data-counter="10" data-suffix="k+">0</span></b><span>Chickens raised annually</span></div>
+                        <div class="hero-stat"><b><span data-counter="5" data-suffix="k+">0</span></b><span>Happy customers</span></div>
+                        <div class="hero-stat"><b><span data-counter="10" data-suffix="+">0</span></b><span>Years in business</span></div>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- Add Pagination -->
-        <div class="swiper-pagination hero-pagination"></div>
-    </div>
-</section>
 
-<!-- Minimalist Words Slider / Trust -->
-<section class="bg-gray" style="padding: var(--space-xl) 0; overflow: hidden;">
-    <div class="container">
-        <div class="swiper trust-swiper">
-            <div class="swiper-wrapper" style="align-items: center;">
-                <div class="swiper-slide" style="text-align: center;"><h3 style="color: var(--gray-400); font-family: 'Outfit';">AUTHENTICITY</h3></div>
-                <div class="swiper-slide" style="text-align: center;"><h3 style="color: var(--gray-400); font-family: 'Outfit';">QUALITY</h3></div>
-                <div class="swiper-slide" style="text-align: center;"><h3 style="color: var(--gray-400); font-family: 'Outfit';">RELIABILITY</h3></div>
-                <div class="swiper-slide" style="text-align: center;"><h3 style="color: var(--gray-400); font-family: 'Outfit';">SUSTAINABILITY</h3></div>
-                <div class="swiper-slide" style="text-align: center;"><h3 style="color: var(--gray-400); font-family: 'Outfit';">INNOVATION</h3></div>
-                <div class="swiper-slide" style="text-align: center;"><h3 style="color: var(--gray-400); font-family: 'Outfit';">EXCELLENCE</h3></div>
-                <div class="swiper-slide" style="text-align: center;"><h3 style="color: var(--gray-400); font-family: 'Outfit';">TRUSTED</h3></div>
-                <div class="swiper-slide" style="text-align: center;"><h3 style="color: var(--gray-400); font-family: 'Outfit';">NUTRITIOUS</h3></div>
+        <!-- Slide 2 -->
+        <div class="swiper-slide hero-slide">
+            <img src="/Frontend/images/download (4).png" alt="Premium egg production">
+            <div class="hero-scrim"></div>
+            <div class="container">
+                <div class="hero-content">
+                    <span class="hero-badge hero-anim"><span class="dot"></span> The Egg People</span>
+                    <h1 class="hero-title hero-anim">Farm-Fresh Eggs, <em>Every Day</em></h1>
+                    <p class="hero-sub hero-anim">State-of-the-art layer facilities producing the freshest, most nutritious eggs — harvested daily and delivered to your family or business.</p>
+                    <div class="hero-cta hero-anim">
+                        <a href="/Frontend/pages/shop.php?category=eggs" class="btn btn-primary" data-magnetic>Order Fresh Eggs</a>
+                        <a href="/Frontend/pages/products.php" class="btn btn-outline">See Our Products</a>
+                    </div>
+                    <div class="hero-stats hero-anim">
+                        <div class="hero-stat"><b><span data-counter="300" data-suffix="+">0</span></b><span>Eggs per bird per year</span></div>
+                        <div class="hero-stat"><b><span data-counter="100" data-suffix="%">0</span></b><span>Biosafety compliant</span></div>
+                        <div class="hero-stat"><b><span data-counter="24" data-suffix="h">0</span></b><span>Response time</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="swiper-slide hero-slide">
+            <img src="/Frontend/images/download (2).png" alt="Expert farm management team">
+            <div class="hero-scrim"></div>
+            <div class="container">
+                <div class="hero-content">
+                    <span class="hero-badge hero-anim"><span class="dot"></span> Expert Farm Management</span>
+                    <h1 class="hero-title hero-anim">Trusted by <em>Thousands</em></h1>
+                    <p class="hero-sub hero-anim">From consulting and incubator rentals to premium feeds — our dedicated team helps farmers grow with confidence.</p>
+                    <div class="hero-cta hero-anim">
+                        <a href="/Frontend/pages/services.php" class="btn btn-primary" data-magnetic>Explore Services</a>
+                        <a href="/Frontend/pages/contact.php" class="btn btn-outline">Partner With Us</a>
+                    </div>
+                    <div class="hero-stats hero-anim">
+                        <div class="hero-stat"><b><span data-counter="95" data-suffix="%+">0</span></b><span>Hatch success rate</span></div>
+                        <div class="hero-stat"><b><span data-counter="40" data-suffix="%">0</span></b><span>Saved on feed costs</span></div>
+                        <div class="hero-stat"><b><span data-counter="6" data-suffix="-7">0</span></b><span>Weeks to market weight</span></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <div class="swiper-pagination hero-pagination"></div>
+    <div class="scroll-cue"><div class="mouse"></div>Scroll</div>
 </section>
 
-<!-- Clean Feature Section -->
-<section>
+<!-- ═══════════════ MARQUEE TRUST BAND ═══════════════ -->
+<div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+        <?php
+        $words = ['AUTHENTICITY', 'QUALITY', 'RELIABILITY', 'SUSTAINABILITY', 'INNOVATION', 'EXCELLENCE', 'TRUSTED', 'NUTRITIOUS'];
+        for ($copy = 0; $copy < 2; $copy++) {
+            foreach ($words as $w) {
+                echo '<span>' . $w . '</span>';
+            }
+        }
+        ?>
+    </div>
+</div>
+
+<!-- ═══════════════ WHY CHOOSE US ═══════════════ -->
+<section class="section-pad bg-white">
     <div class="container">
-        <div class="section-header">
-            <h2>Why Choose Busia Chicken?</h2>
-            <p>We combine traditional farming wisdom with modern technology to deliver the best poultry products.</p>
+        <div class="section-head center" data-reveal>
+            <span class="eyebrow centered">Why Busia Chicken</span>
+            <h2 class="section-title">Farming done <em>right</em>, from hatch to harvest</h2>
+            <p class="lead">We combine traditional farming wisdom with modern technology to deliver the best poultry products in the region.</p>
         </div>
-        
-        <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-2xl);">
-            <div class="feature-card live-float">
-                <div style="width: 56px; height: 56px; background: var(--gray-50); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-lg); color: var(--primary);">
-                    <i data-lucide="shield-check" style="width: 28px; height: 28px;"></i>
-                </div>
-                <h4 style="margin-bottom: var(--space-sm);">Premium Quality</h4>
-                <p style="font-size: 0.95rem; margin: 0; color: var(--gray-600);">Rigorous health checks and premium feeds ensure our birds are the healthiest in the region.</p>
+
+        <div class="grid-3" data-reveal-group style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.8rem;">
+            <div class="p-card">
+                <div class="p-icon"><i data-lucide="shield-check" style="width:28px;height:28px;"></i></div>
+                <h3>Premium Quality</h3>
+                <p>Rigorous health checks, premium feeds and strict biosafety protocols ensure our birds are the healthiest in the region.</p>
             </div>
-            <div class="feature-card live-float">
-                <div style="width: 56px; height: 56px; background: var(--gray-50); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-lg); color: var(--primary);">
-                    <i data-lucide="truck" style="width: 28px; height: 28px;"></i>
-                </div>
-                <h4 style="margin-bottom: var(--space-sm);">Reliable Delivery</h4>
-                <p style="font-size: 0.95rem; margin: 0; color: var(--gray-600);">Timely and safe transportation of live birds and fresh eggs directly to your farm or business.</p>
+            <div class="p-card">
+                <div class="p-icon"><i data-lucide="truck" style="width:28px;height:28px;"></i></div>
+                <h3>Reliable Delivery</h3>
+                <p>Timely, safe transportation of live birds and fresh eggs — direct to your farm or business, in carefully monitored transit.</p>
             </div>
-            <div class="feature-card live-float">
-                <div style="width: 56px; height: 56px; background: var(--gray-50); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-lg); color: var(--primary);">
-                    <i data-lucide="book-open" style="width: 28px; height: 28px;"></i>
-                </div>
-                <h4 style="margin-bottom: var(--space-sm);">Expert Support</h4>
-                <p style="font-size: 0.95rem; margin: 0; color: var(--gray-600);">Our farm management software and expert consultants help you maximize your yield.</p>
+            <div class="p-card">
+                <div class="p-icon"><i data-lucide="graduation-cap" style="width:28px;height:28px;"></i></div>
+                <h3>Expert Support</h3>
+                <p>Consulting, incubator rentals and feed-formulation training help you maximize yield and cut operating costs.</p>
+            </div>
+            <div class="p-card">
+                <div class="p-icon"><i data-lucide="egg" style="width:28px;height:28px;"></i></div>
+                <h3>Farm-Fresh Eggs</h3>
+                <p>Grade-A eggs harvested daily from modern layer houses — packed in 30-egg trays for homes, shops and hotels.</p>
+            </div>
+            <div class="p-card">
+                <div class="p-icon"><i data-lucide="dna" style="width:28px;height:28px;"></i></div>
+                <h3>Superior Genetics</h3>
+                <p>Ross 308, Cobb 500, ISA Brown and Lohmann breeds — vaccinated, disease-free and bred for performance.</p>
+            </div>
+            <div class="p-card">
+                <div class="p-icon"><i data-lucide="heart-handshake" style="width:28px;height:28px;"></i></div>
+                <h3>Customer First</h3>
+                <p>Transparent pricing, honest advice and long-term partnerships with the farmers and families we serve.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Elegant E-Commerce Showcase -->
-<section style="background-color: var(--gray-50); position: relative; overflow: hidden;">
+<!-- ═══════════════ STATS BAND ═══════════════ -->
+<section class="section-pad stats-band">
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--space-3xl);">
-            <div style="max-width: 600px;">
-                <div style="display: inline-block; padding: 0.5rem 1rem; background: var(--white); color: var(--primary); font-weight: 600; font-size: 0.875rem; border-radius: var(--radius-pill); margin-bottom: var(--space-md); border: 1px solid var(--gray-200);">
-                    Best Sellers
-                </div>
-                <h2>Featured Products</h2>
-                <p>Browse our selection of premium poultry and feeds.</p>
+        <div class="grid-4" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.6rem;">
+            <div class="stat-item" data-reveal>
+                <b><span data-counter="10" data-suffix="k+">0</span></b>
+                <span>Chickens Raised Annually</span>
             </div>
-            <div style="display: flex; gap: var(--space-md); align-items: center; margin-bottom: 1rem;">
-                <a href="/Frontend/pages/shop.php" class="btn btn-outline">View Full Shop</a>
+            <div class="stat-item" data-reveal data-reveal-delay="120">
+                <b><span data-counter="5" data-suffix="k+">0</span></b>
+                <span>Satisfied Customers</span>
+            </div>
+            <div class="stat-item" data-reveal data-reveal-delay="240">
+                <b><span data-counter="10" data-suffix="+">0</span></b>
+                <span>Years in Business</span>
+            </div>
+            <div class="stat-item" data-reveal data-reveal-delay="360">
+                <b><span data-counter="100" data-suffix="%">0</span></b>
+                <span>Quality Guarantee</span>
             </div>
         </div>
+    </div>
+</section>
 
-        <!-- Slider Container with Arrows & Progress -->
-        <div style="position: relative; padding: 0 20px;">
-            <div class="swiper swiper-products creative-slider">
+<!-- ═══════════════ FEATURED PRODUCTS ═══════════════ -->
+<section class="section-pad" style="background:var(--cream-50);">
+    <div class="container">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:1.6rem;flex-wrap:wrap;margin-bottom:2.4rem;" data-reveal>
+            <div>
+                <span class="eyebrow">Best Sellers</span>
+                <h2 class="section-title" style="margin-bottom:0.4rem;">Featured <em>Products</em></h2>
+                <p class="lead" style="margin:0;">Premium poultry, eggs and feeds — ready to order.</p>
+            </div>
+            <a href="/Frontend/pages/shop.php" class="btn btn-outline">View Full Shop <i data-lucide="arrow-right" style="width:16px;height:16px;"></i></a>
+        </div>
+
+        <div style="position:relative;padding:0 6px;">
+            <div class="swiper creative-slider swiper-products">
                 <div class="swiper-wrapper">
                 <?php
-                // Load products from the shared product source (DB or fallback)
                 require_once __DIR__ . '/includes/product_source.php';
                 $products = loadDisplayProducts($pdo);
-                // Limit to 8 featured items
                 if (!empty($products)) {
                     $products = array_slice($products, 0, 8);
                 }
 
                 foreach ($products as $index => $product):
-                    // Image resolution: prefer explicit `img`, then `image_url`, then fall back by product_type
                     $img = $product['img'] ?? $product['image_url'] ?? '';
                     if (!$img) {
                         $type = $product['product_type'] ?? 'feed';
@@ -172,48 +204,146 @@ $pdo = getDB();
                     }
                 ?>
                 <div class="swiper-slide">
-                        <div class="product-card creative-card" data-id="<?php echo $product['id']; ?>" data-type="<?php echo htmlspecialchars($product['product_type'] ?? '', ENT_QUOTES); ?>" data-instock="<?php echo (!empty($product['stock_quantity']) && $product['stock_quantity'] > 0) ? '1' : '0'; ?>">
-                        <div class="product-image">
-                            <span class="product-badge">Top Rated</span>
-                            <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
-                        </div>
-                        <div class="product-body">
-                            <h4 class="product-name" data-gsap="title"><?php echo htmlspecialchars($product['name'], ENT_QUOTES, 'UTF-8') ?></h4>
-                            <p class="product-description" data-gsap="desc"><?php echo htmlspecialchars($product['description'] ?? $product['desc'] ?? 'Premium quality poultry product.'); ?></p>
-                            <div class="product-meta" data-gsap="meta">
-                                <span class="product-price">KES <?php echo number_format((float)$product['price'], 0) ?></span>
+                    <div class="product-card creative-card" data-id="<?php echo $product['id']; ?>" data-type="<?php echo htmlspecialchars($product['product_type'] ?? '', ENT_QUOTES); ?>" data-instock="<?php echo (!empty($product['stock_quantity']) && $product['stock_quantity'] > 0) ? '1' : '0'; ?>">
+                        <a href="/Frontend/pages/product-detail.php?id=<?php echo $product['id']; ?>" style="display:block;text-decoration:none;color:inherit;">
+                            <div class="product-image">
+                                <span class="product-badge">Top Rated</span>
+                                <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" loading="lazy">
                             </div>
-                            <button class="add-to-cart-btn btn btn-primary creative-btn" data-id="<?php echo $product['id'] ?>" data-qty="1" data-gsap="btn">
+                        </a>
+                        <div class="product-body">
+                            <h4 class="product-name"><?php echo htmlspecialchars($product['name'], ENT_QUOTES, 'UTF-8'); ?></h4>
+                            <p class="product-description"><?php echo htmlspecialchars($product['description'] ?? $product['desc'] ?? 'Premium quality poultry product.'); ?></p>
+                            <div class="product-meta">
+                                <span class="product-price">KES <?php echo number_format((float)$product['price'], 0); ?></span>
+                            </div>
+                            <button class="add-to-cart-btn btn btn-primary" data-id="<?php echo $product['id']; ?>" data-qty="1" style="width:100%;justify-content:center;">
                                 <span>Add to Cart</span>
-                                <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                                <i data-lucide="arrow-right" style="width:16px;height:16px;"></i>
                             </button>
                         </div>
                     </div>
                 </div>
                 <?php endforeach; ?>
                 </div>
-                
-                <!-- Custom Progress Bar -->
-                <div class="slider-progress-container">
-                    <div class="slider-progress-bar"></div>
-                </div>
             </div>
 
-            <!-- Enhanced Navigation -->
             <div class="swiper-button-prev creative-nav-prev"></div>
             <div class="swiper-button-next creative-nav-next"></div>
         </div>
     </div>
 </section>
 
-<!-- Minimal CTA -->
-<section class="bg-dark" style="text-align: center; padding: var(--space-4xl) 0;">
-    <div class="container" style="max-width: 600px;">
-        <h2 style="margin-bottom: var(--space-lg);">Ready to elevate your farm?</h2>
-        <p style="margin-bottom: var(--space-2xl);">Join thousands of successful farmers using Busia Chicken products and management tools.</p>
-        <div style="display: flex; gap: var(--space-md); justify-content: center;">
-            <a href="/Frontend/pages/register.php" class="btn btn-primary">Create Account</a>
-            <a href="/Frontend/pages/contact.php" class="btn btn-outline" style="border-color: var(--gray-600); color: var(--white);">Contact Sales</a>
+<!-- ═══════════════ PROCESS ═══════════════ -->
+<section class="section-pad bg-white">
+    <div class="container">
+        <div class="section-head center" data-reveal>
+            <span class="eyebrow centered">How It Works</span>
+            <h2 class="section-title">From our farm to <em>your table</em></h2>
+            <p class="lead">A simple, transparent journey — so you always know exactly what you're getting.</p>
+        </div>
+
+        <div class="grid-4" data-reveal-group style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1.8rem;">
+            <div class="p-card num-card">
+                <span class="step-no">01</span>
+                <h3>Select &amp; Order</h3>
+                <p>Choose your chicks, birds, eggs or feeds online or by phone. Our team confirms availability instantly.</p>
+            </div>
+            <div class="p-card num-card">
+                <span class="step-no">02</span>
+                <h3>Vaccinated &amp; Checked</h3>
+                <p>Every bird passes health and vaccination protocols before it leaves the farm gates.</p>
+            </div>
+            <div class="p-card num-card">
+                <span class="step-no">03</span>
+                <h3>Packed &amp; Delivered</h3>
+                <p>Carefully packed and transported in monitored conditions — on time, every time.</p>
+            </div>
+            <div class="p-card num-card">
+                <span class="step-no">04</span>
+                <h3>Grow With Support</h3>
+                <p>Ongoing consulting, feed advice and after-sale support to help your flock thrive.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════ STORY TEASER ═══════════════ -->
+<section class="section-pad" style="background:var(--cream-50);">
+    <div class="container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(2.4rem,5vw,4.5rem);align-items:center;">
+        <div class="img-frame frame-gold" data-reveal="left">
+            <img src="/Frontend/images/download (2).png" alt="Busia Chicken Farm team" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.06">
+        </div>
+        <div data-reveal="right">
+            <span class="eyebrow">Our Story</span>
+            <h2 class="section-title">From 500 birds to <em>East Africa's</em> trusted farm</h2>
+            <p class="lead">Founded in 2015 in Nasira AC, Busia, we've grown from a small family operation into a modern poultry facility serving thousands of customers — without ever losing the personal touch.</p>
+            <ul class="check-list" style="margin:1.6rem 0 2.2rem;">
+                <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>State-of-the-art incubation &amp; biosafety facilities</li>
+                <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>Vaccinated, disease-free birds with <em>95%+ hatch rates</em></li>
+                <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>Feed formulas that cut costs by up to <em>40%</em></li>
+            </ul>
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                <a href="/Frontend/pages/about.php" class="btn btn-primary" data-magnetic>Read Our Story</a>
+                <a href="/Frontend/pages/services.php" class="btn btn-outline">Explore Services</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════ TESTIMONIALS ═══════════════ -->
+<section class="section-pad bg-white">
+    <div class="container">
+        <div class="section-head center" data-reveal>
+            <span class="eyebrow centered">Testimonials</span>
+            <h2 class="section-title">Farmers who <em>trust us</em></h2>
+        </div>
+
+        <div class="grid-3" data-reveal-group style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.8rem;">
+            <figure class="testimonial-card">
+                <span class="quote-mark">&ldquo;</span>
+                <div class="stars">★★★★★</div>
+                <blockquote>I've bought day-old chicks from Busia for three seasons now. Mortality is almost zero and the support team actually answers the phone.</blockquote>
+                <figcaption>
+                    <span class="avatar">JM</span>
+                    <span><span class="t-name">James Muriithi</span><br><span class="t-role">Broiler Farmer, Eldoret</span></span>
+                </figcaption>
+            </figure>
+            <figure class="testimonial-card">
+                <span class="quote-mark">&ldquo;</span>
+                <div class="stars">★★★★★</div>
+                <blockquote>The incubator rental service changed our hatchery. We now hatch over 2,000 chicks a month with an amazing success rate.</blockquote>
+                <figcaption>
+                    <span class="avatar">AN</span>
+                    <span><span class="t-name">Alice Nekesa</span><br><span class="t-role">Hatchery Owner, Bungoma</span></span>
+                </figcaption>
+            </figure>
+            <figure class="testimonial-card">
+                <span class="quote-mark">&ldquo;</span>
+                <div class="stars">★★★★★</div>
+                <blockquote>Fresh eggs delivered to our restaurant every morning, without fail. The quality is unmatched in the county.</blockquote>
+                <figcaption>
+                    <span class="avatar">DO</span>
+                    <span><span class="t-name">Daniel Ochieng</span><br><span class="t-role">Restaurant Owner, Busia Town</span></span>
+                </figcaption>
+            </figure>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════ CTA ═══════════════ -->
+<section class="section-pad" style="background:var(--cream-50);">
+    <div class="container">
+        <div class="cta-band" data-reveal="zoom">
+            <div class="container" style="padding:0;">
+                <span class="eyebrow centered" style="color:var(--gold-300);">Let's Get Started</span>
+                <h2>Ready to elevate your farm?</h2>
+                <p>Join thousands of successful farmers using Busia Chicken products and management tools. Whether you're a family, a restaurant or a commercial operation — we've got you covered.</p>
+                <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                    <a href="/Frontend/pages/register.php" class="btn btn-primary" data-magnetic>Create Account</a>
+                    <a href="/Frontend/pages/contact.php" class="btn btn-ghost">Contact Sales</a>
+                </div>
+            </div>
         </div>
     </div>
 </section>

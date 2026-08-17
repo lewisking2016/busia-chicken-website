@@ -65,47 +65,9 @@ const BusiaApp = {
     // ═══════════════════════════════════════════════════════════════
 
     setupMobileMenu() {
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mainNav = document.getElementById('main-nav');
-
-        if (!mobileMenuBtn) return;
-
-        mobileMenuBtn.addEventListener('click', () => {
-            mainNav.classList.toggle('active');
-            mobileMenuBtn.classList.toggle('active');
-
-            // Animate hamburger to X
-            const spans = mobileMenuBtn.querySelectorAll('span');
-            if (mobileMenuBtn.classList.contains('active')) {
-                spans[0].style.transform = 'rotate(45deg) translateY(12px)';
-                spans[1].style.opacity = '0';
-                spans[2].style.transform = 'rotate(-45deg) translateY(-12px)';
-            } else {
-                spans[0].style.transform = 'none';
-                spans[1].style.opacity = '1';
-                spans[2].style.transform = 'none';
-            }
-        });
-
-        // Close menu on link click
-        mainNav.querySelectorAll('.nav-link').forEach((link) => {
-            link.addEventListener('click', () => {
-                mainNav.classList.remove('active');
-                mobileMenuBtn.classList.remove('active');
-                const spans = mobileMenuBtn.querySelectorAll('span');
-                spans[0].style.transform = 'none';
-                spans[1].style.opacity = '1';
-                spans[2].style.transform = 'none';
-            });
-        });
-
-        // Close menu on outside click
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.navbar')) {
-                mainNav.classList.remove('active');
-                mobileMenuBtn.classList.remove('active');
-            }
-        });
+        // Mobile drawer is fully handled by premium.js (CSS-class hamburger animation,
+        // slide-in panel, aria state, Escape/outside-click close). Kept as a no-op
+        // here so pages that rely on BusiaApp.init() still behave consistently.
     },
 
     // ═══════════════════════════════════════════════════════════════
