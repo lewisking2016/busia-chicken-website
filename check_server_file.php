@@ -2,6 +2,7 @@
 /**
  * Check Server File Version
  */
+require __DIR__ . '/Backend/config/maintenance_guard.php';
 
 $file = __DIR__ . '/Frontend/admin/bulk_import_export.php';
 $content = file_get_contents($file);
