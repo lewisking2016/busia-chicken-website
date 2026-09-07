@@ -9,9 +9,9 @@ $cp   = basename($_SERVER['SCRIPT_NAME']);
 $tab  = $_GET['tab'] ?? '';
 
 $isDash       = $cp === 'dashboard.php';
-$isPoultry    = in_array($cp, ['hub_operations.php','flocks.php','production.php','vaccinations.php','batches.php','health.php','broiler.php','hatchery.php','feeding.php','extras.php'], true);
+$isPoultry    = in_array($cp, ['hub_operations.php','hub_mybirds.php','flocks.php','production.php','vaccinations.php','batches.php','health.php','broiler.php','hatchery.php','feeding.php','extras.php'], true);
 $isInventory  = in_array($cp, ['hub_inventory.php','stores.php','feed_production.php','egg_grading.php'], true);
-$isSalesFinance = in_array($cp, ['hub_finance.php','profit.php','cashbook.php','credit.php','purchase_orders.php','daily_sales.php','bulk_sales.php','lpo.php'], true);
+$isSalesFinance = in_array($cp, ['hub_money.php','hub_finance.php','profit.php','cashbook.php','credit.php','purchase_orders.php','daily_sales.php','bulk_sales.php','lpo.php'], true);
 $isReports    = in_array($cp, ['analytics.php','bulk_import_export.php'], true);
 $isPeople     = $cp === 'hub_people.php';
 $isSettings   = $cp === 'hub_settings.php';
@@ -38,6 +38,23 @@ function navLinkWithSub(string $href, string $icon, string $label, bool $active,
         return ''; // nothing viewable — hide the whole group
     }
     $submodules = $visible;
+
+    // Small icon for every sub-item so eyes can scan faster than reading text.
+    $subIcons = [
+        'flocks' => 'layers', 'production' => 'egg', 'vaccinations' => 'syringe',
+        'batches' => 'home', 'health' => 'heart-pulse', 'broiler' => 'drumstick',
+        'hatchery' => 'egg', 'feeding' => 'wheat', 'extras' => 'heart-crack',
+        'products' => 'package', 'stores' => 'boxes', 'feed' => 'flask-conical', 'eggs' => 'egg',
+        'hub_finance' => 'banknote', 'profit' => 'percent', 'cashbook' => 'book-open',
+        'credit' => 'hand-coins', 'lpo' => 'file-text', 'po' => 'shopping-cart',
+        'daily' => 'receipt', 'bulk' => 'shopping-bag',
+        'analytics' => 'bar-chart-3', 'import' => 'download',
+        'staff' => 'users', 'users' => 'user', 'tasks' => 'check-circle', 'messages' => 'message-circle',
+        'calendar' => 'calendar', 'dropdowns' => 'list', 'settings' => 'settings',
+        'logs' => 'scroll-text', 'permissions' => 'shield-check',
+        'group_flocks' => 'bird', 'group_eggs' => 'egg', 'group_health' => 'heart-pulse', 'group_growth' => 'trending-up',
+        'money_overview' => 'layout-dashboard', 'money_income' => 'trending-up', 'money_spending' => 'wallet',
+    ];
 
     $base = $active
         ? 'background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;box-shadow:0 4px 14px rgba(27,94,32,0.22);'
@@ -68,7 +85,15 @@ HTML;
         if (is_array($item) && isset($item['label'], $item['href'])) {
             $linkHref = $item['href'];
             $subLabel = $item['label'];
-            $subActive = basename($_SERVER['SCRIPT_NAME']) === basename(parse_url($linkHref, PHP_URL_PATH));
+            // Hub pages share one script (e.g. hub_mybirds.php) — a sub item is
+            // active only when its ?group= matches the page we are actually on.
+            if (basename($_SERVER['SCRIPT_NAME']) === basename(parse_url($linkHref, PHP_URL_PATH))) {
+                parse_str((string)parse_url($linkHref, PHP_URL_QUERY), $linkQp);
+                $subActive = ($linkQp['group'] ?? '') === ($_GET['group'] ?? '');
+                if (!isset($linkQp['group'])) $subActive = true; // plain pages are always active on themselves
+            } else {
+                $subActive = false;
+            }
         } else {
             $linkHref = "{$href}?tab={$tKey}";
             $subLabel = (string)$item;
@@ -80,10 +105,12 @@ HTML;
         }
         $subColor = $subActive ? 'color: var(--admin-primary); font-weight: 700;' : 'color: #64748b; font-weight: 500;';
         $subClass = 'nav-sub' . ($subActive ? ' active' : '');
+        $subIcon = $subIcons[$tKey] ?? 'arrow-right';
         $html .= <<<HTML
             <li>
-                <a href="{$linkHref}" class="{$subClass}" style="display:block; padding:6px 12px; font-size:0.82rem; text-decoration:none; border-radius:4px; transition: all 0.15s; {$subColor}" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
-                    • {$subLabel}
+                <a href="{$linkHref}" class="{$subClass}" style="display:flex;align-items:center;gap:8px; padding:7px 10px; font-size:0.82rem; text-decoration:none; border-radius:6px; transition: all 0.15s; {$subColor}">
+                    <i data-lucide="{$subIcon}" style="width:14px;height:14px;flex-shrink:0;opacity:0.9;"></i>
+                    <span>{$subLabel}</span>
                 </a>
             </li>
 HTML;
@@ -112,8 +139,28 @@ HTML;
     .nav-chevron svg { transition: transform 0.2s ease; }
     .nav-group-open .nav-chevron svg { transform: rotate(180deg); }
     .nav-subs { transition: opacity 0.15s ease; }
+
+    /* ── Sidebar UX polish ── */
+    #admin-nav { scrollbar-gutter: stable; }
+    .nav-item:not(.active):hover { background: #eef7f0 !important; color: #14532d !important; }
+    a.nav-sub { padding: 7px 10px !important; }
+    a.nav-sub:hover { background: #f1f5f9 !important; }
+    .nav-sub svg, .nav-item svg { stroke: currentColor; }
+    .nav-chevron { border-radius: 6px; transition: background 0.15s ease, color 0.15s ease; }
+    .nav-chevron:hover { background: rgba(27, 94, 32, 0.08); color: var(--admin-primary); }
+    .nav-item:focus-visible, .nav-chevron:focus-visible, .nav-sub:focus-visible,
+    #admin-nav-search:focus-visible, #nav-search-clear:focus-visible {
+        outline: 2px solid rgba(27, 94, 32, 0.45); outline-offset: 1px;
+    }
+    #admin-nav-search:focus { border-color: var(--admin-primary); background: #fff; box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.10); }
+    #nav-search-clear:hover { background: rgba(15, 23, 42, 0.05); color: #334155; }
+    mark.nav-hl { background: #fde68a; color: inherit; padding: 0 1px; border-radius: 2px; }
+    .nav-help-btn:hover { border-color: #bbf7d0 !important; background: #f0fdf4 !important; }
+    .nav-help-btn svg { transition: transform 0.15s ease; }
+    .nav-help-btn:hover svg { transform: scale(1.08); }
+    .admin-nav-userrow:hover { background: #f1f5f9 !important; }
 </style>
-<nav id="admin-nav" style="width:264px;background:#fff;border-right:1px solid rgba(203,213,225,0.7);padding:18px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;box-shadow:2px 0 16px rgba(15,23,42,0.03);box-sizing:border-box;z-index:100;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(27,94,32,0.15) transparent;flex-shrink:0;">
+<nav id="admin-nav" style="width:264px;background:#fff;border-right:1px solid rgba(203,213,225,0.7);padding:18px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;box-shadow:2px 0 16px rgba(15,23,42,0.03);box-sizing:border-box;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(27,94,32,0.15) transparent;flex-shrink:0;">
 
     <!-- Brand -->
     <div style="display:flex;align-items:center;gap:11px;margin-bottom:28px;padding:0 4px;">
@@ -124,70 +171,100 @@ HTML;
         </div>
     </div>
 
+    <!-- Quick search: type what you want to do (works in the drawer too) -->
+    <div style="position:relative;margin:0 2px 10px;">
+        <i data-lucide="search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#94a3b8;pointer-events:none;"></i>
+        <input id="admin-nav-search" type="search" placeholder="Find: eggs, feed, money…" autocomplete="off" aria-label="Search navigation"
+               style="width:100%;box-sizing:border-box;padding:10px 34px 10px 33px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;font-family:inherit;font-size:0.85rem;color:#0f172a;outline:none;transition:all 0.15s;">
+        <button id="nav-search-clear" type="button" aria-label="Clear search" title="Clear search"
+                style="display:none;position:absolute;right:5px;top:50%;transform:translateY(-50%);width:24px;height:24px;border:none;background:transparent;color:#94a3b8;cursor:pointer;border-radius:6px;align-items:center;justify-content:center;">
+            <i data-lucide="x" style="width:14px;height:14px;"></i>
+        </button>
+    </div>
+    <div id="nav-search-empty" style="display:none;margin:2px 2px 10px;padding:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;color:#9a3412;font-size:0.8rem;line-height:1.5;">
+        Nothing matches here. Try <strong>eggs</strong>, <strong>feed</strong>, <strong>money</strong>, <strong>sick</strong> or <strong>staff</strong>.
+    </div>
+
     <!-- Navigation -->
-    <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px;flex-grow:1;">
+    <ul id="admin-nav-list" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px;flex-grow:1;">
+
+        <!-- Quick Actions: the 5 things farmers do every day, in plain words -->
+        <li style="margin:2px 0 6px;">
+            <p style="margin:0 4px 6px;font-size:0.68rem;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;">Today's Tasks</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                <?php
+                $quick = [
+                    ['production.php',  'clipboard-list', 'Eggs Collected', 'production'],
+                    ['extras.php',      'heart-crack',    'Broken Eggs',     'extras'],
+                    ['health.php',      'activity',       'Dead / Sick Birds', 'health'],
+                    ['feeding.php',     'droplet',        'Feed Used',       'feeding'],
+                    ['daily_sales.php', 'dollar-sign',    'Sales Today',     'daily_sales'],
+                ];
+                $hasQuick = false;
+                foreach ($quick as $q) {
+                    if (function_exists('busiaCanView') && !busiaCanView($q[3])) continue;
+                    $hasQuick = true;
+                    $qActive = basename($_SERVER['SCRIPT_NAME']) === $q[0];
+                    echo '<a href="/Frontend/admin/' . $q[0] . '" style="display:flex;align-items:center;gap:7px;padding:8px 9px;border-radius:8px;background:' . ($qActive ? 'linear-gradient(135deg,#1B5E20,#2E7D32)' : '#f0fdf4') . ';color:' . ($qActive ? '#fff' : '#166534') . ';text-decoration:none;font-weight:700;font-size:0.76rem;border:1px solid ' . ($qActive ? 'transparent' : '#bbf7d0') . ';transition:all 0.15s;"><i data-lucide="' . $q[1] . '" style="width:15px;height:15px;flex-shrink:0;"></i><span>' . $q[2] . '</span></a>';
+                }
+                if (!$hasQuick) echo '<div style="grid-column:span 2;color:#94a3b8;font-size:0.75rem;padding:4px;">No daily tasks for your role.</div>';
+                ?>
+            </div>
+        </li>
 
         <?= navLinkDirect('/Frontend/admin/dashboard.php','layout-dashboard','Dashboard',$isDash) ?>
 
         <?= navLinkWithSub(
-            '/Frontend/admin/hub_operations.php',
+            '/Frontend/admin/hub_mybirds.php?group=flocks',
             'bird',
-            'Poultry Operations',
+            'My Birds',
             $isPoultry,
             [
-                'flocks'       => 'Flocks',
-                'production'   => 'Daily Production',
-                'vaccinations' => 'Vaccinations',
-                'batches'      => ['label' => 'Batches & Houses', 'href' => '/Frontend/admin/batches.php'],
-                'health'       => ['label' => 'Health & Vet', 'href' => '/Frontend/admin/health.php'],
-                'broiler'      => ['label' => 'Broiler Workflow', 'href' => '/Frontend/admin/broiler.php'],
-                'hatchery'     => ['label' => 'Hatchery (DOC)', 'href' => '/Frontend/admin/hatchery.php'],
-                'feeding'      => ['label' => 'Feeding Program', 'href' => '/Frontend/admin/feeding.php'],
-                'extras'       => ['label' => 'Losses & Quality', 'href' => '/Frontend/admin/extras.php']
+                // 9 old modules combined into 4 clear groups (all tools still one tap away)
+                'group_flocks' => ['label' => 'Flocks & Houses',    'href' => '/Frontend/admin/hub_mybirds.php?group=flocks', 'perm' => 'flocks'],
+                'group_eggs'   => ['label' => 'Eggs & Losses',      'href' => '/Frontend/admin/hub_mybirds.php?group=eggs',   'perm' => 'production'],
+                'group_health' => ['label' => 'Health & Vaccines',  'href' => '/Frontend/admin/hub_mybirds.php?group=health', 'perm' => 'health'],
+                'group_growth' => ['label' => 'Growth & Feeding',   'href' => '/Frontend/admin/hub_mybirds.php?group=growth', 'perm' => 'feeding']
             ],
-            $tab ?: 'flocks'
+            $tab ?: 'group_flocks'
         ) ?>
 
         <?= navLinkWithSub(
             '/Frontend/admin/hub_inventory.php',
             'package',
-            'Inventory & Stores',
+            'Feed & Stores',
             $isInventory,
             [
-                'products' => 'Products Catalog',
-                'stores'   => ['label' => 'Stores & Stock', 'href' => '/Frontend/admin/stores.php'],
-                'feed'     => ['label' => 'Feed Production', 'href' => '/Frontend/admin/feed_production.php'],
-                'eggs'     => ['label' => 'Egg Grading', 'href' => '/Frontend/admin/egg_grading.php']
+                'products' => 'Products',
+                'stores'   => ['label' => 'Stock', 'href' => '/Frontend/admin/stores.php'],
+                'feed'     => ['label' => 'Make Feed', 'href' => '/Frontend/admin/feed_production.php'],
+                'eggs'     => ['label' => 'Egg Sizes', 'href' => '/Frontend/admin/egg_grading.php']
             ],
             $tab ?: 'products'
         ) ?>
 
         <?= navLinkWithSub(
-            '/Frontend/admin/hub_finance.php',
+            '/Frontend/admin/hub_money.php?group=overview',
             'trending-up',
-            'Sales & Finance',
+            'Money',
             $isSalesFinance,
             [
-                'hub_finance' => ['label' => 'Sales & Finance Hub', 'href' => '/Frontend/admin/hub_finance.php'],
-                'profit'      => ['label' => 'Costs & Profit', 'href' => '/Frontend/admin/profit.php'],
-                'cashbook'    => ['label' => 'Cashbook', 'href' => '/Frontend/admin/cashbook.php'],
-                'credit'      => ['label' => 'Customer Credit', 'href' => '/Frontend/admin/credit.php'],
-                'lpo'         => ['label' => 'LPO & Invoicing', 'href' => '/Frontend/admin/lpo.php'],
-                'po'          => ['label' => 'Procurement (PO)', 'href' => '/Frontend/admin/purchase_orders.php'],
-                'daily'       => ['label' => 'Daily Reconciliation', 'href' => '/Frontend/admin/daily_sales.php'],
-                'bulk'        => ['label' => 'Bulk Sales', 'href' => '/Frontend/admin/bulk_sales.php']
+                // 8 old modules combined into 3 clear groups (all tools still one tap away)
+                'money_overview' => ['label' => 'Money Overview',  'href' => '/Frontend/admin/hub_money.php?group=overview', 'perm' => 'hub_finance'],
+                'money_income'   => ['label' => 'Sales & Credit',  'href' => '/Frontend/admin/hub_money.php?group=income',   'perm' => 'daily_sales'],
+                'money_spending' => ['label' => 'Cash & Spending', 'href' => '/Frontend/admin/hub_money.php?group=spending', 'perm' => 'cashbook']
             ],
-            $tab ?: 'hub_finance'
+            $tab ?: 'money_overview'
         ) ?>
 
         <?= navLinkWithSub(
             '/Frontend/admin/analytics.php',
             'bar-chart-2',
-            'Reports & Tools',
+            'Reports',
             $isReports,
             [
-                'analytics' => ['label' => 'Analytics & Charts', 'href' => '/Frontend/admin/analytics.php'],
-                'import'    => ['label' => 'Bulk Import/Export', 'href' => '/Frontend/admin/bulk_import_export.php']
+                'analytics' => ['label' => 'Charts & Reports', 'href' => '/Frontend/admin/analytics.php'],
+                'import'    => ['label' => 'Import / Export', 'href' => '/Frontend/admin/bulk_import_export.php']
             ],
             $tab ?: 'analytics'
         ) ?>
@@ -213,15 +290,26 @@ HTML;
             $isSettings,
             [
                 'calendar'  => 'Calendar',
-                'dropdowns' => 'Dropdowns',
+                'dropdowns' => 'Lists & Options',
                 'settings'  => 'App Settings',
-                'logs'      => 'Activity Logs',
-                'permissions' => ['label' => 'Roles & Permissions', 'href' => '/Frontend/admin/permissions.php']
+                'logs'      => 'History',
+                'permissions' => ['label' => 'User Permissions', 'href' => '/Frontend/admin/permissions.php']
             ],
             $tab ?: 'calendar'
         ) ?>
 
     </ul>
+
+    <!-- Need a hand? Always reachable, opens the same walkthrough as the ? button -->
+    <button id="admin-nav-help" type="button" class="nav-help-btn" onclick="if (typeof openGuideModal === 'function') openGuideModal();"
+            style="display:flex;align-items:center;gap:11px;width:100%;text-align:left;margin:6px 0 12px;padding:11px 13px;border:1px solid #d1fae5;border-radius:10px;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);cursor:pointer;transition:all 0.15s;color:#065f46;font-family:inherit;">
+        <span style="width:34px;height:34px;border-radius:9px;background:rgba(27,94,32,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="help-circle" style="width:18px;height:18px;"></i></span>
+        <span style="flex:1;min-width:0;">
+            <span style="display:block;font-weight:700;font-size:0.82rem;">Need a hand?</span>
+            <span style="display:block;font-size:0.72rem;color:#15803d;margin-top:1px;">Tap here — see how everything works</span>
+        </span>
+        <i data-lucide="chevron-right" style="width:15px;height:15px;flex-shrink:0;opacity:0.7;"></i>
+    </button>
 
     <!-- User info & logout -->
     <div style="margin-top:auto;padding-top:14px;border-top:1px solid rgba(203,213,225,0.6);">

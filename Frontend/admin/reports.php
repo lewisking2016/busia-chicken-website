@@ -299,42 +299,23 @@ async function loadFormulaPerformance() {
 
 document.addEventListener('DOMContentLoaded', loadFormulaPerformance);
 </script>
+<script src="/Frontend/assets/js/busia-charts.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const labels = <?php echo json_encode(array_map(function($m) { 
-        return date('M Y', strtotime($m['month'] . '-01')); 
+document.addEventListener('DOMContentLoaded', function () {
+    const canvas = document.getElementById('report-chart-revenue');
+    if (!canvas) return;
+    const labels = <?php echo json_encode(array_map(function($m) {
+        return date('M Y', strtotime($m['month'] . '-01'));
     }, $monthly_revenue)); ?>;
-    const values = <?php echo json_encode(array_map(function($m) { 
-        return (float)$m['revenue']; 
+    const values = <?php echo json_encode(array_map(function($m) {
+        return (float)$m['revenue'];
     }, $monthly_revenue)); ?>;
 
-    if (document.getElementById('report-chart-revenue') && labels.length > 0) {
-        new Chart(document.getElementById('report-chart-revenue'), {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Revenue',
-                    data: values,
-                    borderColor: '#1B5E20',
-                    backgroundColor: 'rgba(27, 94, 32, 0.08)',
-                    fill: true,
-                    tension: 0.32,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#FFC107',
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: '#64748b' } },
-                    y: { grid: { color: 'rgba(148,163,184,0.12)' }, ticks: { color: '#64748b' } },
-                }
-            }
-        });
+    if (!labels.length || BusiaCharts.isEmpty(values)) {
+        BusiaCharts.showEmpty(canvas, 'Nothing to show yet', 'Monthly revenue will appear here once orders and payments are recorded.');
+        return;
     }
+    BusiaCharts.areaChart(canvas, labels, values, { color: BusiaCharts.C.primary });
 });
 </script>
 

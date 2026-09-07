@@ -143,6 +143,45 @@ function reconcileLegacySchema(PDO $pdo): void
         $pdo->exec("ALTER TABLE egg_losses ADD COLUMN stage ENUM('collection','transport','storage','other') NOT NULL DEFAULT 'collection' AFTER loss_type");
     }
 
+    // ── feed_recipes — the codebase historically used two column names for
+    //    the recipe title ('recipe_name' in migration_poultry_complete.sql and
+    //    some modules, 'name' in others and in older databases). Ensure BOTH
+    //    exist and stay in sync so every module works on any deployment.
+    if (tableExists($pdo, 'feed_recipes')) {
+        $frCols = array_flip($pdo->query('SHOW COLUMNS FROM feed_recipes')->fetchAll(PDO::FETCH_COLUMN));
+        $add = [];
+        if (!isset($frCols['name']))         $add[] = 'ADD COLUMN name VARCHAR(100) NULL AFTER id';
+        if (!isset($frCols['recipe_name']))  $add[] = 'ADD COLUMN recipe_name VARCHAR(100) NULL AFTER id';
+        if (!isset($frCols['target_species'])) $add[] = "ADD COLUMN target_species VARCHAR(50) NULL";
+        if ($add) {
+            $pdo->exec('ALTER TABLE feed_recipes ' . implode(', ', $add));
+            // One-time back-fill so both names carry the same value.
+            $pdo->exec("UPDATE feed_recipes SET recipe_name = name WHERE (recipe_name IS NULL OR recipe_name = '') AND name IS NOT NULL AND name <> ''");
+            $pdo->exec("UPDATE feed_recipes SET name = recipe_name WHERE (name IS NULL OR name = '') AND recipe_name IS NOT NULL AND recipe_name <> ''");
+        }
+
+        // product_id must be nullable: the Feed Production flow saves recipes
+        // without linking a product, but a legacy table shape made it NOT NULL
+        // (which would reject every new recipe with an FK error).
+        $nn = $pdo->query("SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'feed_recipes' AND COLUMN_NAME = 'product_id'")->fetchColumn();
+        if ($nn === 'NO') {
+            $pdo->exec('ALTER TABLE feed_recipes MODIFY product_id INT NULL');
+        }
+    }
+
+    // ── health_records — legacy tables predate the poultry module shape and
+    //    lack flock_id / batch_id / mortality_reason that every current
+    //    module and the health export read. Add them (nullable, no data loss).
+    if (tableExists($pdo, 'health_records')) {
+        $add = [];
+        if (!columnExists($pdo, 'health_records', 'flock_id'))        $add[] = 'ADD COLUMN flock_id INT NULL';
+        if (!columnExists($pdo, 'health_records', 'batch_id'))        $add[] = 'ADD COLUMN batch_id INT NULL';
+        if (!columnExists($pdo, 'health_records', 'mortality_reason')) $add[] = 'ADD COLUMN mortality_reason VARCHAR(255) NULL';
+        if ($add) {
+            $pdo->exec('ALTER TABLE health_records ' . implode(', ', $add));
+        }
+    }
+
     // ── users.role — older databases have an ENUM without 'sales_staff',
     //    so assigning that role silently stores an empty string. Widen it.
     if (tableExists($pdo, 'users')) {
@@ -183,6 +222,7 @@ function busiaModuleKeyForScript(string $script): string
 {
     $map = [
         'dashboard.php' => 'dashboard',
+        'hub_mybirds.php' => 'flocks',
         'hub_operations.php' => 'flocks', 'flocks.php' => 'flocks', 'flocks_tab.php' => 'flocks',
         'production.php' => 'production', 'vaccinations.php' => 'vaccinations',
         'batches.php' => 'batches', 'health.php' => 'health', 'broiler.php' => 'broiler',
@@ -190,6 +230,7 @@ function busiaModuleKeyForScript(string $script): string
         'hub_inventory.php' => 'products', 'products.php' => 'products',
         'stores.php' => 'stores', 'feed_production.php' => 'feed_production',
         'egg_grading.php' => 'egg_grading',
+        'hub_money.php' => 'hub_finance',
         'hub_finance.php' => 'hub_finance', 'profit.php' => 'profit', 'cashbook.php' => 'cashbook',
         'credit.php' => 'credit', 'purchase_orders.php' => 'purchase_orders',
         'daily_sales.php' => 'daily_sales', 'bulk_sales.php' => 'bulk_sales', 'lpo.php' => 'lpo',
@@ -312,7 +353,17 @@ function seedMasterData(PDO $pdo): void
 }
 
 /**
+ * Bump this when reconcileLegacySchema / seedMasterData gain new steps, so
+ * existing databases re-run the one-time reconciliation on their next load.
+ */
+const BUSIA_SCHEMA_SEED_VERSION = 2;
+
+/**
  * Ensure all module tables exist. No-op when everything is present.
+ *
+ * Steady-state cost is two queries (SHOW TABLES + one settings read): the
+ * legacy-column reconciliation and master-data seeding are gated behind a
+ * version flag so they run once, not on every page load.
  */
 function ensureBusiaSchema(PDO $pdo): void
 {
@@ -321,16 +372,11 @@ function ensureBusiaSchema(PDO $pdo): void
     $checked = true;
 
     try {
-        // Always reconcile legacy column shapes first (idempotent, cheap) so
-        // existing databases get the columns the current modules read even
-        // when every table already exists.
-        reconcileLegacySchema($pdo);
-        seedMasterData($pdo);
-
         $configDir = __DIR__;
         $poultryFile = $configDir . '/migration_poultry_complete.sql';
         $businessFile = $configDir . '/migration_v2_business.sql';
 
+        // Completeness guard — cheap on steady state (one SHOW TABLES).
         // Loop until stable: a statement can fail mid-run when its foreign
         // key target is created later in the same pass (e.g. batches depends
         // on houses/flocks). Later passes create those, then the dependents.
@@ -340,7 +386,7 @@ function ensureBusiaSchema(PDO $pdo): void
             $missingBusiness = array_diff(migrationTableNames($businessFile), $existing);
 
             if (!$missingPoultry && !$missingBusiness) {
-                return; // everything present
+                break; // everything present
             }
 
             $tableCountBefore = count($existing);
@@ -356,7 +402,28 @@ function ensureBusiaSchema(PDO $pdo): void
 
             $after = $pdo->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN);
             if (count($after) <= $tableCountBefore) {
-                return; // no progress — give up quietly, retried next request
+                break; // no progress — give up quietly, retried next request
+            }
+        }
+
+        // One-time reconcile + seed, gated by a version flag so steady-state
+        // requests skip the dozens of SHOW COLUMNS / INSERT IGNOREs.
+        $seeded = null;
+        try {
+            $seeded = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'db_schema_seed_version'")->fetchColumn();
+        } catch (Exception $e) {
+            // settings table may not exist yet — run the one-time pass below
+        }
+
+        if ((string)$seeded !== (string)BUSIA_SCHEMA_SEED_VERSION) {
+            reconcileLegacySchema($pdo);
+            seedMasterData($pdo);
+            try {
+                $pdo->exec("INSERT INTO settings (setting_key, setting_value, setting_group, description)
+                            VALUES ('db_schema_seed_version', " . (int)BUSIA_SCHEMA_SEED_VERSION . ", 'system', 'Auto-migration reconcile/seed version')
+                            ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+            } catch (Exception $e) {
+                // settings table missing — retried next request
             }
         }
     } catch (Exception $e) {

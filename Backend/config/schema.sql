@@ -146,6 +146,20 @@ CREATE TABLE IF NOT EXISTS vaccinations (
     FOREIGN KEY (administered_by) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+-- Admin-configured vaccine program used when a new flock is created.
+-- NOT seeded: the farm manager enters the vaccines and day-offsets they
+-- actually use, so schedules are data-driven, never hardcoded.
+CREATE TABLE IF NOT EXISTS vaccination_plans (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    bird_type VARCHAR(32) NOT NULL,
+    vaccine_name VARCHAR(150) NOT NULL,
+    day_after_hatch INT NOT NULL DEFAULT 0,
+    sort_order INT NOT NULL DEFAULT 0,
+    is_active TINYINT NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_plan_bird (bird_type, is_active)
+) ENGINE=InnoDB;
+
 -- 5. Financial Bookkeeping
 CREATE TABLE IF NOT EXISTS financial_records (
     id INT AUTO_INCREMENT PRIMARY KEY,

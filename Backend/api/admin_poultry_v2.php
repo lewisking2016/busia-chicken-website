@@ -499,12 +499,12 @@ try {
             $ingredients = json_decode($_POST['ingredients'] ?? '[]', true);
             if ($name === '') api_err('Recipe name required');
             if ($id > 0) {
-                $pdo->prepare("UPDATE feed_recipes SET recipe_name=?, description=?, base_bag_size_kg=?, target_species=? WHERE id=?")
-                    ->execute([$name, $desc, $bag, $target, $id]);
+                $pdo->prepare("UPDATE feed_recipes SET recipe_name=?, name=?, description=?, base_bag_size_kg=?, target_species=? WHERE id=?")
+                    ->execute([$name, $name, $desc, $bag, $target, $id]);
                 $pdo->prepare("DELETE FROM feed_recipe_ingredients WHERE recipe_id=?")->execute([$id]);
             } else {
-                $pdo->prepare("INSERT INTO feed_recipes (recipe_name, description, base_bag_size_kg, target_species) VALUES (?,?,?,?)")
-                    ->execute([$name, $desc, $bag, $target]);
+                $pdo->prepare("INSERT INTO feed_recipes (recipe_name, name, description, base_bag_size_kg, target_species) VALUES (?,?,?,?,?)")
+                    ->execute([$name, $name, $desc, $bag, $target]);
                 $id = (int)$pdo->lastInsertId();
             }
             $ingStmt = $pdo->prepare("INSERT INTO feed_recipe_ingredients (recipe_id, raw_material_id, amount_per_bag_kg) VALUES (?,?,?)");

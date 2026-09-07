@@ -420,6 +420,145 @@ document.addEventListener('DOMContentLoaded',loadProductionData);
     </div>
 </div>
 
+<!-- Vaccine Program: admin-configured defaults applied to NEW flocks (never hardcoded) -->
+<?php $vpCanManage = in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager'], true); ?>
+<div class="admin-card" style="margin-top:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
+        <div>
+            <h3 style="margin:0;font-family:'Outfit',sans-serif;font-size:1.1rem;">Vaccine Program <span style="font-weight:600;font-size:0.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">for new flocks</span></h3>
+            <p style="margin:4px 0 0;font-size:0.85rem;color:#64748b;">These vaccines are scheduled automatically whenever you add a flock of that type. Existing flocks are never changed.</p>
+        </div>
+        <?php if ($vpCanManage): ?>
+        <div style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1px solid var(--admin-border);border-radius:8px;padding:6px 12px;color:#166534;font-size:0.82rem;font-weight:600;">
+            <i data-lucide="syringe" style="width:14px;height:14px;"></i> You manage this program
+        </div>
+        <?php else: ?>
+        <div style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1px solid var(--admin-border);border-radius:8px;padding:6px 12px;color:#64748b;font-size:0.82rem;font-weight:600;">
+            <i data-lucide="lock" style="width:14px;height:14px;"></i> Managed by the Farm Manager
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <?php if ($vpCanManage): ?>
+    <form id="vp-form" style="display:grid;grid-template-columns:180px 1fr 140px auto;gap:10px;align-items:end;margin:14px 0 16px;">
+        <div class="admin-form-group" style="margin:0;">
+            <label class="admin-form-label">Bird type</label>
+            <select class="admin-form-control" id="vp-type">
+                <option value="layer">Layers (egg birds)</option>
+                <option value="broiler">Broilers (meat birds)</option>
+                <option value="kienyeji">Kienyeji / Indigenous</option>
+                <option value="general">General (any type)</option>
+            </select>
+        </div>
+        <div class="admin-form-group" style="margin:0;">
+            <label class="admin-form-label">Vaccine / treatment name</label>
+            <input class="admin-form-control" id="vp-name" required placeholder="e.g. Newcastle (Lasota), Marek's">
+        </div>
+        <div class="admin-form-group" style="margin:0;">
+            <label class="admin-form-label">Day after hatch</label>
+            <input class="admin-form-control" type="number" id="vp-day" min="0" value="7" required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="vp-add-btn" style="white-space:nowrap;"><i data-lucide="plus" style="width:15px;height:15px;"></i> Add</button>
+    </form>
+    <?php else: ?>
+    <p style="margin:14px 0 6px;font-size:0.85rem;color:#b45309;">Your role can see this program but not change it. Ask the Farm Manager to add or edit vaccines.</p>
+    <?php endif; ?>
+
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead><tr><th>Bird Type</th><th>Vaccine / Treatment</th><th>Day After Hatch</th><th style="width:80px;"></th></tr></thead>
+            <tbody id="vaccine-plan-body"><tr><td colspan="4" style="text-align:center;padding:22px;color:#94a3b8;">Loading vaccine program...</td></tr></tbody>
+        </table>
+    </div>
+    <p style="margin:10px 0 0;font-size:0.8rem;color:#94a3b8;">No vaccines listed for a type? Then adding that flock won't schedule any — set the program first and it applies to all future flocks.</p>
+</div>
+
+<script>
+/* Vaccine Program manager (data-driven — no hardcoded schedules). */
+window.vaccinePlanList = [];
+const VP_CSRF = window.BusiaAdmin?.csrfToken || '';
+
+function vpRows() { return document.getElementById('vaccine-plan-body'); }
+
+async function loadVaccinePlan() {
+    const tb = vpRows();
+    if (!tb) return;
+    setTbLoading('vaccine-plan-body', 4, 'Loading vaccine program...');
+    try {
+        const res = await fetch('/Backend/api/admin_poultry.php?action=get_vaccine_plans');
+        const r = await res.json();
+        if (!r.success) { setTbError('vaccine-plan-body', 4, r.message || 'Failed to load.'); return; }
+        window.vaccinePlanList = r.data || [];
+        renderVaccinePlan();
+    } catch (e) { setTbError('vaccine-plan-body', 4, 'Network error.'); console.error(e); }
+}
+
+function vpTypeLabel(t) {
+    return { layer: 'Layers', broiler: 'Broilers', kienyeji: 'Kienyeji', general: 'General' }[t] || t;
+}
+
+function renderVaccinePlan() {
+    const tb = vpRows();
+    if (!tb) return;
+    const canManage = document.getElementById('vp-form') !== null;
+    if (!window.vaccinePlanList.length) {
+        tb.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:22px;color:#94a3b8;">' + (canManage ? 'No program set yet. Add your first vaccine above — it will apply to every new flock from now on.' : 'No vaccine program set yet. Ask the Farm Manager to add one.') + '</td></tr>';
+        return;
+    }
+    tb.innerHTML = window.vaccinePlanList.map(p => `<tr>
+        <td><span class="badge-pill ${p.bird_type === 'general' ? 'badge-pill-warning' : 'badge-pill-success'}">${vpTypeLabel(p.bird_type)}</span></td>
+        <td><strong>${escapeHtml(p.vaccine_name)}</strong></td>
+        <td>Age ${p.day_after_hatch} ${Number(p.day_after_hatch) === 1 ? 'day' : 'days'}</td>
+        <td>${canManage ? '<button class="btn btn-trans btn-sm" style="color:#dc2626;" onclick="deleteVaccinePlan(' + p.id + ')"><i data-lucide="trash-2" style="width:13px;height:13px;"></i> Remove</button>' : ''}</td>
+    </tr>`).join('');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+const vpForm = document.getElementById('vp-form');
+if (vpForm) {
+    vpForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = (document.getElementById('vp-name').value || '').trim();
+        const day = parseInt(document.getElementById('vp-day').value, 10);
+        if (!name || isNaN(day) || day < 0) { alert('Enter the vaccine name and a valid day.'); return; }
+        const btn = document.getElementById('vp-add-btn');
+        const old = btn.innerHTML;
+        btn.disabled = true; btn.textContent = 'Adding...';
+        const fd = new FormData();
+        fd.append('csrf_token', VP_CSRF);
+        fd.append('bird_type', document.getElementById('vp-type').value);
+        fd.append('vaccine_name', name);
+        fd.append('day_after_hatch', String(day));
+        try {
+            const res = await fetch('/Backend/api/admin_poultry.php?action=save_vaccine_plan', { method: 'POST', body: fd });
+            const r = await res.json();
+            if (!r.success) { alert(r.message || 'Could not add.'); return; }
+            document.getElementById('vp-name').value = '';
+            loadVaccinePlan();
+        } catch (e) { alert('Network error.'); }
+        finally { btn.disabled = false; btn.innerHTML = old; if (typeof lucide !== 'undefined') lucide.createIcons(); }
+    });
+}
+
+async function deleteVaccinePlan(id) {
+    if (!confirm('Remove this vaccine from the program? Future flocks will no longer get it.')) return;
+    const fd = new FormData();
+    fd.append('csrf_token', VP_CSRF);
+    fd.append('id', String(id));
+    try {
+        const res = await fetch('/Backend/api/admin_poultry.php?action=delete_vaccine_plan', { method: 'POST', body: fd });
+        const r = await res.json();
+        if (!r.success) { alert(r.message || 'Could not remove.'); return; }
+        loadVaccinePlan();
+    } catch (e) { alert('Network error.'); }
+}
+
+if (typeof escapeHtml === 'undefined') {
+    function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+}
+document.addEventListener('DOMContentLoaded', loadVaccinePlan);
+</script>
+
 <!-- Vaccination Modal -->
 <div id="vac-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;align-items:center;justify-content:center;">
     <div style="background:#fff;padding:32px;border-radius:12px;width:100%;max-width:520px;box-shadow:0 20px 40px rgba(0,0,0,0.15);">

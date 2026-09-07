@@ -20,7 +20,7 @@ if (!in_array($tab, $validTabs, true)) $tab = 'all';
 $productSuggestions = [];
 if ($pdo) {
     try {
-        $productSuggestions = safeQueryAll($pdo, "SELECT name FROM products WHERE status='active' ORDER BY name LIMIT 300");
+        $productSuggestions = safeQueryAll($pdo, "SELECT name FROM products WHERE is_active = 1 ORDER BY name LIMIT 300");
     } catch (Exception $e) { $productSuggestions = []; }
 }
 ?>

@@ -53,16 +53,62 @@
     Chart.defaults.animations.duration = 900;
     Chart.defaults.animations.easing = 'easeOutQuart';
 
+    // ── Data checks + friendly empty state (a blank grid looks broken) ──
+    function dataIsEmpty(values) {
+        if (!values || !values.length) return true;
+        return values.every(v => {
+            const arr = Array.isArray(v) ? v : [v];
+            return !arr.length || arr.every(x => x === 0 || x === null || x === undefined || x === '' || x === '0');
+        });
+    }
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    }
+    function showChartEmpty(canvas, title, hint) {
+        if (!canvas || !canvas.parentElement) return;
+        const host = canvas.parentElement;
+        if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+        if (!document.getElementById('bc-empty-style')) {
+            const st = document.createElement('style');
+            st.id = 'bc-empty-style';
+            st.textContent =
+                '.bc-empty-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center;padding:12px;pointer-events:none;z-index:3;}' +
+                '.bc-empty-ico{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;' +
+                'background:linear-gradient(135deg,rgba(27,94,32,0.07),rgba(255,193,7,0.12));border:1px solid rgba(27,94,32,0.12);' +
+                'box-shadow:0 6px 14px rgba(15,23,42,0.04);}';
+            document.head.appendChild(st);
+        }
+        let layer = host.querySelector('.bc-empty-overlay');
+        if (!layer) {
+            layer = document.createElement('div');
+            layer.className = 'bc-empty-overlay';
+            host.appendChild(layer);
+        }
+        layer.innerHTML =
+            '<div class="bc-empty-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#2E7D32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 4-5"/></svg></div>' +
+            '<p style="margin:0;font-weight:700;color:#475569;font-size:0.88rem;">' + esc(title) + '</p>' +
+            '<p style="margin:0;color:#94a3b8;font-size:0.76rem;line-height:1.5;max-width:270px;">' + esc(hint) + '</p>';
+    }
+
+    // Compact axis labels (1.2K / 3.4M) so wide grids stay readable.
+    function compactNumber(v) {
+        if (typeof v !== 'number') return v;
+        const abs = Math.abs(v);
+        if (abs >= 1e6) return (v / 1e6).toFixed(abs >= 1e7 ? 0 : 1) + 'M';
+        if (abs >= 1e3) return (v / 1e3).toFixed(abs >= 1e5 ? 0 : 1) + 'k';
+        return String(v);
+    }
+
     function baseScales(opts) {
         opts = opts || {};
         return {
             x: {
                 grid: { display: false, drawBorder: false },
-                ticks: { color: C.text, font: { size: 11 } },
+                ticks: { color: C.text, font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 14 },
             },
             y: {
                 grid: { color: C.grid, drawBorder: false },
-                ticks: { color: C.text, font: { size: 11 } },
+                ticks: { color: C.text, font: { size: 11 }, callback: compactNumber, maxTicksLimit: 7 },
                 beginAtZero: true,
             },
         };
@@ -84,6 +130,10 @@
     // ────────────────────────────────────────────────────────────
     function lineChart(canvas, labels, datasets, opts) {
         opts = opts || {};
+        if (dataIsEmpty(datasets.map(d => d && d.data))) {
+            showChartEmpty(canvas, opts.emptyTitle || 'Nothing to show yet', opts.emptyHint || 'Records you add will appear here automatically.');
+            return null;
+        }
         const ctx = canvas.getContext('2d');
         const ds = datasets.map((d, i) => {
             const color = d.color || [C.primary, C.amber, C.blue, C.purple][i % 4];
@@ -116,6 +166,10 @@
     // ────────────────────────────────────────────────────────────
     function barChart(canvas, labels, values, opts) {
         opts = opts || {};
+        if (dataIsEmpty(values)) {
+            showChartEmpty(canvas, opts.emptyTitle || 'Nothing to show yet', opts.emptyHint || 'Records you add will appear here automatically.');
+            return null;
+        }
         const ctx = canvas.getContext('2d');
         const color = opts.color || C.primary;
         const data = {
@@ -150,6 +204,10 @@
     // ────────────────────────────────────────────────────────────
     function hBarChart(canvas, labels, values, opts) {
         opts = opts || {};
+        if (dataIsEmpty(values)) {
+            showChartEmpty(canvas, opts.emptyTitle || 'Nothing to show yet', opts.emptyHint || 'Records you add will appear here automatically.');
+            return null;
+        }
         const color = opts.color || C.primary;
         return new Chart(canvas, {
             type: 'bar',
@@ -180,6 +238,10 @@
     // Stacked bar (e.g. mortality vs eggs)
     // ────────────────────────────────────────────────────────────
     function stackedBar(canvas, labels, datasets) {
+        if (dataIsEmpty(datasets.map(d => d && d.data))) {
+            showChartEmpty(canvas, 'Nothing to show yet', 'Records you add will appear here automatically.');
+            return null;
+        }
         const ctx = canvas.getContext('2d');
         return new Chart(canvas, {
             type: 'bar',
@@ -209,6 +271,10 @@
     // ────────────────────────────────────────────────────────────
     function donutChart(canvas, labels, values, opts) {
         opts = opts || {};
+        if (dataIsEmpty(values)) {
+            showChartEmpty(canvas, opts.emptyTitle || 'Nothing to show yet', opts.emptyHint || 'Records you add will appear here automatically.');
+            return null;
+        }
         const colors = opts.colors || [C.primary, C.amber, C.blue, C.purple, C.pink, C.cyan, C.green, C.red, C.orange];
         return new Chart(canvas, {
             type: 'doughnut',
@@ -246,6 +312,10 @@
     // ────────────────────────────────────────────────────────────
     function areaChart(canvas, labels, values, opts) {
         opts = opts || {};
+        if (dataIsEmpty(values)) {
+            showChartEmpty(canvas, opts.emptyTitle || 'Nothing to show yet', opts.emptyHint || 'Records you add will appear here automatically.');
+            return null;
+        }
         const color = opts.color || C.primary;
         return new Chart(canvas, {
             type: 'line',
@@ -441,5 +511,9 @@
         lineChart, barChart, hBarChart, stackedBar, donutChart, areaChart, comboChart,
         sparkline, countUp, countUpAll, animateCards,
         k, kes, dayLabel, monthLabel,
+        // Shared guards so pages with custom chart builders can show the same
+        // friendly empty state instead of a blank grid.
+        isEmpty: dataIsEmpty,
+        showEmpty: showChartEmpty,
     };
 })(window);

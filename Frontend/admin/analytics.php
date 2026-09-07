@@ -456,6 +456,10 @@ function renderProfitChart(profit) {
     const rev = (profit || []).map(p => +p.revenue || 0);
     const cost = (profit || []).map(p => +p.cost || 0);
     const ctx = document.getElementById('chart-profit');
+    if (BusiaCharts.isEmpty([rev, cost])) {
+        BusiaCharts.showEmpty(ctx, 'Nothing to show yet', 'Monthly revenue and costs will appear here once you record sales or expenses.');
+        return;
+    }
     charts.profit = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -485,6 +489,10 @@ function renderCashFlowChart(cashbook) {
     const min = (cashbook || []).map(c => +c.money_in || 0);
     const mout = (cashbook || []).map(c => -+c.money_out || 0);
     const ctx = document.getElementById('chart-cashflow');
+    if (BusiaCharts.isEmpty([min, mout])) {
+        BusiaCharts.showEmpty(ctx, 'Nothing to show yet', 'Money in and out over the last 30 days will appear here once you record payments.');
+        return;
+    }
     charts.cashflow = new Chart(ctx, {
         type: 'bar',
         data: { labels, datasets: [
@@ -524,6 +532,10 @@ function renderMortalityChart(m) {
     const values = (m || []).map(x => +x.mortality_pct || 0);
     const colors = values.map(v => v > 10 ? C.red : (v > 5 ? C.amber : C.green));
     const ctx = document.getElementById('chart-mortality');
+    if (BusiaCharts.isEmpty(values)) {
+        BusiaCharts.showEmpty(ctx, 'Nothing to show yet', 'Mortality per flock will appear here once batches have recorded losses.');
+        return;
+    }
     charts.mortality = new Chart(ctx, {
         type: 'bar',
         data: { labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: 4, maxBarThickness: 24 }] },
@@ -546,6 +558,10 @@ function renderFcrChart(batches) {
     const values = (batches || []).map(b => +b.fcr || 0);
     const colors = values.map(v => v > 2.2 ? C.red : (v > 1.8 ? C.amber : C.green));
     const ctx = document.getElementById('chart-fcr');
+    if (BusiaCharts.isEmpty(values)) {
+        BusiaCharts.showEmpty(ctx, 'Nothing to show yet', 'Feed conversion ratios will appear here once broiler weights and feed use are recorded.');
+        return;
+    }
     charts.fcr = new Chart(ctx, {
         type: 'bar',
         data: { labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: 4, maxBarThickness: 24 }] },
