@@ -2,6 +2,8 @@
 /**
  * Quick Status Check
  */
+require __DIR__ . '/Backend/config/maintenance_guard.php';
+
 header('Content-Type: text/html; charset=UTF-8');
 
 echo "<!DOCTYPE html><html><head><title>Status Check</title>";

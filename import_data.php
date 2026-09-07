@@ -5,11 +5,8 @@
  */
 declare(strict_types=1);
 
-// Database credentials
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'mrhzdunf_busiachicken');
-define('DB_USER', 'mrhzdunf_busia_user');
-define('DB_PASS', 'busia_user');
+require __DIR__ . '/Backend/config/maintenance_guard.php';
+require_once __DIR__ . '/Backend/config/database.php';
 
 header('Content-Type: text/html; charset=UTF-8');
 echo "<!DOCTYPE html><html><head><title>Data Import</title>";
@@ -20,12 +17,10 @@ echo "h1{color:#2c3e50;}</style></head><body>";
 echo "<h1>🔄 Database Import Tool</h1>";
 
 try {
-    $pdo = new PDO(
-        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
-        DB_USER,
-        DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
+    $pdo = getDatabaseConnection();
+    if (!$pdo) {
+        throw new Exception('Could not connect to the database. Verify the credentials in Backend/config/database.php');
+    }
     
     echo "<span class='ok'>✓ Connected to database</span>";
     

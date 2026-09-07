@@ -1,3 +1,6 @@
+<?php
+require __DIR__ . '/Backend/config/maintenance_guard.php';
+?>
 <!DOCTYPE html>
 <html>
 <head>

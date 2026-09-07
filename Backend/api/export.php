@@ -65,6 +65,39 @@ try {
     switch ($module) {
 
         // ─────────────────────────────────────────────────────────
+        // PRODUCTS — matches the Import/Export module's product CSV
+        // ─────────────────────────────────────────────────────────
+        case 'products':
+            $sql = "SELECT p.id, p.name, c.name AS category, p.product_type, p.price,
+                           p.stock_quantity, p.description, p.is_active, p.created_at
+                    FROM products p
+                    LEFT JOIN categories c ON c.id = p.category_id
+                    WHERE 1=1";
+            $p = [];
+            if ($from) { $sql .= " AND DATE(p.created_at) >= ?"; $p[] = $from; }
+            if ($to)   { $sql .= " AND DATE(p.created_at) <= ?"; $p[] = $to; }
+            $sql .= " ORDER BY p.name ASC";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($p);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $out = array_map(function($r) {
+                return [
+                    'ID'          => $r['id'],
+                    'Name'        => $r['name'],
+                    'Category'    => $r['category'] ?? '',
+                    'Type'        => $r['product_type'],
+                    'Price'       => $r['price'],
+                    'Stock'       => $r['stock_quantity'],
+                    'Description' => $r['description'],
+                    'Active'      => $r['is_active'] ? 'Yes' : 'No',
+                    'Created'     => $r['created_at'],
+                ];
+            }, $rows);
+            csv_send('products_' . $today . '.csv',
+                ['ID', 'Name', 'Category', 'Type', 'Price', 'Stock', 'Description', 'Active', 'Created'], $out);
+            break;
+
+        // ─────────────────────────────────────────────────────────
         // ORDERS — matches "busia_orders_report_YYYY-MM-DD.csv"
         // ─────────────────────────────────────────────────────────
         case 'orders':

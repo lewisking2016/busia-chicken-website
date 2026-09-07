@@ -2,6 +2,7 @@
 /**
  * Quick Product Check - Debug Tool
  */
+require __DIR__ . '/Backend/config/maintenance_guard.php';
 require_once __DIR__ . '/Backend/config/database.php';
 
 header('Content-Type: text/html; charset=UTF-8');

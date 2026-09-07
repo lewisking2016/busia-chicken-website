@@ -4,6 +4,10 @@
  * Run this once in browser to fix pull errors
  */
 
+// Runs git commands on the server — super admins only.
+$requiredRoles = ['super_admin'];
+require __DIR__ . '/Backend/config/maintenance_guard.php';
+
 header('Content-Type: text/html; charset=UTF-8');
 echo "<!DOCTYPE html><html><head><title>Fix Git</title>";
 echo "<style>body{font-family:monospace;padding:40px;background:#1e1e1e;color:#00ff00;max-width:900px;margin:0 auto;}";
