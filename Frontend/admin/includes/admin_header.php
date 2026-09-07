@@ -825,10 +825,15 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
         .admin-nav-backdrop {
             display: none;
         }
+        /* Desktop: sticky sidebar sits above content while scrolling */
+        #admin-nav { z-index: 100; }
 
         /* Tablet and below: sidebar becomes a slide-in drawer */
         @media (max-width: 1023px) {
             .admin-nav-toggle { display: inline-flex; }
+
+            /* Let the top bar wrap instead of squeezing the greeting text */
+            .admin-top-bar { flex-wrap: wrap; row-gap: 10px; }
 
             .admin-nav-backdrop {
                 display: block;
@@ -843,6 +848,10 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
             body.nav-open .admin-nav-backdrop { opacity: 1; pointer-events: auto; }
             body.nav-open { overflow: hidden; }
 
+            /* Keep the hamburger above the backdrop so it can toggle the
+               drawer closed (the backdrop otherwise swallows the tap). */
+            .admin-nav-toggle { position: relative; z-index: 1200; }
+
             #admin-nav {
                 position: fixed !important;
                 left: 0;
@@ -850,10 +859,19 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
                 bottom: 0;
                 transform: translateX(-105%);
                 transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-                z-index: 1100;
+                /* !important: the sidebar's inline z-index must never beat this,
+                   or the backdrop (1090) would float above the open drawer and
+                   swallow every tap on the menu. */
+                z-index: 1100 !important;
                 box-shadow: 4px 0 28px rgba(15, 23, 42, 0.18);
+                /* Smooth momentum scrolling for the tall nav on touch devices */
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
             }
             #admin-nav.open { transform: translateX(0); }
+
+            /* Bigger tap target for the hamburger on touch screens */
+            .admin-nav-toggle { width: 44px; height: 44px; }
 
             .admin-content { padding: 14px; }
 
@@ -861,23 +879,253 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
             .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
             div[style*="repeat(4,1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
             div[style*="repeat(3,1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
+
+            /* Inline styles beat class-based media queries, so px-sized inline
+               grids (e.g. 342px 1fr, 1fr 380px) must be forced to collapse. */
+            div[style*="grid-template-columns"][style*="px"] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
         }
 
-        /* Phones: single-column everything, stack the top bar */
+        /* Small tablets & large phones: two-row top bar
+           (Row 1: toggle + greeting, Row 2: actions full width) */
+        @media (max-width: 767px) {
+            .admin-top-bar {
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 8px 12px;
+                padding: 12px 14px;
+            }
+            .admin-top-bar .welcome-message {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex: 1;
+                min-width: 0;
+            }
+            /* Compact greeting typography — no wrapping sub-line */
+            .admin-top-bar .welcome-message h2 { font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+            /* Actions (Quick Actions + help + avatar) get their own full-width row */
+            .admin-top-bar > div:last-child {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            /* Small screens: every data table becomes stacked cards — each row
+               turns into a column of label/value pairs, so nothing squeezes or
+               overflows horizontally. Labels come from <thead> via JS. */
+
+            /* Inline-styled grids also collapse to one column here (they beat
+               class-based media queries) and flex rows wrap. */
+            div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+            div[style*="display:flex"] { flex-wrap: wrap !important; }
+            div[style*="display: flex"] { flex-wrap: wrap !important; }
+            .admin-card, .stat-card, .dashboard-hero-card { min-width: 0; }
+            img { max-width: 100%; height: auto; }
+            html, body { overflow-x: clip; }
+
+            .table-responsive { overflow: visible !important; }
+            table.admin-table { border: 0 !important; }
+            .admin-table thead { display: none !important; }
+            .admin-table tbody { display: block; width: 100%; }
+            .admin-table tr {
+                display: block;
+                width: 100%;
+                margin: 0 0 12px 0;
+                padding: 6px 0;
+                border: 1px solid var(--admin-border);
+                border-radius: 8px;
+                background: #fff;
+                box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+            }
+            .admin-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 14px;
+                width: 100%;
+                min-height: 34px;
+                border: 0 !important;
+                border-bottom: 1px dashed rgba(203, 213, 225, 0.7) !important;
+                padding: 8px 14px;
+                text-align: right;
+                box-sizing: border-box;
+            }
+            .admin-table td:last-child { border-bottom: 0 !important; }
+            .admin-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #64748b;
+                text-align: left;
+                flex-shrink: 0;
+                max-width: 45%;
+            }
+            /* Rows that span all columns (empty states, totals) stay full width */
+            .admin-table td[colspan] { display: block; text-align: center; }
+            .admin-table td[colspan]::before { display: none; }
+            /* Action buttons: wrap onto their own line inside the card */
+            .admin-table td .tbl-actions { justify-content: flex-end; }
+            .admin-table td .btn { margin: 2px 0; }
+        }
+
+        /* Phones: single-column everything, declutter the top bar */
         @media (max-width: 640px) {
             .admin-content { padding: 12px; }
-            .admin-top-bar {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-            }
-            .admin-top-bar > div:last-child { justify-content: flex-end; }
+            /* Small phones: hide the greeting sub-line and the avatar text
+               (username/role already shown in the sidebar) so nothing wraps. */
+            .admin-top-bar .welcome-message p { display: none; }
+            .admin-top-bar .welcome-message h2 { font-size: 1rem; }
+            .admin-profile-badge > div:last-child { display: none; }
             .dashboard-hero { flex-direction: column; }
             .stat-grid { grid-template-columns: 1fr !important; }
             div[style*="repeat(4,1fr)"],
             div[style*="repeat(3,1fr)"],
             div[style*="repeat(2,1fr)"],
             div[style*="2fr 1fr"] { grid-template-columns: 1fr !important; }
+
+            /* Any remaining inline-styled grid container collapses to one
+               column (inline styles otherwise override the class rules). */
+            div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+
+            /* Inline flex rows wrap instead of overflowing the viewport. */
+            div[style*="display:flex"] { flex-wrap: wrap !important; }
+            div[style*="display: flex"] { flex-wrap: wrap !important; }
+
+            /* Let grid children shrink — fixes tables/wide content forcing
+               the whole page wider than the phone screen. */
+            .admin-card, .stat-card, .dashboard-hero-card { min-width: 0; }
+            img { max-width: 100%; height: auto; }
+
+            /* Final safety net: never allow page-level sideways scroll. Inner
+               .table-responsive containers still scroll on their own. */
+            html, body { overflow-x: clip; }
+
+            /* Breathe: tighter card padding so cards fill the phone nicely. */
+            .admin-card { padding: 16px !important; }
+            .dashboard-hero-card { padding: 20px !important; }
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           DETAIL VIEW SWITCH (Cards ⇄ List) — changes only the records
+           below, never the summary cards. Applied on every admin page
+           that shows an .admin-table via body.busia-details-* classes.
+        ═══════════════════════════════════════════════════════════ */
+        .dt-view-toggle {
+            display: none;
+            align-items: center;
+            gap: 3px;
+            background: #f1f5f9;
+            border: 1px solid var(--admin-border);
+            border-radius: 6px;
+            padding: 3px;
+            flex-shrink: 0;
+        }
+        .dt-view-toggle button {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 10px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            background: transparent;
+            color: #64748b;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .dt-view-toggle button:hover { color: var(--admin-primary); }
+        .dt-view-toggle button.dt-on {
+            background: #fff;
+            border-color: var(--admin-border);
+            color: var(--admin-primary);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.10);
+        }
+        .dt-view-toggle i { width: 14px; height: 14px; }
+
+        /* Cards: every record row becomes its own labelled card (any screen).
+           Same visual language phones already use — now optional on desktop. */
+        body.busia-details-cards .table-responsive { overflow: visible !important; }
+        body.busia-details-cards table.admin-table { border: 0 !important; }
+        body.busia-details-cards .admin-table thead { display: none !important; }
+        body.busia-details-cards .admin-table tbody { display: block; width: 100%; }
+        body.busia-details-cards .admin-table tr {
+            display: block;
+            width: 100%;
+            margin: 0 0 12px 0;
+            padding: 6px 0;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+        }
+        body.busia-details-cards .admin-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+            min-height: 34px;
+            border: 0 !important;
+            border-bottom: 1px dashed rgba(203, 213, 225, 0.7) !important;
+            padding: 8px 14px;
+            text-align: right;
+            box-sizing: border-box;
+        }
+        body.busia-details-cards .admin-table td:last-child { border-bottom: 0 !important; }
+        body.busia-details-cards .admin-table td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            text-align: left;
+            flex-shrink: 0;
+            max-width: 45%;
+        }
+        body.busia-details-cards .admin-table td[colspan] { display: block; text-align: center; }
+        body.busia-details-cards .admin-table td[colspan]::before { display: none; }
+        body.busia-details-cards .admin-table td .tbl-actions { justify-content: flex-end; }
+        body.busia-details-cards .admin-table td .btn { margin: 2px 0; }
+
+        /* List: force plain table rows even on phones (overrides the ≤767px
+           automatic card layout, so the admin can opt back into compact rows). */
+        body.busia-details-list .table-responsive { overflow-x: auto !important; }
+        body.busia-details-list table.admin-table { border: 1px solid var(--admin-border) !important; }
+        body.busia-details-list .admin-table thead { display: table-header-group !important; }
+        body.busia-details-list .admin-table tbody { display: table-row-group !important; width: auto; }
+        body.busia-details-list .admin-table tr {
+            display: table-row !important;
+            width: auto;
+            margin: 0;
+            padding: 0;
+            border: 0 !important;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+        body.busia-details-list .admin-table td {
+            display: table-cell !important;
+            width: auto;
+            min-height: 0;
+            border: 1px solid var(--admin-border) !important;
+            border-bottom: 1px solid var(--admin-border) !important;
+            padding: 10px 12px;
+            text-align: left;
+        }
+        body.busia-details-list .admin-table td::before { display: none !important; content: none; }
+        body.busia-details-list .admin-table td[colspan] { text-align: center; }
+        body.busia-details-list .admin-table td .btn { margin: 0; }
+
+        @media (max-width: 640px) {
+            .dt-view-toggle button { padding: 6px 8px; font-size: 0.74rem; }
         }
     </style>
     <script>
@@ -909,6 +1157,15 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
                 <p>Welcome back to your dashboard portal.</p>
             </div>
             <div style="display: flex; align-items: center; gap: 16px;">
+                <!-- Detail view switch: Cards ⇄ List (only records change, never the summary cards) -->
+                <div class="dt-view-toggle" id="detail-view-toggle" role="group" aria-label="Detail view">
+                    <button type="button" data-dt="cards" aria-pressed="false" title="Show each record as a card">
+                        <i data-lucide="layout-grid"></i> Cards
+                    </button>
+                    <button type="button" data-dt="list" aria-pressed="false" title="Show records in a compact list">
+                        <i data-lucide="list"></i> List
+                    </button>
+                </div>
                 <?php if (!empty($quickActions)): ?>
                 <div class="quick-actions-wrap" style="position: relative;">
                     <button id="quick-actions-toggle" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; font-size: 0.85rem; border-radius: 8px;">

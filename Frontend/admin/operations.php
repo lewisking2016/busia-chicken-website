@@ -67,8 +67,4 @@ if (!in_array($tab, $allowedTabs, true)) {
     ?>
 </div>
 
-<script>
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-</script>
+<?php include __DIR__ . '/includes/admin_footer.php'; ?>

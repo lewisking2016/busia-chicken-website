@@ -12,6 +12,75 @@ session_start();
 
 require_once __DIR__ . '/../config/database.php';
 
+/**
+ * Classify a breed name into a bird-type key the admin uses to configure the
+ * vaccine program. This is only a lookup key — the actual vaccines and day
+ * offsets come from the vaccination_plans table the admin manages.
+ */
+function busiaDetectBirdType(string $breed): string
+{
+    $b = strtolower($breed);
+    if (str_contains($b, 'broiler') || str_contains($b, 'cobb') || str_contains($b, 'ross') || str_contains($b, 'kroiler') || str_contains($b, 'aseel')) {
+        return 'broiler';
+    }
+    if (str_contains($b, 'kienyeji') || str_contains($b, 'indigenous') || str_contains($b, 'sasso') || str_contains($b, 'rainbow')) {
+        return 'kienyeji';
+    }
+    return 'layer';
+}
+
+/** Bird-type keys the admin can define a program for. */
+function busiaPlanBirdTypes(): array
+{
+    return ['layer', 'broiler', 'kienyeji', 'general'];
+}
+
+/**
+ * The active program the ADMIN configured for a bird type (falls back to the
+ * 'general' program when the specific type has none). Empty = nothing set.
+ */
+function busiaActiveVaccinePlan(\PDO $pdo, string $type): array
+{
+    foreach (array_unique([$type, 'general']) as $t) {
+        $st = $pdo->prepare('SELECT vaccine_name, day_after_hatch FROM vaccination_plans WHERE bird_type = ? AND is_active = 1 ORDER BY sort_order ASC, day_after_hatch ASC, id ASC');
+        $st->execute([$t]);
+        $got = $st->fetchAll(PDO::FETCH_ASSOC);
+        if ($got) {
+            return $got;
+        }
+    }
+    return [];
+}
+
+/**
+ * Schedule a NEW flock's vaccinations from the admin-configured program.
+ * Returns how many were scheduled (0 when the admin has not set a program).
+ */
+function busiaAutoScheduleVaccinations(\PDO $pdo, int $flockId, string $breed, string $hatchDate): int
+{
+    if ($flockId <= 0 || $hatchDate === '') {
+        return 0;
+    }
+    // Safety: never double-schedule a flock that already has vaccinations.
+    $has = $pdo->prepare('SELECT COUNT(*) FROM vaccinations WHERE flock_id = ?');
+    $has->execute([$flockId]);
+    if ((int)$has->fetchColumn() > 0) {
+        return 0;
+    }
+    $plan = busiaActiveVaccinePlan($pdo, busiaDetectBirdType($breed));
+    if (!$plan) {
+        return 0;
+    }
+    $ins = $pdo->prepare('INSERT INTO vaccinations (flock_id, vaccine_name, scheduled_date, status) VALUES (?, ?, ?, ?)');
+    $added = 0;
+    foreach ($plan as $row) {
+        $scheduled = date('Y-m-d', strtotime($hatchDate . ' +' . (int)$row['day_after_hatch'] . ' day'));
+        $ins->execute([$flockId, $row['vaccine_name'], $scheduled, 'scheduled']);
+        $added++;
+    }
+    return $added;
+}
+
 try {
     if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'stock_manager'], true)) {
         throw new Exception('Unauthorized access');
@@ -53,8 +122,22 @@ try {
                 $stmt->execute([$flock_name, $breed, $initial_count, $initial_count, $hatch_date, $status]);
                 $msg = 'Flock created';
             }
-            logActivity($pdo, 'save', 'flocks', "{$msg}: {$flock_name} ({$breed}, {$initial_count} birds)", $id > 0 ? $id : (int)$pdo->lastInsertId(), 'flock');
-            echo json_encode(['success' => true, 'message' => $msg]);
+            $flockId = $id > 0 ? $id : (int)$pdo->lastInsertId();
+
+            // NEW FLOCKS ONLY: build the vaccination schedule automatically.
+            $vaccinesAdded = 0;
+            if ($id <= 0) {
+                $vaccinesAdded = busiaAutoScheduleVaccinations($pdo, $flockId, $breed, $hatch_date);
+                if ($vaccinesAdded > 0) {
+                    $msg .= " — {$vaccinesAdded} vaccines scheduled automatically";
+                }
+            }
+            logActivity($pdo, 'save', 'flocks', "{$msg}: {$flock_name} ({$breed}, {$initial_count} birds)", $flockId, 'flock');
+            echo json_encode([
+                'success' => true,
+                'message' => $msg,
+                'data'    => ['id' => $flockId, 'vaccines_added' => $vaccinesAdded],
+            ]);
             break;
 
         case 'delete_flock':
@@ -194,6 +277,65 @@ try {
             $stmt->execute([$id]);
             logActivity($pdo, 'delete', 'vaccinations', "Deleted vaccination #{$id}", $id, 'vaccination');
             echo json_encode(['success' => true, 'message' => 'Vaccination schedule deleted']);
+            break;
+
+        // --- VACCINE PROGRAM (admin-configured defaults for NEW flocks) ---
+        case 'get_vaccine_plans':
+            $rows = $pdo->query('SELECT * FROM vaccination_plans ORDER BY FIELD(bird_type, \'layer\', \'broiler\', \'kienyeji\', \'general\'), bird_type ASC, sort_order ASC, day_after_hatch ASC, id ASC')->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode(['success' => true, 'data' => $rows]);
+            break;
+
+        case 'resolve_vaccine_plan':
+            // Given a breed, tell the UI which type applies and what the
+            // admin-configured program contains for it (empty when unset).
+            $breed = trim($_GET['breed'] ?? '');
+            $type = $breed === '' ? 'general' : busiaDetectBirdType($breed);
+            echo json_encode([
+                'success' => true,
+                'bird_type' => $type,
+                'data' => busiaActiveVaccinePlan($pdo, $type),
+            ]);
+            break;
+
+        case 'save_vaccine_plan':
+            if ($method !== 'POST') throw new Exception('Invalid request method');
+            if (!in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager'], true)) {
+                throw new Exception('Only the Farm Manager can change the vaccine program');
+            }
+            $id = (int)($_POST['id'] ?? 0);
+            $bird_type = trim($_POST['bird_type'] ?? '');
+            $vaccine_name = trim($_POST['vaccine_name'] ?? '');
+            $day_after_hatch = (int)($_POST['day_after_hatch'] ?? 0);
+            $sort_order = (int)($_POST['sort_order'] ?? 0);
+            $is_active = isset($_POST['is_active']) ? ((int)$_POST['is_active'] === 0 ? 0 : 1) : 1;
+
+            if (!in_array($bird_type, busiaPlanBirdTypes(), true) || $vaccine_name === '' || $day_after_hatch < 0) {
+                throw new Exception('Bird type, vaccine name, and a valid day are required');
+            }
+
+            if ($id > 0) {
+                $stmt = $pdo->prepare('UPDATE vaccination_plans SET bird_type = ?, vaccine_name = ?, day_after_hatch = ?, sort_order = ?, is_active = ? WHERE id = ?');
+                $stmt->execute([$bird_type, $vaccine_name, $day_after_hatch, $sort_order, $is_active, $id]);
+                $msg = 'Vaccine program item updated';
+            } else {
+                $stmt = $pdo->prepare('INSERT INTO vaccination_plans (bird_type, vaccine_name, day_after_hatch, sort_order, is_active) VALUES (?, ?, ?, ?, ?)');
+                $stmt->execute([$bird_type, $vaccine_name, $day_after_hatch, $sort_order, $is_active]);
+                $msg = 'Vaccine program item added';
+            }
+            logActivity($pdo, 'save', 'vaccination_plans', "{$msg}: {$vaccine_name} ({$bird_type}, day {$day_after_hatch})", $id > 0 ? $id : (int)$pdo->lastInsertId(), 'vaccination_plan');
+            echo json_encode(['success' => true, 'message' => $msg]);
+            break;
+
+        case 'delete_vaccine_plan':
+            if ($method !== 'POST') throw new Exception('Invalid request method');
+            if (!in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager'], true)) {
+                throw new Exception('Only the Farm Manager can change the vaccine program');
+            }
+            $id = (int)($_POST['id'] ?? 0);
+            $stmt = $pdo->prepare('DELETE FROM vaccination_plans WHERE id = ?');
+            $stmt->execute([$id]);
+            logActivity($pdo, 'delete', 'vaccination_plans', "Deleted vaccine program item #{$id}", $id, 'vaccination_plan');
+            echo json_encode(['success' => true, 'message' => 'Vaccine program item removed']);
             break;
 
         // --- EXPENSES (FINANCIAL RECORDS) ---

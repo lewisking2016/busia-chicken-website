@@ -275,11 +275,11 @@ try {
 
             $pdo->beginTransaction();
             if ($id > 0) {
-                execute($pdo, "UPDATE feed_recipes SET name = ?, product_id = ?, base_bag_size_kg = ? WHERE id = ?", [$name, $product_id, $bag_size, $id]);
+                execute($pdo, "UPDATE feed_recipes SET name = ?, recipe_name = ?, product_id = ?, base_bag_size_kg = ? WHERE id = ?", [$name, $name, $product_id, $bag_size, $id]);
                 execute($pdo, "DELETE FROM recipe_ingredients WHERE recipe_id = ?", [$id]);
                 $recipe_id = $id;
             } else {
-                execute($pdo, "INSERT INTO feed_recipes (name, product_id, base_bag_size_kg) VALUES (?, ?, ?)", [$name, $product_id, $bag_size]);
+                execute($pdo, "INSERT INTO feed_recipes (name, recipe_name, product_id, base_bag_size_kg) VALUES (?, ?, ?, ?)", [$name, $name, $product_id, $bag_size]);
                 $recipe_id = (int)$pdo->lastInsertId();
             }
 

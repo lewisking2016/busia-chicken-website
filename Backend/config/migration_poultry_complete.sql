@@ -416,3 +416,15 @@ INSERT IGNORE INTO settings (setting_key, setting_value, setting_group, descript
 ('low_stock_alert_days', '7',                  'stores',  'Days of stock remaining to trigger alert'),
 ('mpesa_shortcode',      '',                   'payment', 'M-Pesa paybill/till'),
 ('mpesa_passkey',        '',                   'payment', 'M-Pesa API passkey');
+
+-- Admin-configured vaccine program applied to NEW flocks (data-driven, not hardcoded)
+CREATE TABLE IF NOT EXISTS vaccination_plans (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    bird_type VARCHAR(32) NOT NULL,
+    vaccine_name VARCHAR(150) NOT NULL,
+    day_after_hatch INT NOT NULL DEFAULT 0,
+    sort_order INT NOT NULL DEFAULT 0,
+    is_active TINYINT NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_plan_bird (bird_type, is_active)
+) ENGINE=InnoDB;

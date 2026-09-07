@@ -51,7 +51,7 @@ if ($pdo) {
             <?php else: foreach ($recipes as $r): ?>
                 <tr>
                     <td><strong><?= htmlspecialchars($r['recipe_name'], ENT_QUOTES, 'UTF-8') ?></strong></td>
-                    <td><span class="badge-pill badge-pill-info"><?= htmlspecialchars($r['target_species'], ENT_QUOTES, 'UTF-8') ?></span></td>
+                    <td><span class="badge-pill badge-pill-info"><?= htmlspecialchars($r['target_species'] ?? 'layers', ENT_QUOTES, 'UTF-8') ?></span></td>
                     <td><?= (float)$r['base_bag_size_kg'] ?> kg</td>
                     <td><?= htmlspecialchars($r['description'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td>
                     <td><span class="badge-pill <?= $r['is_active']?'badge-pill-success':'badge-pill-info' ?>"><?= $r['is_active']?'Active':'Inactive' ?></span></td>

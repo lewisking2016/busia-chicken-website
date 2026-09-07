@@ -68,9 +68,19 @@ include __DIR__ . '/includes/admin_header.php';
                 <input type="text" name="flock_name" id="flock-name" class="form-control" placeholder="e.g. Batch A - Layers" required>
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
-                <label class="form-label">Breed</label>
-                <input type="text" name="breed" id="flock-breed" class="form-control" placeholder="e.g. ISA Brown" required>
+                <label class="form-label">Breed / Bird Type</label>
+                <input type="text" name="breed" id="flock-breed" class="form-control" placeholder="e.g. ISA Brown" list="breed-suggestions" required>
+                <datalist id="breed-suggestions">
+                    <option value="ISA Brown"></option>
+                    <option value="Kenbrow"></option>
+                    <option value="Cobb 500"></option>
+                    <option value="Ross 308"></option>
+                    <option value="Kienyeji (Indigenous)"></option>
+                    <option value="Sasso"></option>
+                </datalist>
+                <small style="display:block;color:#64748b;margin-top:6px;line-height:1.5;">Common types: <strong>ISA Brown / Kenbrow</strong> (eggs) · <strong>Cobb / Ross</strong> (meat) · <strong>Kienyeji</strong></small>
             </div>
+            <div id="vax-preview" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;margin-bottom:15px;color:#14532d;font-size:0.84rem;"></div>
             <div class="form-group" style="margin-bottom: 15px;">
                 <label class="form-label">Initial Count (Chicks)</label>
                 <input type="number" name="initial_count" id="flock-initial-count" class="form-control" min="1" required>
@@ -97,6 +107,29 @@ include __DIR__ . '/includes/admin_header.php';
                 <button type="submit" class="btn btn-primary" style="flex: 1;">Save Flock</button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- What happened next? Guided success step (so nobody gets lost after saving) -->
+<div id="flock-success" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:2400;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:#fff;border-radius:12px;width:100%;max-width:430px;padding:30px 28px;text-align:center;box-shadow:0 25px 60px rgba(15,23,42,0.25);">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <i data-lucide="check" style="width:28px;height:28px;"></i>
+        </div>
+        <h3 style="margin:0 0 6px;font-family:'Outfit',sans-serif;color:#0f172a;">Flock added successfully</h3>
+        <p id="flock-success-detail" style="margin:0 0 14px;color:#475569;font-size:0.92rem;line-height:1.55;"></p>
+        <div id="flock-success-badge" style="margin-bottom:18px;"></div>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+            <a href="/Frontend/admin/hub_operations.php?tab=vaccinations" class="btn btn-primary" style="width:100%;justify-content:center;padding:11px 16px;border-radius:6px;text-decoration:none;">
+                <i data-lucide="syringe" style="width:16px;height:16px;"></i> View Vaccine Plan
+            </a>
+            <a href="/Frontend/admin/production.php" class="btn btn-outline" style="width:100%;justify-content:center;padding:10px 16px;border-radius:6px;text-decoration:none;">
+                <i data-lucide="egg" style="width:16px;height:16px;"></i> Log Today's Eggs
+            </a>
+            <button type="button" class="btn btn-trans" style="width:100%;justify-content:center;padding:10px 16px;border-radius:6px;" onclick="document.getElementById('flock-success').style.display='none'">
+                Done — I'm finished
+            </button>
+        </div>
     </div>
 </div>
 
@@ -183,10 +216,66 @@ function openFlockModal() {
     document.getElementById('current-count-group').style.display = 'none';
     document.getElementById('status-group').style.display = 'none';
     document.getElementById('flock-modal').style.display = 'flex';
+    renderVaxPreview();
 }
 
 function closeFlockModal() {
     document.getElementById('flock-modal').style.display = 'none';
+}
+
+/* ── Auto-vaccination preview: pulled LIVE from the admin's Vaccine Program
+   (Vaccines screen → Vaccine program). No schedules are hardcoded here. ── */
+let vaxPreviewTimer = null;
+const VAX_TYPE_LABELS = { layer: 'Layers (egg birds)', broiler: 'Broilers (meat birds)', kienyeji: 'Kienyeji', general: 'General' };
+function renderVaxPreview() {
+    const el = document.getElementById('vax-preview');
+    const breed = (document.getElementById('flock-breed').value || '').trim();
+    if (!el) return;
+    if (!breed) { el.style.display = 'none'; return; }
+    clearTimeout(vaxPreviewTimer);
+    el.style.display = 'block';
+    el.innerHTML = '<small style="color:#166534;">Checking the vaccine program...</small>';
+    vaxPreviewTimer = setTimeout(async () => {
+        try {
+            const res = await fetch('/Backend/api/admin_poultry.php?action=resolve_vaccine_plan&breed=' + encodeURIComponent(breed));
+            const r = await res.json();
+            if (!r.success) throw new Error(r.message || 'load failed');
+            const items = r.data || [];
+            if (!items.length) {
+                el.innerHTML = '<div style="display:flex;align-items:flex-start;gap:8px;color:#92400e;"><i data-lucide="info" style="width:15px;height:15px;flex-shrink:0;margin-top:1px;"></i><span>No vaccine program has been set for this bird type yet. Ask the Farm Manager to add one under <strong>My Birds → Vaccines → Vaccine Program</strong> — or add vaccines for this flock later.</span></div>';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                return;
+            }
+            const typeLabel = VAX_TYPE_LABELS[r.bird_type] || r.bird_type;
+            el.innerHTML = '<div style="display:flex;align-items:center;gap:6px;font-weight:700;margin-bottom:6px;">' +
+                '<i data-lucide="syringe" style="width:14px;height:14px;"></i> ' + escapeHtml(typeLabel) + ' — we will add these automatically:</div>' +
+                '<ul style="margin:0;padding-left:18px;display:grid;gap:2px;">' +
+                items.map(v => '<li>' + escapeHtml(v.vaccine_name) + ' <small style="color:#166534;">(age ' + Number(v.day_after_hatch) + (Number(v.day_after_hatch) === 1 ? ' day' : ' days') + ')</small></li>').join('') +
+                '</ul>' +
+                '<small style="display:block;margin-top:6px;color:#166534;">Dates are worked out from the hatch date. You can change them later on the Vaccines screen.</small>';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        } catch (e) {
+            el.innerHTML = '<small style="color:#94a3b8;">Could not load the vaccine program right now — vaccines can still be added after saving.</small>';
+        }
+    }, 350);
+}
+
+/* Guided "what next?" step so nobody gets lost right after saving a flock */
+function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+function showFlockDone(flockName, birds, vaccinesAdded) {
+    const detail = document.getElementById('flock-success-detail');
+    const badge = document.getElementById('flock-success-badge');
+    if (!detail || !badge) return;
+    detail.innerHTML = 'Flock <strong>' + escapeHtml(flockName) + '</strong> is now in the system with <strong>' + Number(birds || 0).toLocaleString() + '</strong> birds.';
+    if (Number(vaccinesAdded) > 0) {
+        badge.innerHTML = '<div style="display:inline-flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;font-weight:700;padding:8px 16px;border-radius:8px;font-size:0.88rem;">' +
+            '<i data-lucide="syringe" style="width:15px;height:15px;"></i> ' + Number(vaccinesAdded) + ' vaccines scheduled automatically</div>';
+    } else {
+        badge.innerHTML = '';
+    }
+    document.getElementById('flock-success').style.display = 'flex';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function editFlock(id) {
@@ -205,6 +294,7 @@ function editFlock(id) {
     document.getElementById('current-count-group').style.display = 'block';
     document.getElementById('status-group').style.display = 'block';
     document.getElementById('flock-modal').style.display = 'flex';
+    renderVaxPreview();
 }
 
 async function deleteFlock(id) {
@@ -240,8 +330,17 @@ document.getElementById('flock-form').addEventListener('submit', async (e) => {
         });
         const result = await response.json();
         if (result.success) {
+            const isNewFlock = !document.getElementById('flock-id').value;
+            const name = (document.getElementById('flock-name').value || '').trim();
+            const birds = document.getElementById('flock-initial-count').value;
+            const vaxAdded = result.data && result.data.vaccines_added ? Number(result.data.vaccines_added) : 0;
             closeFlockModal();
             loadFlocks();
+            // New flock: guide the user to the next useful step instead of
+            // dropping them back on an empty page ("where did my data go?").
+            if (isNewFlock) {
+                showFlockDone(name || 'Flock', birds, vaxAdded);
+            }
         } else {
             alert('Error: ' + (result.message || 'Could not save flock.'));
         }
@@ -252,6 +351,9 @@ document.getElementById('flock-form').addEventListener('submit', async (e) => {
         setBtnLoading(btn, false);
     }
 });
+
+// Live vaccine-plan preview while typing the breed
+document.getElementById('flock-breed').addEventListener('input', renderVaxPreview);
 
 // Spinner keyframe animation
 if (!document.getElementById('admin-spin-style')) {

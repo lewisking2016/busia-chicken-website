@@ -114,7 +114,7 @@ try {
                 // Format: each day shows the per-tier breakdown as one row
                 $tierTxt = [];
                 foreach ($lineArr as $l) {
-                    $tierTxt[] = $l['quantity_crates'] . ' × KES ' . $l['unit_price'] . ' (' . $l['product_type'] . ') = KES ' . number_format($l['line_total'], 2);
+                    $tierTxt[] = $l['quantity_crates'] . ' × KES ' . $l['unit_price'] . ' (' . $l['product_type'] . ') = KES ' . number_format((float)$l['line_total'], 2);
                 }
                 $out[] = [
                     'Date'             => $h['sale_date'],

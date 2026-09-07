@@ -169,6 +169,94 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
             height: 300px;
             width: 100%;
         }
+
+        /* ═══ Dashboard module view: Cards ⇄ List ═══ */
+        .dash-view-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            margin: 0 0 16px;
+            flex-wrap: wrap;
+        }
+        .dash-view-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #64748b;
+        }
+        .seg {
+            display: inline-flex;
+            align-items: center;
+            background: #eef2f6;
+            border: 1px solid var(--admin-border);
+            border-radius: 4px;
+            padding: 3px;
+            gap: 3px;
+        }
+        .seg-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 13px;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            background: transparent;
+            color: #475569;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.84rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .seg-btn i { width: 15px; height: 15px; }
+        .seg-btn:hover { color: var(--admin-primary); }
+        .seg-btn.is-active {
+            background: #fff;
+            border-color: var(--admin-border);
+            color: var(--admin-primary);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.10);
+        }
+        .admin-card h3 i[data-lucide] {
+            width: 18px;
+            height: 18px;
+            color: var(--admin-primary);
+            flex-shrink: 0;
+        }
+
+        /* List view: every module becomes a full-width row, stacked top to bottom */
+        .dash-view-list .dashboard-kpi-row {
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+        .dash-view-list .stat-card {
+            padding: 14px 18px;
+        }
+        .dash-view-list .stat-card-info {
+            flex-direction: row;
+            align-items: baseline;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .dash-view-list .stat-card strong { margin-top: 0; font-size: 1.5rem; }
+        .dash-view-list .dashboard-main-grid {
+            grid-template-columns: 1fr !important;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+        .dash-view-list .admin-card { padding: 18px 22px; }
+        .dash-view-list .chart-box { height: 260px; }
+        .dash-view-list .admin-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+        @media (max-width: 640px) {
+            .dash-view-toolbar { justify-content: space-between; width: 100%; }
+            .dash-view-list .stat-card { padding: 12px 16px; }
+        }
     </style>
 
     <!-- Redesigned Welcome Banner -->
@@ -188,6 +276,19 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
                 <i data-lucide="bar-chart" style="width: 18px; height: 18px;"></i>
                 <span>Analytics Report</span>
             </a>
+        </div>
+    </div>
+
+    <!-- Module view switcher (Cards ⇄ List) -->
+    <div class="dash-view-toolbar">
+        <span class="dash-view-label"><i data-lucide="columns-2" style="width:14px;height:14px;vertical-align:-2px;"></i> Dashboard view</span>
+        <div class="seg" role="group" aria-label="Dashboard view">
+            <button type="button" class="seg-btn is-active" data-dash-view="grid" aria-pressed="true">
+                <i data-lucide="layout-grid"></i><span>Cards</span>
+            </button>
+            <button type="button" class="seg-btn" data-dash-view="list" aria-pressed="false">
+                <i data-lucide="list"></i><span>List</span>
+            </button>
         </div>
     </div>
 
@@ -249,7 +350,7 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
     <!-- Main Grid containing Charts and Lists -->
     <div class="dashboard-main-grid">
         <!-- Revenue Chart Card -->
-        <div class="admin-card">
+        <div class="admin-card" data-dash-mod="revenue-trend">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: var(--admin-text-heading);">Revenue Trend</h3>
                 <span class="badge-pill badge-pill-success">Live Sync</span>
@@ -259,7 +360,7 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
             </div>
         </div>
         <!-- System Status & Stocks Alerts -->
-        <div class="admin-card" style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="admin-card" data-dash-mod="system-overview" style="display: flex; flex-direction: column; gap: 20px;">
             <h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: var(--admin-text-heading);">System Overview</h3>
             
             <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -300,7 +401,7 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
 
     <div class="dashboard-main-grid" style="grid-template-columns: 1fr 1fr;">
         <!-- Order Volume Card -->
-        <div class="admin-card">
+        <div class="admin-card" data-dash-mod="order-volumes">
             <h3 style="margin: 0 0 24px 0; font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: var(--admin-text-heading);">Order Volumes</h3>
             <div class="chart-box" style="height: 250px;">
                 <canvas id="chart-orders"></canvas>
@@ -308,7 +409,7 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
         </div>
 
         <!-- Recent Activity Card -->
-        <div class="admin-card">
+        <div class="admin-card" data-dash-mod="audit-log">
             <h3 style="margin: 0 0 20px 0; font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: var(--admin-text-heading);">System Audit Log</h3>
             <div class="table-responsive">
                 <table class="admin-table">
@@ -391,5 +492,53 @@ function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']
 loadDashboard();
 </script>
 
+<script>
+/* Dashboard module view: Cards (grid) ⇄ List (stacked rows).
+   Choice is remembered per browser so the admin keeps their preference. */
+(function () {
+    const KEY = 'busiaDashView';
+    const MOD_ICONS = {
+        'revenue-trend': 'trending-up',
+        'system-overview': 'activity',
+        'order-volumes': 'shopping-bag',
+        'audit-log': 'scroll-text'
+    };
+    const btns = document.querySelectorAll('[data-dash-view]');
+    const cards = document.querySelectorAll('[data-dash-mod]');
+
+    // Give each module heading its icon chip (used by both views).
+    function decorate() {
+        cards.forEach(c => {
+            const h = c.querySelector(':scope > h3') || c.querySelector('h3');
+            if (!h || h.querySelector('svg, i')) return;
+            const i = document.createElement('i');
+            i.setAttribute('data-lucide', MOD_ICONS[c.getAttribute('data-dash-mod')] || 'circle-dot');
+            i.setAttribute('aria-hidden', 'true');
+            h.prepend(i);
+        });
+        if (window.lucide) { try { lucide.createIcons(); } catch (e) {} }
+    }
+
+    function apply(mode) {
+        document.body.classList.toggle('dash-view-list', mode === 'list');
+        btns.forEach(b => {
+            const on = b.getAttribute('data-dash-view') === mode;
+            b.classList.toggle('is-active', on);
+            b.setAttribute('aria-pressed', String(on));
+        });
+        try { localStorage.setItem(KEY, mode); } catch (e) {}
+    }
+
+    if (!btns.length) return;
+    btns.forEach(b => b.addEventListener('click', () => apply(b.getAttribute('data-dash-view'))));
+
+    let saved = 'grid';
+    try { saved = localStorage.getItem(KEY) || 'grid'; } catch (e) {}
+    if (saved !== 'grid' && saved !== 'list') saved = 'grid';
+
+    decorate();
+    apply(saved);
+})();
+</script>
 
 <?php include __DIR__ . '/includes/admin_footer.php'; ?>
