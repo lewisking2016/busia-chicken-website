@@ -261,20 +261,24 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
 
     <!-- Redesigned Welcome Banner -->
     <div class="dashboard-hero-card">
-        <h1>Operations Cockpit</h1>
-        <p>Manage products, view analytics reports, monitor system health status, and handle orders all in a clean, high-performance workspace.</p>
+        <h1>Busia Poultry &amp; Feeds Operations Cockpit</h1>
+        <p>Unified enterprise terminal managing live chicken flocks, raw material milling, finished feed warehouse inventory, and sales operations.</p>
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <a class="btn btn-white" href="orders.php">
+            <a class="btn btn-white" href="bulk_sales.php">
                 <i data-lucide="shopping-cart" style="width: 18px; height: 18px;"></i>
-                <span>Review Orders</span>
+                <span>Sell Chickens &amp; Feed</span>
             </a>
-            <a class="btn btn-trans" href="products.php">
-                <i data-lucide="package" style="width: 18px; height: 18px;"></i>
-                <span>Manage Products</span>
+            <a class="btn btn-trans" href="feed_production.php">
+                <i data-lucide="wheat" style="width: 18px; height: 18px;"></i>
+                <span>Feed Production &amp; Stock</span>
             </a>
-            <a class="btn btn-trans" href="reports.php">
-                <i data-lucide="bar-chart" style="width: 18px; height: 18px;"></i>
-                <span>Analytics Report</span>
+            <a class="btn btn-trans" href="batches.php">
+                <i data-lucide="layers" style="width: 18px; height: 18px;"></i>
+                <span>Manage Chicken Batches</span>
+            </a>
+            <a class="btn btn-trans" href="hub_inventory.php">
+                <i data-lucide="boxes" style="width: 18px; height: 18px;"></i>
+                <span>Stores &amp; Inventory</span>
             </a>
         </div>
     </div>
@@ -296,10 +300,10 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
     <div class="dashboard-kpi-row">
         <div class="stat-card">
             <div class="stat-card-info">
-                <small>Total Revenue</small>
+                <small>Total Revenue (30d)</small>
                 <strong id="kpi-sales">KES 0</strong>
                 <span style="font-size: 0.8rem; color: #16a34a; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
-                    <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i> +18.5% this month
+                    <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i> Poultry &amp; feed sales
                 </span>
             </div>
             <div class="stat-card-icon">
@@ -309,40 +313,40 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
 
         <div class="stat-card">
             <div class="stat-card-info">
-                <small>Orders Completed</small>
-                <strong id="kpi-orders">0</strong>
+                <small>Active Live Chickens</small>
+                <strong id="kpi-birds">0 birds</strong>
                 <span style="font-size: 0.8rem; color: #16a34a; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
-                    <i data-lucide="check" style="width: 14px; height: 14px;"></i> +9.1% conversion
+                    <i data-lucide="check" style="width: 14px; height: 14px;"></i> <span id="kpi-active-flocks-text">0</span> active flocks
                 </span>
             </div>
-            <div class="stat-card-icon info">
-                <i data-lucide="shopping-bag"></i>
+            <div class="stat-card-icon" style="background:#dcfce7;color:#15803d;">
+                <i data-lucide="bird"></i>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-card-info">
-                <small>Avg. Order Value</small>
-                <strong id="kpi-avg">KES 0</strong>
-                <span style="font-size: 0.8rem; color: #16a34a; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
-                    <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i> +5.2% growth
+                <small>Warehouse Finished Feeds</small>
+                <strong id="kpi-feed-stock">0 bags</strong>
+                <span style="font-size: 0.8rem; color: #0284c7; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                    <i data-lucide="package" style="width: 14px; height: 14px;"></i> Available in warehouse
                 </span>
             </div>
-            <div class="stat-card-icon accent">
-                <i data-lucide="pie-chart"></i>
+            <div class="stat-card-icon accent" style="background:#e0f2fe;color:#0284c7;">
+                <i data-lucide="wheat"></i>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-card-info">
-                <small>Healthy Flocks</small>
-                <strong id="kpi-flock-summary">—</strong>
-                <span style="font-size: 0.8rem; color: #16a34a; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
-                    <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> Active
+                <small>Raw Materials Store</small>
+                <strong id="kpi-raw-stock">0 kg</strong>
+                <span style="font-size: 0.8rem; color: #d97706; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                    <i data-lucide="layers" style="width: 14px; height: 14px;"></i> Grains &amp; premix stock
                 </span>
             </div>
-            <div class="stat-card-icon accent" style="background: rgba(22, 163, 74, 0.1); color: #16a34a;">
-                <i data-lucide="layers"></i>
+            <div class="stat-card-icon accent" style="background:#fef3c7;color:#d97706;">
+                <i data-lucide="boxes"></i>
             </div>
         </div>
     </div>
@@ -480,6 +484,69 @@ async function loadDashboard() {
                 const name = ((a.first_name || '') + ' ' + (a.last_name || '')).trim() || 'Guest';
                 const color = a.status === 'completed' ? '#16a34a' : a.status === 'cancelled' ? '#dc2626' : '#d97706';
                 return `<tr><td><strong>${escapeHtml(name)}</strong> — order #${a.id} for KES ${parseFloat(a.total_amount||0).toLocaleString()} <span style="color:${color};font-size:0.78rem;text-transform:uppercase;font-weight:600;">${a.status}</span></td><td style="text-align:right;color:#64748b;font-size:0.85rem;">${(a.created_at||'').split(' ')[0]}</td></tr>`;
+            }).join('');
+        }
+    }
+
+    // Update Core Chicken & Feed KPI values
+    const d = data.data || {};
+    if (document.getElementById('kpi-sales')) {
+        document.getElementById('kpi-sales').textContent = 'KES ' + Math.round(d.total_sales_30d || 0).toLocaleString();
+    }
+    if (document.getElementById('kpi-birds')) {
+        document.getElementById('kpi-birds').textContent = (d.active_birds || 0).toLocaleString() + ' birds';
+    }
+    if (document.getElementById('kpi-active-flocks-text')) {
+        document.getElementById('kpi-active-flocks-text').textContent = d.active_batches || 0;
+    }
+    if (document.getElementById('kpi-active-flocks')) {
+        document.getElementById('kpi-active-flocks').textContent = d.active_batches || 0;
+    }
+    if (document.getElementById('kpi-feed-stock')) {
+        document.getElementById('kpi-feed-stock').textContent = (d.feed_stock_bags || 0).toLocaleString() + ' bags';
+    }
+    if (document.getElementById('kpi-raw-stock')) {
+        document.getElementById('kpi-raw-stock').textContent = Math.round(d.raw_materials_kg || 0).toLocaleString() + ' kg';
+    }
+
+    // Top moving products widget
+    const topProdEl = document.getElementById('top-products');
+    if (topProdEl) {
+        if (!topProducts.length) {
+            topProdEl.innerHTML = '<p style="padding:16px;text-align:center;color:#64748b;margin:0;font-size:0.85rem;">No product sales recorded yet.</p>';
+        } else {
+            topProdEl.innerHTML = topProducts.map(p => `
+                <div class="mini-list-item">
+                    <div class="item-details">
+                        <strong>${escapeHtml(p.name || 'Product')}</strong>
+                        <span>High demand finished item</span>
+                    </div>
+                    <span class="badge-pill badge-pill-success">${parseInt(p.qty||0)} sold</span>
+                </div>
+            `).join('');
+        }
+    }
+
+    // Raw material health widget
+    const rawEl = document.getElementById('raw-material-health');
+    if (rawEl) {
+        const rawItems = d.low_stock || [];
+        if (!rawItems.length) {
+            rawEl.innerHTML = '<div style="padding:14px;color:#16a34a;font-size:0.85rem;display:flex;align-items:center;gap:8px;"><i data-lucide="check-circle" style="width:16px;height:16px;"></i> All milling materials above minimum stock</div>';
+        } else {
+            rawEl.innerHTML = rawItems.slice(0, 4).map(m => {
+                const isCrit = parseFloat(m.current_stock) <= parseFloat(m.min_stock_level);
+                return `
+                    <div class="mini-list-item">
+                        <div class="item-details">
+                            <strong>${escapeHtml(m.material_name)}</strong>
+                            <span>Min: ${parseFloat(m.min_stock_level)} ${m.unit||'kg'}</span>
+                        </div>
+                        <span class="badge-pill ${isCrit ? 'badge-pill-danger' : 'badge-pill-info'}">
+                            ${parseFloat(m.current_stock).toFixed(1)} ${m.unit||'kg'}
+                        </span>
+                    </div>
+                `;
             }).join('');
         }
     }

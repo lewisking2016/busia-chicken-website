@@ -190,6 +190,16 @@ function reconcileLegacySchema(PDO $pdo): void
             $pdo->exec("ALTER TABLE users MODIFY role ENUM('super_admin','farm_manager','stock_manager','sales_staff','customer') NULL DEFAULT 'customer'");
         }
     }
+
+    // ── bulk_sales — add batch_id and product_id for chicken and feed traceability
+    if (tableExists($pdo, 'bulk_sales')) {
+        $add = [];
+        if (!columnExists($pdo, 'bulk_sales', 'batch_id'))   $add[] = 'ADD COLUMN batch_id INT NULL AFTER customer_phone';
+        if (!columnExists($pdo, 'bulk_sales', 'product_id')) $add[] = 'ADD COLUMN product_id INT NULL AFTER batch_id';
+        if ($add) {
+            $pdo->exec('ALTER TABLE bulk_sales ' . implode(', ', $add));
+        }
+    }
 }
 
 /**
@@ -356,7 +366,7 @@ function seedMasterData(PDO $pdo): void
  * Bump this when reconcileLegacySchema / seedMasterData gain new steps, so
  * existing databases re-run the one-time reconciliation on their next load.
  */
-const BUSIA_SCHEMA_SEED_VERSION = 2;
+const BUSIA_SCHEMA_SEED_VERSION = 3;
 
 /**
  * Ensure all module tables exist. No-op when everything is present.

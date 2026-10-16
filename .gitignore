@@ -83,3 +83,7 @@ Analyze*.md
 # Ignore server-modified files to prevent pull conflicts
 busiaadmin.php
 .htaccess
+
+# Local documentation & skills — never push to GitHub
+docs/
+skills/

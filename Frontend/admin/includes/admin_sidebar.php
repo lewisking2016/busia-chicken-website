@@ -198,7 +198,7 @@ HTML;
                     ['extras.php',      'heart-crack',    'Broken Eggs',     'extras'],
                     ['health.php',      'activity',       'Dead / Sick Birds', 'health'],
                     ['feeding.php',     'droplet',        'Feed Used',       'feeding'],
-                    ['daily_sales.php', 'dollar-sign',    'Sales Today',     'daily_sales'],
+                    ['bulk_sales.php',  'dollar-sign',    'Record Sale',     'bulk_sales'],
                 ];
                 $hasQuick = false;
                 foreach ($quick as $q) {
@@ -235,26 +235,27 @@ HTML;
             'Feed & Stores',
             $isInventory,
             [
-                'products' => 'Products',
-                'stores'   => ['label' => 'Stock', 'href' => '/Frontend/admin/stores.php'],
-                'feed'     => ['label' => 'Make Feed', 'href' => '/Frontend/admin/feed_production.php'],
-                'eggs'     => ['label' => 'Egg Sizes', 'href' => '/Frontend/admin/egg_grading.php']
+                'warehouse' => ['label' => 'Warehouse Hub', 'href' => '/Frontend/admin/hub_inventory.php'],
+                'feed'      => ['label' => 'Make Feed (BOM)', 'href' => '/Frontend/admin/feed_production.php'],
+                'stores'    => ['label' => 'Raw Materials', 'href' => '/Frontend/admin/stores.php'],
+                'products'  => ['label' => 'Products Catalog', 'href' => '/Frontend/admin/products.php']
             ],
-            $tab ?: 'products'
+            $tab ?: 'warehouse'
         ) ?>
 
         <?= navLinkWithSub(
-            '/Frontend/admin/hub_money.php?group=overview',
-            'trending-up',
-            'Money',
+            '/Frontend/admin/bulk_sales.php',
+            'shopping-cart',
+            'Sales Terminal',
             $isSalesFinance,
             [
-                // 8 old modules combined into 3 clear groups (all tools still one tap away)
-                'money_overview' => ['label' => 'Money Overview',  'href' => '/Frontend/admin/hub_money.php?group=overview', 'perm' => 'hub_finance'],
-                'money_income'   => ['label' => 'Sales & Credit',  'href' => '/Frontend/admin/hub_money.php?group=income',   'perm' => 'daily_sales'],
-                'money_spending' => ['label' => 'Cash & Spending', 'href' => '/Frontend/admin/hub_money.php?group=spending', 'perm' => 'cashbook']
+                'terminal' => ['label' => 'Sell Chickens & Feed', 'href' => '/Frontend/admin/bulk_sales.php'],
+                'daily'    => ['label' => 'Daily Sales Check', 'href' => '/Frontend/admin/daily_sales.php'],
+                'cashbook' => ['label' => 'Cashbook (Money)', 'href' => '/Frontend/admin/cashbook.php'],
+                'credit'   => ['label' => 'Debtors (Credit)', 'href' => '/Frontend/admin/credit.php'],
+                'money'    => ['label' => 'Finance Overview', 'href' => '/Frontend/admin/hub_money.php?group=overview']
             ],
-            $tab ?: 'money_overview'
+            $tab ?: 'terminal'
         ) ?>
 
         <?= navLinkWithSub(

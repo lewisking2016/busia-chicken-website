@@ -95,13 +95,19 @@ try {
     if ($action === 'batch_profit' && $method === 'GET') {
         $batch_id = (int)($_GET['batch_id'] ?? 0);
         if (!$batch_id) err('Batch required');
-        $batch = $pdo->query("SELECT * FROM batches WHERE id=$batch_id")->fetch(PDO::FETCH_ASSOC);
-        $costs = $pdo->query("SELECT cost_type, SUM(total_cost) AS total FROM batch_costs WHERE batch_id=$batch_id GROUP BY cost_type")->fetchAll(PDO::FETCH_ASSOC);
+        $bStmt = $pdo->prepare("SELECT * FROM batches WHERE id=?");
+        $bStmt->execute([$batch_id]);
+        $batch = $bStmt->fetch(PDO::FETCH_ASSOC);
+        if (!$batch) err('Batch not found');
+        $cStmt = $pdo->prepare("SELECT cost_type, SUM(total_cost) AS total FROM batch_costs WHERE batch_id=? GROUP BY cost_type");
+        $cStmt->execute([$batch_id]);
+        $costs = $cStmt->fetchAll(PDO::FETCH_ASSOC);
         $costByType = [];
         $totalCost = 0;
         foreach ($costs as $c) { $costByType[$c['cost_type']] = (float)$c['total']; $totalCost += (float)$c['total']; }
-        $revenue = (float)$pdo->query("SELECT COALESCE(SUM(total_amount),0) FROM bulk_sales WHERE notes LIKE '%batch #$batch_id%'")->fetchColumn();
-        // Fallback: sum from feed_production_batches sold? Use sold_birds * estimated price
+        $revStmt = $pdo->prepare("SELECT COALESCE(SUM(total_amount),0) FROM bulk_sales WHERE batch_id=? OR notes LIKE ?");
+        $revStmt->execute([$batch_id, '%batch #' . $batch_id . '%']);
+        $revenue = (float)$revStmt->fetchColumn();
         $profit = $revenue - $totalCost;
         ok(['data' => [
             'batch' => $batch,
@@ -306,10 +312,48 @@ try {
         $kg = (float)($_POST['kg_fed'] ?? 0);
         $notes = trim($_POST['notes'] ?? '');
         if ($batch_id === 0 || $kg <= 0) err('Batch and kg required');
-        $pdo->prepare("INSERT INTO feed_allocations (batch_id, allocation_date, feed_type, kg_fed, notes, recorded_by) VALUES (?,?,?,?,?,?)")
-            ->execute([$batch_id, $date, $feed, $kg, $notes, $user_id]);
-        logActivity($pdo, 'add', 'feeding', "Feed allocation: {$kg}kg {$feed} to batch #{$batch_id}", $batch_id, 'batch');
-        ok(['message' => 'Feed allocation saved']);
+
+        $pdo->beginTransaction();
+        try {
+            $pdo->prepare("INSERT INTO feed_allocations (batch_id, allocation_date, feed_type, kg_fed, notes, recorded_by) VALUES (?,?,?,?,?,?)")
+                ->execute([$batch_id, $date, $feed, $kg, $notes, $user_id]);
+
+            // ERPNext Auto Cost Rollup: Determine cost per kg from recent production or default
+            $costPerKg = 52.0; // fallback default KES/kg
+            $costStmt = $pdo->query("SELECT cost_per_kg FROM feed_production_batches ORDER BY production_date DESC LIMIT 1");
+            $lastCost = (float)$costStmt->fetchColumn();
+            if ($lastCost > 0) $costPerKg = $lastCost;
+
+            $totalFeedCost = round($kg * $costPerKg, 2);
+
+            // Insert into batch_costs so the chicken batch profitability is accurate
+            if (tableExists($pdo, 'batch_costs')) {
+                $pdo->prepare("INSERT INTO batch_costs (batch_id, cost_date, cost_type, description, quantity, unit, unit_cost, total_cost, paid_from, reference_no, recorded_by) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+                    ->execute([$batch_id, $date, 'feed', "Internal Feed Consumed: {$kg}kg {$feed}", $kg, 'kg', $costPerKg, $totalFeedCost, 'cash', 'FEED-ALLOC-' . date('Ymd'), $user_id]);
+            }
+
+            // Deduct from matching finished product in stock if available
+            if (tableExists($pdo, 'products')) {
+                $feedProd = $pdo->prepare("SELECT id, weight_kg, stock_quantity FROM products WHERE product_type='feed' AND (name LIKE ? OR description LIKE ?) LIMIT 1");
+                $feedProd->execute(['%' . $feed . '%', '%' . $feed . '%']);
+                $fRow = $feedProd->fetch(PDO::FETCH_ASSOC);
+                if ($fRow) {
+                    $bagWeight = (float)($fRow['weight_kg'] ?: 70);
+                    $bagsToDeduct = (int)round($kg / $bagWeight);
+                    if ($bagsToDeduct > 0) {
+                        $pdo->prepare("UPDATE products SET stock_quantity = GREATEST(0, stock_quantity - ?) WHERE id=?")
+                            ->execute([$bagsToDeduct, (int)$fRow['id']]);
+                    }
+                }
+            }
+
+            $pdo->commit();
+            logActivity($pdo, 'add', 'feeding', "Feed allocation: {$kg}kg {$feed} (KES {$totalFeedCost}) to batch #{$batch_id}", $batch_id, 'batch');
+            ok(['message' => "Feeding recorded: {$kg}kg allocated and KES {$totalFeedCost} added to batch cost"]);
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            err('Failed to record feeding: ' . $e->getMessage());
+        }
     }
     if ($action === 'fcr_report' && $method === 'GET') {
         $batch_id = (int)($_GET['batch_id'] ?? 0);

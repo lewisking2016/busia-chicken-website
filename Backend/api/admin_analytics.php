@@ -235,6 +235,16 @@ try {
     $prodCatStmt->execute();
     $productMix = $prodCatStmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Live Poultry & Feeds Core Metrics
+    $activeBirds = (int)safeFetchColumn($pdo, "SELECT COALESCE(SUM(current_birds),0) FROM batches WHERE status='active'");
+    $activeBatches = (int)safeFetchColumn($pdo, "SELECT COUNT(*) FROM batches WHERE status='active'");
+    $feedStockBags = (int)safeFetchColumn($pdo, "SELECT COALESCE(SUM(stock_quantity),0) FROM products WHERE product_type='feed'");
+    $rawMaterialsKg = (float)safeFetchColumn($pdo, "SELECT COALESCE(SUM(current_stock),0) FROM raw_materials");
+    $totalSales30d = (float)safeFetchColumn($pdo, "SELECT COALESCE(SUM(amount),0) FROM cashbook_entries WHERE direction='in' AND entry_date >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)");
+    if ($totalSales30d <= 0) {
+        $totalSales30d = (float)safeFetchColumn($pdo, "SELECT COALESCE(SUM(total_amount),0) FROM orders WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)");
+    }
+
     $response['success'] = true;
     $response['data'] = [
         'sales' => $sales,
@@ -256,6 +266,11 @@ try {
         'top_debtors' => $topDebtors,
         'customer_types' => $customerTypes,
         'product_mix' => $productMix,
+        'active_birds' => $activeBirds,
+        'active_batches' => $activeBatches,
+        'feed_stock_bags' => $feedStockBags,
+        'raw_materials_kg' => $rawMaterialsKg,
+        'total_sales_30d' => $totalSales30d,
     ];
 
 } catch (Exception $e) {
