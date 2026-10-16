@@ -525,9 +525,12 @@ try {
             $bags = (int)($_POST['bags_produced'] ?? 0);
             if ($rid === 0 || $bags === 0) api_err('Recipe and bag count required');
 
-            $stmt = $pdo->prepare("SELECT base_bag_size_kg FROM feed_recipes WHERE id=?");
+            $stmt = $pdo->prepare("SELECT * FROM feed_recipes WHERE id=?");
             $stmt->execute([$rid]);
-            $bag_size = (float)$stmt->fetchColumn();
+            $recipe = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$recipe) api_err('Recipe not found');
+            $bag_size = (float)($recipe['base_bag_size_kg'] ?? 70);
+            $recipe_name = trim((string)($recipe['recipe_name'] ?: ($recipe['name'] ?? 'Feed')));
             $total_kg = $bags * $bag_size;
 
             // Compute cost and deduct raw materials
@@ -544,17 +547,60 @@ try {
                 $selStmt->execute([(int)$ing['raw_material_id']]);
                 $row = $selStmt->fetch(PDO::FETCH_ASSOC);
                 $unit_cost = (float)($row['current_price_per_unit'] ?? 0);
-                $cur = (float)$row['current_stock'];
+                $cur = (float)($row['current_stock'] ?? 0);
                 $new_bal = $cur - $need;
                 $cost = $need * $unit_cost;
                 $total_cost += $cost;
                 $updStmt->execute([$need, (int)$ing['raw_material_id']]);
-                $mvStmt->execute([date('Y-m-d'), (int)$ing['raw_material_id'], 'used_production', -$need, $new_bal, $unit_cost, $cost, 'PROD-' . time(), "Used in feed production (recipe $rid)", $user_id]);
+                $mvStmt->execute([date('Y-m-d'), (int)$ing['raw_material_id'], 'used_production', -$need, $new_bal, $unit_cost, $cost, 'PROD-' . time(), "Used in feed production (recipe $rid - $recipe_name)", $user_id]);
             }
             $cost_per_kg = $total_kg > 0 ? $total_cost / $total_kg : 0;
+            $cost_per_bag = $bags > 0 ? $total_cost / $bags : 0;
             $prodStmt->execute([date('Y-m-d'), $rid, $bags, $bag_size, $total_kg, $total_cost, $cost_per_kg, $user_id]);
+            $batch_prod_id = (int)$pdo->lastInsertId();
+
+            // ERPNext Finished Goods Stocking: Credit finished bags into `products`
+            $prod_id = (int)($recipe['product_id'] ?? 0);
+            if ($prod_id > 0) {
+                $checkProd = $pdo->prepare("SELECT id FROM products WHERE id=?");
+                $checkProd->execute([$prod_id]);
+                if ($checkProd->fetch()) {
+                    $pdo->prepare("UPDATE products SET stock_quantity = stock_quantity + ?, weight_kg = ?, updated_at = NOW() WHERE id=?")
+                        ->execute([$bags, $bag_size, $prod_id]);
+                } else {
+                    $prod_id = 0;
+                }
+            }
+            if ($prod_id === 0) {
+                $prodName = $recipe_name . ' (' . (int)$bag_size . 'kg)';
+                $findStmt = $pdo->prepare("SELECT id FROM products WHERE name = ? OR name = ?");
+                $findStmt->execute([$prodName, $recipe_name]);
+                $foundId = (int)$findStmt->fetchColumn();
+                if ($foundId > 0) {
+                    $pdo->prepare("UPDATE products SET stock_quantity = stock_quantity + ?, weight_kg = ?, updated_at = NOW() WHERE id=?")
+                        ->execute([$bags, $bag_size, $foundId]);
+                    $pdo->prepare("UPDATE feed_recipes SET product_id = ? WHERE id = ?")->execute([$foundId, $rid]);
+                } else {
+                    $slug = strtolower(trim((string)preg_replace('/[^A-Za-z0-9-]+/', '-', $prodName)));
+                    $defaultPrice = round($cost_per_bag * 1.25, -1);
+                    if ($defaultPrice <= 0) $defaultPrice = round($bag_size * 55, -1);
+                    $pdo->prepare("INSERT INTO products (name, slug, description, product_type, price, stock_quantity, weight_kg, is_active, is_featured) VALUES (?, ?, ?, 'feed', ?, ?, ?, 1, 1)")
+                        ->execute([$prodName, $slug . '-' . time(), "Freshly milled $recipe_name ($bag_size kg bag)", $defaultPrice, $bags, $bag_size]);
+                    $newProdId = (int)$pdo->lastInsertId();
+                    $pdo->prepare("UPDATE feed_recipes SET product_id = ? WHERE id = ?")->execute([$newProdId, $rid]);
+                }
+            }
+
             $pdo->commit();
-            api_ok(['message' => 'Feed produced', 'total_kg' => $total_kg, 'total_cost' => $total_cost, 'cost_per_kg' => $cost_per_kg]);
+            logActivity($pdo, 'add', 'production', "Feed produced: $bags bags ($total_kg kg) $recipe_name at KES $total_cost", $batch_prod_id, 'feed_production');
+            api_ok([
+                'message' => "Successfully produced $bags bags ($total_kg kg) of $recipe_name. Finished feed stock updated!",
+                'total_kg' => $total_kg,
+                'total_cost' => $total_cost,
+                'cost_per_kg' => $cost_per_kg,
+                'cost_per_bag' => $cost_per_bag,
+                'bags_produced' => $bags
+            ]);
         } catch (Exception $e) {
             $pdo->rollBack();
             api_err('Production failed: ' . $e->getMessage());
@@ -592,11 +638,15 @@ try {
     if ($action === 'get_bulk_sales') {
         $from = $_GET['from'] ?? null;
         $to = $_GET['to'] ?? null;
-        $sql = "SELECT * FROM bulk_sales WHERE 1=1";
+        $sql = "SELECT s.*, b.batch_name, b.batch_code, p.name AS product_name
+                FROM bulk_sales s
+                LEFT JOIN batches b ON b.id = s.batch_id
+                LEFT JOIN products p ON p.id = s.product_id
+                WHERE 1=1";
         $params = [];
-        if ($from) { $sql .= " AND sale_date >= ?"; $params[] = $from; }
-        if ($to) { $sql .= " AND sale_date <= ?"; $params[] = $to; }
-        $sql .= " ORDER BY sale_date DESC LIMIT 500";
+        if ($from) { $sql .= " AND s.sale_date >= ?"; $params[] = $from; }
+        if ($to) { $sql .= " AND s.sale_date <= ?"; $params[] = $to; }
+        $sql .= " ORDER BY s.sale_date DESC LIMIT 500";
         $rows = safe_query_all($pdo, $sql, $params);
         api_ok(['data' => $rows]);
     }
@@ -606,27 +656,76 @@ try {
         $cust_id = (int)($_POST['customer_id'] ?? 0) ?: null;
         $name = trim($_POST['customer_name'] ?? '');
         $phone = trim($_POST['customer_phone'] ?? '');
-        $type = $_POST['product_type'] ?? 'eggs';
+        $batch_id = (int)($_POST['batch_id'] ?? 0) ?: null;
+        $product_id = (int)($_POST['product_id'] ?? 0) ?: null;
+        $type = $_POST['product_type'] ?? 'broiler';
         $qty = (float)($_POST['quantity'] ?? 0);
-        $unit = $_POST['unit'] ?? 'crate';
+        $unit = $_POST['unit'] ?? 'piece';
         $price = (float)($_POST['unit_price'] ?? 0);
         $paid = (float)($_POST['amount_paid'] ?? 0);
         $method_pay = $_POST['payment_method'] ?? 'cash';
-        $status = $_POST['payment_status'] ?? 'paid';
+        $status = $_POST['payment_status'] ?? ($paid >= ($qty * $price) ? 'paid' : ($paid > 0 ? 'partial' : 'pending'));
         $notes = trim($_POST['notes'] ?? '');
-        if ($name === '' || $qty === 0 || $price === 0) api_err('Customer, quantity, and price are required');
+        if ($name === '' || $qty <= 0 || $price <= 0) api_err('Customer, quantity, and price are required');
         $total = $qty * $price;
-        $balance = $total - $paid;
-        if ($id > 0) {
-            $pdo->prepare("UPDATE bulk_sales SET sale_date=?, customer_id=?, customer_name=?, customer_phone=?, product_type=?, quantity=?, unit=?, unit_price=?, total_amount=?, amount_paid=?, balance=?, payment_method=?, payment_status=?, notes=?, sold_by=? WHERE id=?")
-                ->execute([$date, $cust_id, $name, $phone, $type, $qty, $unit, $price, $total, $paid, $balance, $method_pay, $status, $notes, $user_id, $id]);
-        } else {
-            $num = 'S' . date('Ymd') . str_pad((string)random_int(0, 9999), 4, '0', STR_PAD_LEFT);
-            $pdo->prepare("INSERT INTO bulk_sales (sale_date, sale_number, customer_id, customer_name, customer_phone, product_type, quantity, unit, unit_price, total_amount, amount_paid, balance, payment_method, payment_status, notes, sold_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-                ->execute([$date, $num, $cust_id, $name, $phone, $type, $qty, $unit, $price, $total, $paid, $balance, $method_pay, $status, $notes, $user_id]);
-            $id = (int)$pdo->lastInsertId();
+        $balance = max(0, $total - $paid);
+
+        $pdo->beginTransaction();
+        try {
+            if ($id > 0) {
+                $pdo->prepare("UPDATE bulk_sales SET sale_date=?, customer_id=?, customer_name=?, customer_phone=?, batch_id=?, product_id=?, product_type=?, quantity=?, unit=?, unit_price=?, total_amount=?, amount_paid=?, balance=?, payment_method=?, payment_status=?, notes=?, sold_by=? WHERE id=?")
+                    ->execute([$date, $cust_id, $name, $phone, $batch_id, $product_id, $type, $qty, $unit, $price, $total, $paid, $balance, $method_pay, $status, $notes, $user_id, $id]);
+            } else {
+                $num = 'S' . date('Ymd') . str_pad((string)random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+                $pdo->prepare("INSERT INTO bulk_sales (sale_date, sale_number, customer_id, customer_name, customer_phone, batch_id, product_id, product_type, quantity, unit, unit_price, total_amount, amount_paid, balance, payment_method, payment_status, notes, sold_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+                    ->execute([$date, $num, $cust_id, $name, $phone, $batch_id, $product_id, $type, $qty, $unit, $price, $total, $paid, $balance, $method_pay, $status, $notes, $user_id]);
+                $id = (int)$pdo->lastInsertId();
+
+                // 1. CHICKEN DEDUCTION: If sale is linked to a batch of chickens
+                if ($batch_id > 0) {
+                    $birdsDeduct = ($unit === 'piece' || $unit === 'bird') ? (int)$qty : (int)ceil($qty / 1.5);
+                    if (isset($_POST['bird_count']) && (int)$_POST['bird_count'] > 0) {
+                        $birdsDeduct = (int)$_POST['bird_count'];
+                    }
+                    if ($birdsDeduct > 0) {
+                        $pdo->prepare("UPDATE batches SET current_birds = GREATEST(0, current_birds - ?), updated_at = NOW() WHERE id=?")
+                            ->execute([$birdsDeduct, $batch_id]);
+                    }
+                }
+
+                // 2. FEED / PRODUCT DEDUCTION: If sale is feed or linked to product_id
+                if ($product_id > 0) {
+                    $pdo->prepare("UPDATE products SET stock_quantity = GREATEST(0, stock_quantity - ?), updated_at = NOW() WHERE id=?")
+                        ->execute([(int)ceil($qty), $product_id]);
+                }
+
+                // 3. CASHBOOK AUTOMATION: Money in
+                if ($paid > 0 && tableExists($pdo, 'cashbook_entries')) {
+                    $sourceMap = [
+                        'broiler' => 'broiler_sales',
+                        'kienyeji' => 'broiler_sales',
+                        'feed' => 'feed_sales',
+                        'eggs' => 'egg_sales',
+                        'chicks' => 'chick_sales'
+                    ];
+                    $moneySource = $sourceMap[$type] ?? 'bulk_sale';
+                    $pdo->prepare("INSERT INTO cashbook_entries (entry_date, direction, money_source, amount, paid_through, customer_name, reference_no, description, recorded_by) VALUES (?, 'in', ?, ?, ?, ?, ?, ?, ?)")
+                        ->execute([$date, $moneySource, $paid, in_array($method_pay, ['cash','mpesa','bank'], true) ? $method_pay : 'cash', $name, $num, "Sale #$num: $qty $unit $type", $user_id]);
+                }
+
+                // 4. DEBTORS / CREDIT AUTOMATION: If balance remains
+                if ($balance > 0 && tableExists($pdo, 'customer_credits')) {
+                    $dueDate = date('Y-m-d', strtotime('+14 days'));
+                    $pdo->prepare("INSERT INTO customer_credits (customer_id, customer_name, customer_phone, credit_date, due_date, item_description, total_amount, amount_paid, balance, status, recorded_by) VALUES (?,?,?,?,?,?,?,?,?,'unpaid',?)")
+                        ->execute([$cust_id, $name, $phone, $date, $dueDate, "Sale #$num: $qty $unit $type", $total, $paid, $balance, $user_id]);
+                }
+            }
+            $pdo->commit();
+            api_ok(['message' => 'Sale recorded successfully', 'id' => $id, 'total' => $total, 'balance' => $balance, 'sale_number' => $num ?? '']);
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            api_err('Failed to record sale: ' . $e->getMessage());
         }
-        api_ok(['message' => 'Sale recorded', 'id' => $id, 'total' => $total, 'balance' => $balance]);
     }
     if ($action === 'delete_bulk_sale' && $method === 'POST') {
         $id = (int)($_POST['id'] ?? 0);
