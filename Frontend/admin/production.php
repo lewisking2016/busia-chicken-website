@@ -90,12 +90,12 @@ include __DIR__ . '/includes/admin_header.php';
                 <div class="form-group">
                     <label class="form-label">Good eggs collected</label>
                     <input type="number" name="eggs_collected" id="production-eggs" class="form-control" min="0" value="0" placeholder="0">
-                    <small style="color:#94a3b8;">Whole, clean eggs</small>
+                    <small style="color:#64748b;">Whole, clean eggs</small>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Cracked / broken eggs</label>
                     <input type="number" name="cracked_eggs" id="production-cracked" class="form-control" min="0" value="0" placeholder="0">
-                    <small style="color:#94a3b8;">Count them separately</small>
+                    <small style="color:#64748b;">Count them separately</small>
                 </div>
             </div>
 
@@ -120,7 +120,7 @@ include __DIR__ . '/includes/admin_header.php';
             </div>
             <div class="form-group" style="margin-bottom: 14px;">
                 <input type="number" name="mortality" id="production-mortality" class="form-control" min="0" value="0" placeholder="0">
-                <small style="color:#94a3b8;">We remove these birds from the flock count automatically.</small>
+                <small style="color:#64748b;">We remove these birds from the flock count automatically.</small>
             </div>
 
             <div class="form-group" style="margin-bottom: 15px;">

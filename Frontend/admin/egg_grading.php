@@ -39,7 +39,7 @@ if ($pdo) {
                 <th>Actions</th>
             </tr></thead>
             <tbody id="grading-body">
-                <tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -92,13 +92,13 @@ async function loadGrades() {
 
 async function loadGrading() {
     const tbody = document.getElementById('grading-body');
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch('/Backend/api/admin_poultry_v2.php?action=get_daily_grading');
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">No grading records yet.</td></tr>'; return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">No grading records yet.</td></tr>'; return; }
         tbody.innerHTML = data.map(d => `<tr>
             <td>${d.record_date}</td>
             <td>${escapeHtml(d.batch_name||'—')}</td>
@@ -108,7 +108,7 @@ async function loadGrading() {
             <td>${parseInt(d.damaged)}</td>
             <td>${escapeHtml(d.notes||'')}</td>
             <td>
-                <button class="btn btn-trans btn-sm" onclick='openGradingModal(${JSON.stringify(d)})'><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
+                <button class="btn btn-trans btn-sm" onclick='openGradingModal(${JSON.stringify(d)})' aria-label="Edit grading record"><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
             </td>
         </tr>`).join('');
         if (typeof lucide !== 'undefined') lucide.createIcons();

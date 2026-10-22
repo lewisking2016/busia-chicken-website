@@ -276,7 +276,7 @@ if ($pdo) {
     <!-- Search & Filter Bar -->
     <form method="GET" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #fafafa; border-bottom: 1px solid var(--admin-border); flex-wrap: wrap; gap: 12px;">
         <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px;">
-            <i data-lucide="search" style="width: 18px; height: 18px; color: #94a3b8;"></i>
+            <i data-lucide="search" style="width: 18px; height: 18px; color: #64748b;"></i>
             <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Search products..." style="background: transparent; border: none; outline: none; font-size: 0.9rem; width: 100%;">
         </div>
         <div style="display: flex; gap: 8px;">
@@ -314,7 +314,7 @@ if ($pdo) {
                                 <?php if ($product['image_url']): ?>
                                     <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="" style="width: 100%; height: 100%; object-fit: cover;">
                                 <?php else: ?>
-                                    <i data-lucide="package" style="width: 20px; height: 20px; color: #94a3b8;"></i>
+                                    <i data-lucide="package" style="width: 20px; height: 20px; color: #64748b;"></i>
                                 <?php endif; ?>
                             </div>
                             <div style="font-weight: 600; color: var(--admin-text-heading);"><?php echo htmlspecialchars($product['name']); ?></div>
@@ -355,7 +355,7 @@ if ($pdo) {
                                 <i data-lucide="package" style="width: 12px; height: 12px;"></i> Feed
                             </span>
                         <?php else: ?>
-                            <span style="color: #94a3b8; font-size: 0.8rem;">N/A</span>
+                            <span style="color: #64748b; font-size: 0.8rem;">N/A</span>
                         <?php endif; ?>
                     </td>
                     <td>
@@ -374,14 +374,14 @@ if ($pdo) {
                     </td>
                     <td style="text-align: right;">
                         <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                            <button title="Edit" onclick="openEditModal(<?php echo htmlspecialchars(json_encode($product)); ?>)" style="background: none; border: none; cursor: pointer; color: #94a3b8; padding: 4px; transition: color 0.2s;" onmouseover="this.style.color='var(--admin-primary)'" onmouseout="this.style.color='#94a3b8'">
+                            <button title="Edit" onclick="openEditModal(<?php echo htmlspecialchars(json_encode($product)); ?>)" style="background: none; border: none; cursor: pointer; color: #64748b; padding: 4px; transition: color 0.2s;" onmouseover="this.style.color='var(--admin-primary)'" onmouseout="this.style.color='#64748b'">
                                 <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
                             </button>
                             <form method="POST" onsubmit="return confirm('Delete this product permanently?');" style="display: inline;">
                                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8'); ?>">
                                 <input type="hidden" name="action" value="delete_product">
                                 <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
-                                <button type="submit" title="Delete" style="background: none; border: none; cursor: pointer; color: #94a3b8; padding: 4px; transition: color 0.2s;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#94a3b8'">
+                                <button type="submit" title="Delete" style="background: none; border: none; cursor: pointer; color: #64748b; padding: 4px; transition: color 0.2s;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#64748b'">
                                     <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
                                 </button>
                             </form>
@@ -452,7 +452,7 @@ if ($pdo) {
             if (!$linked_found):
             ?>
                 <div style="grid-column: 1 / -1; text-align: center; padding: 32px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; color: #64748b; font-size: 0.9rem;">
-                    <i data-lucide="alert-circle" style="width: 24px; height: 24px; color: #94a3b8; margin-bottom: 8px;"></i>
+                    <i data-lucide="alert-circle" style="width: 24px; height: 24px; color: #64748b; margin-bottom: 8px;"></i>
                     <p style="margin: 0;">No products are currently configured for direct Raw Material Sales.</p>
                     <p style="margin: 4px 0 0; font-size: 0.8rem;">Edit an existing product or add a new one, then configure the "Link Raw Material" settings.</p>
                 </div>
@@ -464,7 +464,7 @@ if ($pdo) {
 <!-- ========== ADD PRODUCT MODAL ========== -->
 <div id="add-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 9999; align-items: center; justify-content: center;">
     <div style="background: #fff; border-radius: 4px; width: 100%; max-width: 560px; padding: 32px; box-shadow: 0 24px 48px rgba(0,0,0,0.15); position: relative;">
-        <button onclick="document.getElementById('add-modal').style.display='none'" style="position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 1.2rem;">✕</button>
+        <button onclick="document.getElementById('add-modal').style.display='none'" style="position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #64748b; font-size: 1.2rem;">✕</button>
         <h3 style="margin: 0 0 24px 0; font-family: 'Outfit', sans-serif; font-size: 1.25rem; color: var(--admin-text-heading);">Add New Product</h3>
         <form method="POST" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8'); ?>">
@@ -474,7 +474,7 @@ if ($pdo) {
                     <label class="admin-form-label">Product Image</label>
                     <div style="display: flex; align-items: center; gap: 16px; border: 1px dashed #cbd5e1; padding: 16px; border-radius: 4px;">
                         <div id="add-preview" style="width: 60px; height: 60px; background: #f8fafc; border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #e2e8f0;">
-                            <i data-lucide="image" style="width: 24px; height: 24px; color: #94a3b8;"></i>
+                            <i data-lucide="image" style="width: 24px; height: 24px; color: #64748b;"></i>
                         </div>
                         <div style="flex: 1;">
                             <input type="file" name="product_image" accept="image/*" onchange="previewImage(this, 'add-preview')" style="font-size: 0.8rem;">
@@ -537,7 +537,7 @@ if ($pdo) {
 <!-- ========== EDIT PRODUCT MODAL ========== -->
 <div id="edit-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 9999; align-items: center; justify-content: center;">
     <div style="background: #fff; border-radius: 4px; width: 100%; max-width: 560px; padding: 32px; box-shadow: 0 24px 48px rgba(0,0,0,0.15); position: relative;">
-        <button onclick="document.getElementById('edit-modal').style.display='none'" style="position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 1.2rem;">✕</button>
+        <button onclick="document.getElementById('edit-modal').style.display='none'" style="position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #64748b; font-size: 1.2rem;">✕</button>
         <h3 style="margin: 0 0 24px 0; font-family: 'Outfit', sans-serif; font-size: 1.25rem; color: var(--admin-text-heading);">Edit Product</h3>
         <form method="POST" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8'); ?>">
@@ -548,7 +548,7 @@ if ($pdo) {
                     <label class="admin-form-label">Update Product Image</label>
                     <div style="display: flex; align-items: center; gap: 16px; border: 1px dashed #cbd5e1; padding: 16px; border-radius: 4px;">
                         <div id="edit-preview" style="width: 60px; height: 60px; background: #f8fafc; border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #e2e8f0;">
-                            <i data-lucide="image" style="width: 24px; height: 24px; color: #94a3b8;"></i>
+                            <i data-lucide="image" style="width: 24px; height: 24px; color: #64748b;"></i>
                         </div>
                         <div style="flex: 1;">
                             <input type="file" name="product_image" accept="image/*" onchange="previewImage(this, 'edit-preview')" style="font-size: 0.8rem;">
@@ -636,7 +636,7 @@ function openEditModal(product) {
     if (product.image_url) {
         preview.innerHTML = `<img src="${product.image_url}" style="width: 100%; height: 100%; object-fit: cover;">`;
     } else {
-        preview.innerHTML = `<i data-lucide="image" style="width: 24px; height: 24px; color: #94a3b8;"></i>`;
+        preview.innerHTML = `<i data-lucide="image" style="width: 24px; height: 24px; color: #64748b;"></i>`;
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
     

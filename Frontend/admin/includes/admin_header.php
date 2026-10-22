@@ -1129,13 +1129,25 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
         }
     </style>
     <script>
-        // Dynamically hide sidebar and topbar elements if loaded inside an iframe
-        if (window.self !== window.top) {
-            document.documentElement.classList.add('in-iframe');
-            const style = document.createElement('style');
-            style.textContent = '.admin-shell > nav, .admin-top-bar { display: none !important; } .admin-shell { display: block !important; } .admin-content { padding: 0 !important; }';
+        // Suppress duplicate sidebar/topbar ONLY when explicitly embedded.
+        // Auto-detecting "am I in an iframe?" is wrong: hosts that iframe the admin
+        // without providing their own nav left users with no way to navigate.
+        // Opt in with ?embed=1 when the host page renders its own navigation.
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get('embed') !== '1') return;
+
+            document.documentElement.classList.add('is-embedded');
+            var style = document.createElement('style');
+            style.textContent =
+                '.is-embedded .admin-shell > nav,' +
+                '.is-embedded .admin-nav-backdrop,' +
+                '.is-embedded .admin-top-bar,' +
+                '.is-embedded .admin-nav-toggle { display: none !important; }' +
+                '.is-embedded .admin-shell { display: block !important; }' +
+                '.is-embedded .admin-content { padding: 0 !important; }';
             document.head.appendChild(style);
-        }
+        })();
     </script>
 </head>
 <body class="admin-layout">
@@ -1173,7 +1185,7 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
                         <i data-lucide="chevron-down" style="width: 13px; height: 13px; transition: transform 0.2s ease;"></i>
                     </button>
                     <div id="quick-actions-menu" style="display: none; position: absolute; right: 0; top: calc(100% + 8px); min-width: 250px; background: #fff; border: 1px solid var(--admin-border); border-radius: 10px; box-shadow: 0 16px 40px rgba(15,23,42,0.14); padding: 7px; z-index: 1300;">
-                        <div style="padding: 8px 12px 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8;">This page</div>
+                        <div style="padding: 8px 12px 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">This page</div>
                         <?php foreach ($quickActions as $qa): ?>
                             <?php if (isset($qa['href']) && isset($qa['click'])): ?>
                                 <a href="<?= htmlspecialchars($qa['href'], ENT_QUOTES, 'UTF-8') ?>" data-quick-click="<?= htmlspecialchars($qa['click'], ENT_QUOTES, 'UTF-8') ?>" style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 7px; text-decoration: none; color: #1e293b; font-size: 0.88rem; font-weight: 600; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">

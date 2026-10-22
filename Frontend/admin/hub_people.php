@@ -169,7 +169,7 @@ $tabs = [
             <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Email</th><th>Phone</th><th>Actions</th></tr></thead>
             <tbody>
             <?php if (empty($staffList)): ?>
-                <tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;">No administrative accounts set up.</td></tr>
+                <tr><td colspan="6" style="text-align:center;padding:28px;color:#64748b;">No administrative accounts set up.</td></tr>
             <?php else: foreach ($staffList as $s): ?>
                 <tr>
                     <td><strong><?= htmlspecialchars(trim(($s['first_name'] ?? '') . ' ' . ($s['last_name'] ?? '')) ?: $s['username'], ENT_QUOTES, 'UTF-8') ?></strong></td>
@@ -250,7 +250,7 @@ document.addEventListener('click',e=>{ const m=document.getElementById('staff-mo
             <thead><tr><th>Title</th><th>Staff Assigned</th><th>Due Date</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
             <?php if (empty($taskList)): ?>
-                <tr><td colspan="5" style="text-align:center;padding:28px;color:#94a3b8;">No tasks configured.</td></tr>
+                <tr><td colspan="5" style="text-align:center;padding:28px;color:#64748b;">No tasks configured.</td></tr>
             <?php else: foreach ($taskList as $t): ?>
                 <tr>
                     <td><strong><?= htmlspecialchars($t['title'], ENT_QUOTES, 'UTF-8') ?></strong><br><small style="color:#64748b;"><?= htmlspecialchars($t['description']??'', ENT_QUOTES, 'UTF-8') ?></small></td>
@@ -331,7 +331,7 @@ document.addEventListener('click',e=>{ const m=document.getElementById('task-mod
             <thead><tr><th>From</th><th>To</th><th>Subject</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
             <?php if (empty($messageList)): ?>
-                <tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;">No messages sent or received.</td></tr>
+                <tr><td colspan="6" style="text-align:center;padding:28px;color:#64748b;">No messages sent or received.</td></tr>
             <?php else: foreach ($messageList as $msg): ?>
                 <tr>
                     <td><?= htmlspecialchars($msg['from_user'] ?? 'System', ENT_QUOTES, 'UTF-8') ?></td>

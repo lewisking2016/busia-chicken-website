@@ -504,7 +504,7 @@ include __DIR__ . '/includes/admin_header.php';
     .file-drop:hover, .file-drop.dragover { border-color: var(--admin-primary); background: rgba(27, 94, 32, 0.04); }
     .file-drop i { width: 28px; height: 28px; color: var(--admin-primary); }
     .file-drop span { font-size: 0.85rem; color: #475569; font-weight: 500; }
-    .file-drop small { font-size: 0.75rem; color: #94a3b8; }
+    .file-drop small { font-size: 0.75rem; color: #64748b; }
     .fmt-chip { display: inline-block; padding: 4px 10px; margin: 0 6px 6px 0; background: #fff; border: 1px solid var(--admin-border); border-radius: 4px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace; font-size: 0.78rem; color: #334155; }
     .section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
     .section-head h3 { margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: var(--admin-text-heading); }
@@ -628,7 +628,7 @@ include __DIR__ . '/includes/admin_header.php';
                 <i data-lucide="upload" style="width: 18px; height: 18px;"></i>
                 Upload & Import Data
             </button>
-            <span style="font-size: 0.8rem; color: #94a3b8;">Not sure of the format? Download the <a href="?template=products" id="format-template" style="color: var(--admin-primary); font-weight: 600;">CSV template</a> for the selected type.</span>
+            <span style="font-size: 0.8rem; color: #64748b;">Not sure of the format? Download the <a href="?template=products" id="format-template" style="color: var(--admin-primary); font-weight: 600;">CSV template</a> for the selected type.</span>
         </div>
     </form>
 

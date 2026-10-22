@@ -110,9 +110,9 @@ $tabs = [
     <div class="admin-card">
         <h3 style="margin:0 0 18px;font-family:'Outfit',sans-serif;font-size:1.1rem;">Farm Calendar</h3>
         <div id="cal-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <button class="btn btn-outline btn-sm" onclick="changeMonth(-1)"><i data-lucide="chevron-left" style="width:14px;height:14px;"></i></button>
+            <button class="btn btn-outline btn-sm" onclick="changeMonth(-1)" aria-label="Previous month"><i data-lucide="chevron-left" style="width:14px;height:14px;"></i></button>
             <strong id="cal-month-label" style="font-family:'Outfit',sans-serif;font-size:1rem;"></strong>
-            <button class="btn btn-outline btn-sm" onclick="changeMonth(1)"><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></button>
+            <button class="btn btn-outline btn-sm" onclick="changeMonth(1)" aria-label="Next month"><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></button>
         </div>
         <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
     </div>
@@ -120,7 +120,7 @@ $tabs = [
     <div class="admin-card">
         <h3 style="margin:0 0 16px;font-family:'Outfit',sans-serif;font-size:1.1rem;">Upcoming Tasks</h3>
         <?php if (empty($tasksDue)): ?>
-            <p style="text-align:center;color:#94a3b8;padding:20px;">No pending tasks with due dates.</p>
+            <p style="text-align:center;color:#64748b;padding:20px;">No pending tasks with due dates.</p>
         <?php else: ?>
         <div style="display:flex;flex-direction:column;gap:10px;">
             <?php foreach ($tasksDue as $t): ?>
@@ -176,7 +176,7 @@ $tabs = [
             <thead><tr><th>Setting Key</th><th>Value</th><th>Actions</th></tr></thead>
             <tbody>
             <?php if (empty($settingsList)): ?>
-                <tr><td colspan="3" style="text-align:center;padding:28px;color:#94a3b8;">No settings configured yet.</td></tr>
+                <tr><td colspan="3" style="text-align:center;padding:28px;color:#64748b;">No settings configured yet.</td></tr>
             <?php else: foreach ($settingsList as $setting): ?>
                 <tr>
                     <td><code style="background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:0.85rem;"><?php echo htmlspecialchars($setting['setting_key'], ENT_QUOTES, 'UTF-8'); ?></code></td>
@@ -222,7 +222,7 @@ $tabs = [
             <thead><tr><th>Date / Time</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
             <tbody>
             <?php if (empty($logsList)): ?>
-                <tr><td colspan="4" style="text-align:center;padding:28px;color:#94a3b8;">No activity logs available.</td></tr>
+                <tr><td colspan="4" style="text-align:center;padding:28px;color:#64748b;">No activity logs available.</td></tr>
             <?php else: foreach ($logsList as $log): ?>
                 <tr>
                     <td style="white-space:nowrap;"><?php echo htmlspecialchars(substr($log['created_at'] ?? '', 0, 16), ENT_QUOTES, 'UTF-8'); ?></td>
@@ -267,7 +267,7 @@ function renderCalendar() {
     const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
     const todayStr = today.toISOString().split('T')[0];
 
-    let html = days.map(d => `<div style="text-align:center;font-size:0.72rem;font-weight:700;color:#94a3b8;padding:4px 0;">${d}</div>`).join('');
+    let html = days.map(d => `<div style="text-align:center;font-size:0.72rem;font-weight:700;color:#64748b;padding:4px 0;">${d}</div>`).join('');
     for (let i = 0; i < firstDay; i++) html += '<div></div>';
     for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');

@@ -50,7 +50,7 @@ if ($pdo) {
                 <th>Total Weight (kg)</th><th>Notes</th><th>Actions</th>
             </tr></thead>
             <tbody id="w-body">
-                <tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -91,13 +91,13 @@ async function loadWeighings() {
     let url = '/Backend/api/admin_business.php?action=list_weighings';
     if (bid) url += '&batch_id=' + bid;
     const tbody = document.getElementById('w-body');
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch(url);
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">No weigh-ins recorded yet.</td></tr>'; return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">No weigh-ins recorded yet.</td></tr>'; return; }
         tbody.innerHTML = data.map(w => {
             const totalKg = (parseFloat(w.avg_weight_kg) * 1000).toFixed(0); // approx
             return `<tr>

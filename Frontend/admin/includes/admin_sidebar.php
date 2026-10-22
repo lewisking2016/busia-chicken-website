@@ -64,7 +64,7 @@ function navLinkWithSub(string $href, string $icon, string $label, bool $active,
     // (chevron toggles them client-side, and the state is remembered).
     $groupClass = $active ? ' nav-group-open' : '';
     $subsDisplay = $active ? 'flex' : 'none';
-    $chevronColor = $active ? 'rgba(255,255,255,0.9)' : '#94a3b8';
+    $chevronColor = $active ? 'rgba(255,255,255,0.9)' : '#64748b';
     $html = <<<HTML
     <li class="nav-group{$groupClass}" style="margin-bottom: 2px;">
         <div style="display:flex;align-items:center;">
@@ -173,11 +173,11 @@ HTML;
 
     <!-- Quick search: type what you want to do (works in the drawer too) -->
     <div style="position:relative;margin:0 2px 10px;">
-        <i data-lucide="search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#94a3b8;pointer-events:none;"></i>
+        <i data-lucide="search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#64748b;pointer-events:none;"></i>
         <input id="admin-nav-search" type="search" placeholder="Find: eggs, feed, money…" autocomplete="off" aria-label="Search navigation"
                style="width:100%;box-sizing:border-box;padding:10px 34px 10px 33px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;font-family:inherit;font-size:0.85rem;color:#0f172a;outline:none;transition:all 0.15s;">
         <button id="nav-search-clear" type="button" aria-label="Clear search" title="Clear search"
-                style="display:none;position:absolute;right:5px;top:50%;transform:translateY(-50%);width:24px;height:24px;border:none;background:transparent;color:#94a3b8;cursor:pointer;border-radius:6px;align-items:center;justify-content:center;">
+                style="display:none;position:absolute;right:5px;top:50%;transform:translateY(-50%);width:24px;height:24px;border:none;background:transparent;color:#64748b;cursor:pointer;border-radius:6px;align-items:center;justify-content:center;">
             <i data-lucide="x" style="width:14px;height:14px;"></i>
         </button>
     </div>
@@ -207,7 +207,7 @@ HTML;
                     $qActive = basename($_SERVER['SCRIPT_NAME']) === $q[0];
                     echo '<a href="/Frontend/admin/' . $q[0] . '" style="display:flex;align-items:center;gap:7px;padding:8px 9px;border-radius:8px;background:' . ($qActive ? 'linear-gradient(135deg,#1B5E20,#2E7D32)' : '#f0fdf4') . ';color:' . ($qActive ? '#fff' : '#166534') . ';text-decoration:none;font-weight:700;font-size:0.76rem;border:1px solid ' . ($qActive ? 'transparent' : '#bbf7d0') . ';transition:all 0.15s;"><i data-lucide="' . $q[1] . '" style="width:15px;height:15px;flex-shrink:0;"></i><span>' . $q[2] . '</span></a>';
                 }
-                if (!$hasQuick) echo '<div style="grid-column:span 2;color:#94a3b8;font-size:0.75rem;padding:4px;">No daily tasks for your role.</div>';
+                if (!$hasQuick) echo '<div style="grid-column:span 2;color:#64748b;font-size:0.75rem;padding:4px;">No daily tasks for your role.</div>';
                 ?>
             </div>
         </li>

@@ -25,7 +25,7 @@
         pink:      '#db2777',
         orange:    '#ea580c',
         text:      '#475569',
-        textLt:    '#94a3b8',
+        textLt:    '#64748b',
         grid:      'rgba(148,163,184,0.12)',
     };
 
@@ -87,7 +87,7 @@
         layer.innerHTML =
             '<div class="bc-empty-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#2E7D32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 4-5"/></svg></div>' +
             '<p style="margin:0;font-weight:700;color:#475569;font-size:0.88rem;">' + esc(title) + '</p>' +
-            '<p style="margin:0;color:#94a3b8;font-size:0.76rem;line-height:1.5;max-width:270px;">' + esc(hint) + '</p>';
+            '<p style="margin:0;color:#64748b;font-size:0.76rem;line-height:1.5;max-width:270px;">' + esc(hint) + '</p>';
     }
 
     // Compact axis labels (1.2K / 3.4M) so wide grids stay readable.

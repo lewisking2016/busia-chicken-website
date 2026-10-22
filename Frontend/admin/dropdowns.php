@@ -151,7 +151,7 @@ require_once __DIR__ . '/includes/admin_header.php';
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <div style="position: relative;">
-                        <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #94a3b8;"></i>
+                        <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #64748b;"></i>
                         <input type="text" id="searchInput" onkeyup="filterOptionsTable()" placeholder="Search options..." 
                                style="padding: 8px 12px 8px 34px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; outline: none; width: 200px;">
                     </div>
@@ -174,7 +174,7 @@ require_once __DIR__ . '/includes/admin_header.php';
                     <tbody>
                         <?php if (empty($options)): ?>
                             <tr>
-                                <td colspan="6" style="padding: 32px; text-align: center; color: #94a3b8;">
+                                <td colspan="6" style="padding: 32px; text-align: center; color: #64748b;">
                                     No options found for this group. Click <strong>Add New Option</strong> above to create one!
                                 </td>
                             </tr>
@@ -271,7 +271,7 @@ require_once __DIR__ . '/includes/admin_header.php';
             </div>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 6px;">
-                    Stored System Value <small style="color: #94a3b8; font-weight: normal;">(Optional - auto-generated if left blank)</small>
+                    Stored System Value <small style="color: #64748b; font-weight: normal;">(Optional - auto-generated if left blank)</small>
                 </label>
                 <input type="text" name="option_value" placeholder="e.g. free_range_broilers" 
                        style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
@@ -346,7 +346,7 @@ require_once __DIR__ . '/includes/admin_header.php';
             </div>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 6px;">
-                    Group Identifier Key <small style="color: #94a3b8; font-weight: normal;">(e.g. feedback_types)</small>
+                    Group Identifier Key <small style="color: #64748b; font-weight: normal;">(e.g. feedback_types)</small>
                 </label>
                 <input type="text" name="group_key" placeholder="e.g. feedback_types" required 
                        style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">

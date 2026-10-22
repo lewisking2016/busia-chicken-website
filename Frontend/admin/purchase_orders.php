@@ -46,7 +46,7 @@ if (!in_array($tab, $validTabs, true)) $tab = 'orders';
                 <th>Status</th><th>Actions</th>
             </tr></thead>
             <tbody id="po-body">
-                <tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -62,7 +62,7 @@ if (!in_array($tab, $validTabs, true)) $tab = 'orders';
         <table class="admin-table">
             <thead><tr><th>Name</th><th>Contact</th><th>Phone</th><th>Email</th><th>Lead Time</th><th>Actions</th></tr></thead>
             <tbody id="sup-body">
-                <tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="6" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -166,7 +166,7 @@ function addPoLine(data = null) {
         <td style="padding:6px;"><input class="admin-form-control" data-field="unit" value="${data?.unit||'kg'}" style="font-size:0.85rem;padding:6px 8px;"></td>
         <td style="padding:6px;"><input class="admin-form-control" type="number" step="0.01" data-field="unit_price" value="${data?.unit_price||0}" style="font-size:0.85rem;padding:6px 8px;" oninput="recalcPo()"></td>
         <td style="padding:6px;font-weight:700;font-size:0.9rem;" class="line-total">KES 0.00</td>
-        <td style="padding:6px;"><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();recalcPo();" style="padding:4px 8px;"><i data-lucide="x" style="width:12px;height:12px;"></i></button></td>
+        <td style="padding:6px;"><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();recalcPo();" style="padding:4px 8px;" aria-label="Remove row"><i data-lucide="x" style="width:12px;height:12px;"></i></button></td>
     `;
     document.getElementById('po-lines').appendChild(tr);
     if (data) tr.querySelector('[data-field=material_id]').value = data.material_id;
@@ -232,13 +232,13 @@ document.getElementById('po-form').addEventListener('submit', async e => {
 async function loadOrders() {
     const tbody = document.getElementById('po-body');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch('/Backend/api/admin_business.php?action=list_purchase_orders');
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">No purchase orders yet.</td></tr>'; return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">No purchase orders yet.</td></tr>'; return; }
         tbody.innerHTML = data.map(p => {
             const sc = p.status==='received'?'badge-pill-success':(p.status==='cancelled'?'badge-pill-danger':(p.status==='draft'?'badge-pill-info':'badge-pill-warning'));
             return `<tr>
@@ -270,13 +270,13 @@ async function receivePo(id) {
 async function loadSuppliersTable() {
     const tbody = document.getElementById('sup-body');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch('/Backend/api/admin_business.php?action=list_suppliers');
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;">No suppliers yet.</td></tr>'; return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:#64748b;">No suppliers yet.</td></tr>'; return; }
         tbody.innerHTML = data.map(s => `<tr>
             <td><strong>${escapeHtml(s.supplier_name)}</strong></td>
             <td>${escapeHtml(s.contact_name||'—')}</td>
@@ -284,7 +284,7 @@ async function loadSuppliersTable() {
             <td>${escapeHtml(s.email||'—')}</td>
             <td>${s.lead_time_days} days</td>
             <td>
-                <button class="btn btn-trans btn-sm" onclick='openSupplierModal(${JSON.stringify(s)})'><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
+                <button class="btn btn-trans btn-sm" onclick='openSupplierModal(${JSON.stringify(s)})' aria-label="Edit supplier"><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
             </td>
         </tr>`).join('');
         if (typeof lucide !== 'undefined') lucide.createIcons();

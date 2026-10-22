@@ -255,7 +255,7 @@ function renderVaxPreview() {
                 '<small style="display:block;margin-top:6px;color:#166534;">Dates are worked out from the hatch date. You can change them later on the Vaccines screen.</small>';
             if (typeof lucide !== 'undefined') lucide.createIcons();
         } catch (e) {
-            el.innerHTML = '<small style="color:#94a3b8;">Could not load the vaccine program right now — vaccines can still be added after saving.</small>';
+            el.innerHTML = '<small style="color:#64748b;">Could not load the vaccine program right now — vaccines can still be added after saving.</small>';
         }
     }, 350);
 }

@@ -81,7 +81,7 @@ $tabs = [
                 </tr>
             </thead>
             <tbody id="health-body">
-                <tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading health records...</td></tr>
+                <tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading health records...</td></tr>
             </tbody>
         </table>
     </div>
@@ -207,7 +207,7 @@ let currentTab = '<?= $tab ?>';
 
 async function loadHealth() {
     const tbody = document.getElementById('health-body');
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     let typeParam = '';
     if (currentTab !== 'all' && currentTab !== 'schedule') {
         typeParam = '&type=' + currentTab;
@@ -229,7 +229,7 @@ async function loadHealth() {
 function renderHealth() {
     const tbody = document.getElementById('health-body');
     if (!allHealth.length) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">No records yet. Click "Log Health Event" to start.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">No records yet. Click "Log Health Event" to start.</td></tr>';
         return;
     }
     const typeColors = {
@@ -254,8 +254,8 @@ function renderHealth() {
             <td>KES ${parseFloat(h.cost||0).toFixed(2)}</td>
             <td><span class="badge-pill ${sc}">${h.status}</span></td>
             <td><div class="tbl-actions">
-                <button class="btn btn-trans btn-sm" onclick='openHealthModal(${JSON.stringify(h)})'><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
-                <button class="btn btn-danger btn-sm" onclick="deleteHealth(${h.id})"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
+                <button class="btn btn-trans btn-sm" onclick='openHealthModal(${JSON.stringify(h)})' aria-label="Edit health record"><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteHealth(${h.id})" aria-label="Delete health record"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
             </div></td>
         </tr>`;
     }).join('');

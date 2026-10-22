@@ -217,7 +217,7 @@ $capacityUsage = $totalCapacity > 0 ? round(($totalOccupied / $totalCapacity) * 
             </thead>
             <tbody>
             <?php if (empty($batches)): ?>
-                <tr><td colspan="7" style="text-align:center;padding:36px;color:#94a3b8;">No batches found. Click "New Batch" to record your first flock.</td></tr>
+                <tr><td colspan="7" style="text-align:center;padding:36px;color:#64748b;">No batches found. Click "New Batch" to record your first flock.</td></tr>
             <?php else: foreach ($batches as $b):
                 $init = max(1, (int)$b['initial_birds']);
                 $curr = (int)$b['current_birds'];
@@ -264,7 +264,7 @@ $capacityUsage = $totalCapacity > 0 ? round(($totalOccupied / $totalCapacity) * 
                         <div style="font-size:0.85rem;color:#334155;">
                             <strong>Wk <?= $weeks ?></strong> <span style="color:#64748b;">(<?= $diffDays ?> days)</span>
                         </div>
-                        <small style="color:#94a3b8;"><?= htmlspecialchars($b['placement_date'], ENT_QUOTES, 'UTF-8') ?></small>
+                        <small style="color:#64748b;"><?= htmlspecialchars($b['placement_date'], ENT_QUOTES, 'UTF-8') ?></small>
                     </td>
                     <td>
                         <div style="display:flex;justify-content:space-between;font-size:0.86rem;font-weight:700;">
@@ -349,7 +349,7 @@ $capacityUsage = $totalCapacity > 0 ? round(($totalOccupied / $totalCapacity) * 
             </thead>
             <tbody>
             <?php if (empty($houses)): ?>
-                <tr><td colspan="7" style="text-align:center;padding:32px;color:#94a3b8;">No houses recorded yet.</td></tr>
+                <tr><td colspan="7" style="text-align:center;padding:32px;color:#64748b;">No houses recorded yet.</td></tr>
             <?php else: foreach ($houses as $h):
                 $cap = max(1, (int)$h['capacity']);
                 $occ = (int)$h['occupied_birds'];
@@ -431,7 +431,7 @@ $capacityUsage = $totalCapacity > 0 ? round(($totalOccupied / $totalCapacity) * 
                 </tr>
             </thead>
             <tbody id="records-body">
-                <tr><td colspan="13" style="text-align:center;padding:28px;color:#94a3b8;">Loading daily logs...</td></tr>
+                <tr><td colspan="13" style="text-align:center;padding:28px;color:#64748b;">Loading daily logs...</td></tr>
             </tbody>
         </table>
     </div>
@@ -443,7 +443,7 @@ $capacityUsage = $totalCapacity > 0 ? round(($totalOccupied / $totalCapacity) * 
     <div style="background:#fff;padding:28px;border-radius:14px;width:100%;max-width:640px;box-shadow:0 20px 40px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;margin:20px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
             <h3 id="batch-modal-title" style="margin:0;font-family:'Outfit',sans-serif;font-size:1.2rem;color:var(--admin-text-heading);">New Chicken Batch</h3>
-            <button type="button" onclick="closeBatchModal()" style="background:none;border:none;cursor:pointer;color:#94a3b8;"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+            <button type="button" onclick="closeBatchModal()" style="background:none;border:none;cursor:pointer;color:#64748b;" aria-label="Close batch form"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
         </div>
         <form id="batch-form">
             <input type="hidden" id="b-id">
@@ -521,7 +521,7 @@ $capacityUsage = $totalCapacity > 0 ? round(($totalOccupied / $totalCapacity) * 
     <div style="background:#fff;padding:28px;border-radius:14px;width:100%;max-width:480px;box-shadow:0 20px 40px rgba(0,0,0,0.2);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
             <h3 id="house-modal-title" style="margin:0;font-family:'Outfit',sans-serif;font-size:1.2rem;color:var(--admin-text-heading);">Add Chicken House</h3>
-            <button type="button" onclick="closeHouseModal()" style="background:none;border:none;cursor:pointer;color:#94a3b8;"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+            <button type="button" onclick="closeHouseModal()" style="background:none;border:none;cursor:pointer;color:#64748b;" aria-label="Close house form"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
         </div>
         <form id="house-form">
             <input type="hidden" id="h-id">
@@ -542,7 +542,7 @@ $capacityUsage = $totalCapacity > 0 ? round(($totalOccupied / $totalCapacity) * 
     <div style="background:#fff;padding:28px;border-radius:14px;width:100%;max-width:720px;box-shadow:0 20px 40px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;margin:20px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
             <h3 id="record-modal-title" style="margin:0;font-family:'Outfit',sans-serif;font-size:1.2rem;color:var(--admin-text-heading);">Log Daily Record</h3>
-            <button type="button" onclick="closeRecordModal()" style="background:none;border:none;cursor:pointer;color:#94a3b8;"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+            <button type="button" onclick="closeRecordModal()" style="background:none;border:none;cursor:pointer;color:#64748b;" aria-label="Close record form"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
         </div>
         <form id="record-form">
             <input type="hidden" id="r-id">
@@ -731,7 +731,7 @@ async function loadRecords() {
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:28px;color:#94a3b8;">No records logged yet.</td></tr>'; return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:28px;color:#64748b;">No records logged yet.</td></tr>'; return; }
         tbody.innerHTML = data.map(r => {
             const pct = (parseFloat(r.production_pct) * 100).toFixed(1);
             return `<tr>
@@ -748,8 +748,8 @@ async function loadRecords() {
                 <td style="color:#64748b;">${parseInt(r.damaged_eggs||0)}</td>
                 <td><span class="badge-pill ${pct > 60 ? 'badge-pill-success' : 'badge-pill-info'}">${pct}%</span></td>
                 <td style="text-align:right;">
-                    <button class="btn btn-trans btn-sm" onclick='openRecordModal(${JSON.stringify(r)})'><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteRecord(${r.id})"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
+                    <button class="btn btn-trans btn-sm" onclick='openRecordModal(${JSON.stringify(r)})' aria-label="Edit record"><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteRecord(${r.id})" aria-label="Delete record"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
                 </td>
             </tr>`;
         }).join('');

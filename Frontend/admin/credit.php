@@ -56,7 +56,7 @@ $customers = ($pdo && tableExists($pdo, 'walk_in_customers'))
                 <th>Due Date</th><th>Status</th><th>Actions</th>
             </tr></thead>
             <tbody id="cr-body">
-                <tr><td colspan="10" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="10" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -176,13 +176,13 @@ async function loadCredit() {
     let url = '/Backend/api/admin_business.php?action=list_credit';
     if (status) url += '&status=' + status;
     const tbody = document.getElementById('cr-body');
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch(url);
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:28px;color:#94a3b8;">No credit sales yet.</td></tr>'; updateKpis([]); return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:28px;color:#64748b;">No credit sales yet.</td></tr>'; updateKpis([]); return; }
         const today = new Date().toISOString().split('T')[0];
         tbody.innerHTML = data.map(c => {
             const isOverdue = c.status !== 'paid' && c.due_date && c.due_date < today;

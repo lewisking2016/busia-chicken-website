@@ -54,7 +54,7 @@ include __DIR__ . '/includes/admin_header.php';
                 <th>Actions</th>
             </tr></thead>
             <tbody id="sales-body">
-                <tr><td colspan="9" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="9" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -122,7 +122,7 @@ function addLine(data = null) {
         <td style="padding:6px;"><input class="admin-form-control" type="number" step="0.01" data-field="unit_price" value="${data?.unit_price||380}" style="font-size:0.85rem;padding:6px 8px;"></td>
         <td style="padding:6px;"><input class="admin-form-control" type="number" data-field="quantity_crates" value="${data?.quantity_crates||0}" style="font-size:0.85rem;padding:6px 8px;" oninput="recalcTotal()"></td>
         <td style="padding:6px;font-weight:700;font-size:0.9rem;" class="line-total">KES 0.00</td>
-        <td style="padding:6px;"><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();recalcTotal();" style="padding:4px 8px;"><i data-lucide="x" style="width:12px;height:12px;"></i></button></td>
+        <td style="padding:6px;"><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove();recalcTotal();" style="padding:4px 8px;" aria-label="Remove row"><i data-lucide="x" style="width:12px;height:12px;"></i></button></td>
     `;
     document.getElementById('sale-lines').appendChild(tr);
     if (data) tr.querySelector('[data-field=product_type]').value = data.product_type;
@@ -195,13 +195,13 @@ async function loadSales() {
     let url = '/Backend/api/admin_poultry_v2.php?action=get_daily_sales';
     if (from) url += '&from=' + from;
     if (to) url += '&to=' + to;
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch(url);
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:#94a3b8;">No data yet.</td></tr>'; updateKpis([]); return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:#64748b;">No data yet.</td></tr>'; updateKpis([]); return; }
         tbody.innerHTML = data.map(s => `<tr>
             <td><strong>${s.sale_date}</strong></td>
             <td>${parseInt(s.opening_balance_crates||0).toLocaleString()}</td>
@@ -212,8 +212,8 @@ async function loadSales() {
             <td>${parseInt(s.total_eggs||0).toLocaleString()}</td>
             <td>${s.lines?.length||0}</td>
             <td>
-                <button class="btn btn-trans btn-sm" onclick='openSaleModal(${JSON.stringify(s)})'><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
-                <button class="btn btn-danger btn-sm" onclick="deleteSale(${s.id})"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
+                <button class="btn btn-trans btn-sm" onclick='openSaleModal(${JSON.stringify(s)})' aria-label="Edit sale"><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteSale(${s.id})" aria-label="Delete sale"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
             </td>
         </tr>`).join('');
         if (typeof lucide !== 'undefined') lucide.createIcons();

@@ -269,7 +269,7 @@ if ($pdo) {
             <!-- Filters & Search -->
             <form method="GET" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #ffffff; border-bottom: 1px solid var(--admin-border); flex-wrap: wrap; gap: 12px;">
                 <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px;">
-                    <i data-lucide="search" style="width: 18px; height: 18px; color: #94a3b8;"></i>
+                    <i data-lucide="search" style="width: 18px; height: 18px; color: #64748b;"></i>
                     <input type="text" name="search" value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>" placeholder="Search customers..." style="background: transparent; border: none; outline: none; font-size: 0.9rem; width: 100%;">
                 </div>
                 <div style="display: flex; gap: 8px;">
@@ -328,7 +328,7 @@ if ($pdo) {
                                 <td style="text-align: right;">
                                     <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
                                         <!-- Reset Password Button -->
-                                        <button title="Reset Password" onclick="openResetModal(<?php echo $usr['id']; ?>, '<?php echo htmlspecialchars($usr['username']); ?>')" style="background: none; border: none; cursor: pointer; color: #94a3b8; padding: 4px; transition: color 0.2s;" onmouseover="this.style.color='var(--admin-primary)'" onmouseout="this.style.color='#94a3b8'">
+                                        <button title="Reset Password" onclick="openResetModal(<?php echo $usr['id']; ?>, '<?php echo htmlspecialchars($usr['username']); ?>')" style="background: none; border: none; cursor: pointer; color: #64748b; padding: 4px; transition: color 0.2s;" onmouseover="this.style.color='var(--admin-primary)'" onmouseout="this.style.color='#64748b'">
                                             <i data-lucide="key-round" style="width: 16px; height: 16px;"></i>
                                         </button>
                                         
@@ -336,7 +336,7 @@ if ($pdo) {
                                         <form method="POST" onsubmit="return confirm('Are you sure you want to delete this user?');" style="margin: 0;">
                                             <input type="hidden" name="action" value="delete_user">
                                             <input type="hidden" name="target_user_id" value="<?php echo $usr['id']; ?>">
-                                            <button type="submit" title="Delete User" style="background: none; border: none; cursor: pointer; color: #94a3b8; padding: 4px; transition: color 0.2s;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#94a3b8'">
+                                            <button type="submit" title="Delete User" style="background: none; border: none; cursor: pointer; color: #64748b; padding: 4px; transition: color 0.2s;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#64748b'">
                                                 <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
                                             </button>
                                         </form>
@@ -360,7 +360,7 @@ if ($pdo) {
 <!-- ========== RESET PASSWORD MODAL ========== -->
 <div id="reset-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 9999; align-items: center; justify-content: center;">
     <div style="background: #fff; border-radius: 4px; width: 100%; max-width: 400px; padding: 32px; box-shadow: 0 24px 48px rgba(0,0,0,0.15); position: relative;">
-        <button onclick="document.getElementById('reset-modal').style.display='none'" style="position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 1.2rem;">✕</button>
+        <button onclick="document.getElementById('reset-modal').style.display='none'" style="position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #64748b; font-size: 1.2rem;">✕</button>
         <h3 style="margin: 0 0 8px 0; font-family: 'Outfit', sans-serif; font-size: 1.25rem; color: var(--admin-text-heading);">Reset User Password</h3>
         <p style="margin: 0 0 20px 0; font-size: 0.85rem; color: #475569;" id="reset-modal-subtitle">Reset password for user.</p>
         
@@ -384,7 +384,7 @@ if ($pdo) {
 <!-- ========== ADD USER MODAL ========== -->
 <div id="add-user-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 9999; align-items: center; justify-content: center;">
     <div style="background: #fff; border-radius: 4px; width: 100%; max-width: 450px; padding: 32px; box-shadow: 0 24px 48px rgba(0,0,0,0.15); position: relative;">
-        <button onclick="document.getElementById('add-user-modal').style.display='none'" style="position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 1.2rem;">✕</button>
+        <button onclick="document.getElementById('add-user-modal').style.display='none'" style="position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #64748b; font-size: 1.2rem;">✕</button>
         <h3 style="margin: 0 0 20px 0; font-family: 'Outfit', sans-serif; font-size: 1.25rem; color: var(--admin-text-heading);">Create New User</h3>
         
         <form method="POST">

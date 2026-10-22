@@ -79,7 +79,7 @@ if ($pdo) {
 }
 .pos-quick-btn:hover {
     background: #e2e8f0;
-    border-color: #94a3b8;
+    border-color: #64748b;
 }
 .pos-quick-btn.active {
     background: var(--admin-primary);
@@ -171,7 +171,7 @@ if ($pdo) {
                 <th>Actions</th>
             </tr></thead>
             <tbody id="bs-body">
-                <tr><td colspan="11" style="text-align:center;padding:28px;color:#94a3b8;">Loading sales...</td></tr>
+                <tr><td colspan="11" style="text-align:center;padding:28px;color:#64748b;">Loading sales...</td></tr>
             </tbody>
         </table>
     </div>
@@ -191,7 +191,7 @@ if ($pdo) {
             <thead><tr><th>Name</th><th>Phone</th><th>Category</th><th>Address</th><th>Registered</th><th>Actions</th></tr></thead>
             <tbody>
             <?php if (empty($customers)): ?>
-                <tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;">No customers registered yet.</td></tr>
+                <tr><td colspan="6" style="text-align:center;padding:28px;color:#64748b;">No customers registered yet.</td></tr>
             <?php else: foreach ($customers as $c): ?>
                 <tr>
                     <td><strong><?= htmlspecialchars($c['customer_name'], ENT_QUOTES, 'UTF-8') ?></strong></td>
@@ -218,7 +218,7 @@ if ($pdo) {
                 <h3 id="bs-modal-title" style="margin:0;font-family:'Outfit',sans-serif;font-size:1.25rem;font-weight:700;">Record Farm Sale</h3>
                 <small style="color:#64748b;">Chickens auto-deduct from Batch; Feeds auto-deduct from Products inventory.</small>
             </div>
-            <button type="button" onclick="closeBulkSaleModal()" style="border:none;background:transparent;cursor:pointer;color:#94a3b8;"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+            <button type="button" onclick="closeBulkSaleModal()" style="border:none;background:transparent;cursor:pointer;color:#64748b;" aria-label="Close bulk sale form"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
         </div>
 
         <form id="bs-form">
@@ -546,13 +546,13 @@ async function loadBulkSales() {
     let url = '/Backend/api/admin_poultry_v2.php?action=get_bulk_sales';
     if (from) url += '&from=' + from;
     if (to) url += '&to=' + to;
-    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:28px;color:#94a3b8;">Loading sales...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:28px;color:#64748b;">Loading sales...</td></tr>';
     try {
         const res = await fetch(url);
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:28px;color:#94a3b8;">No sales records found.</td></tr>'; return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:28px;color:#64748b;">No sales records found.</td></tr>'; return; }
         tbody.innerHTML = data.map(s => {
             const statusBadge = s.payment_status==='paid'?'badge-pill-success':(s.payment_status==='partial'?'badge-pill-warning':'badge-pill-info');
             const originText = s.batch_code ? `<span class="badge-pill badge-pill-info">${escapeHtml(s.batch_code)}</span>` : (s.product_name ? `<span style="font-size:0.8rem;color:#64748b;">${escapeHtml(s.product_name)}</span>` : '—');

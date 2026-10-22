@@ -183,7 +183,7 @@ $estimatedMonthlyFeedCost = round($totalKgMonth * $recentMillingCost, 2);
                 </tr>
             </thead>
             <tbody id="alloc-body">
-                <tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">Loading feed consumption records...</td></tr>
+                <tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">Loading feed consumption records...</td></tr>
             </tbody>
         </table>
     </div>
@@ -221,7 +221,7 @@ $estimatedMonthlyFeedCost = round($totalKgMonth * $recentMillingCost, 2);
                 </tr>
             </thead>
             <tbody id="standards-body">
-                <tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;">Loading standards...</td></tr>
+                <tr><td colspan="6" style="text-align:center;padding:28px;color:#64748b;">Loading standards...</td></tr>
             </tbody>
         </table>
     </div>
@@ -294,7 +294,7 @@ $estimatedMonthlyFeedCost = round($totalKgMonth * $recentMillingCost, 2);
                 <h3 style="margin:0;font-family:'Outfit',sans-serif;font-size:1.2rem;color:var(--admin-text-heading);">Record Flock Feeding</h3>
                 <p style="margin:2px 0 0;font-size:0.82rem;color:#64748b;">Deducts feed inventory & allocates cost to flock.</p>
             </div>
-            <button type="button" onclick="closeAllocationModal()" style="background:none;border:none;cursor:pointer;color:#94a3b8;"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+            <button type="button" onclick="closeAllocationModal()" style="background:none;border:none;cursor:pointer;color:#64748b;" aria-label="Close allocation form"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
         </div>
 
         <form id="alloc-form">
@@ -382,7 +382,7 @@ $estimatedMonthlyFeedCost = round($totalKgMonth * $recentMillingCost, 2);
     <div style="background:#fff;padding:28px;border-radius:14px;width:100%;max-width:440px;box-shadow:0 20px 40px rgba(0,0,0,0.2);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
             <h3 style="margin:0;font-family:'Outfit',sans-serif;font-size:1.2rem;color:var(--admin-text-heading);">Feeding Standard</h3>
-            <button type="button" onclick="document.getElementById('std-modal').style.display='none'" style="background:none;border:none;cursor:pointer;color:#94a3b8;"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
+            <button type="button" onclick="document.getElementById('std-modal').style.display='none'" style="background:none;border:none;cursor:pointer;color:#64748b;" aria-label="Close standard form"><i data-lucide="x" style="width:20px;height:20px;"></i></button>
         </div>
         <form id="std-form">
             <input type="hidden" id="s-id">
@@ -496,13 +496,13 @@ document.getElementById('alloc-form').addEventListener('submit', async e => {
 async function loadAllocations() {
     const tbody = document.getElementById('alloc-body');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">Loading feed consumption records...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">Loading feed consumption records...</td></tr>';
     try {
         const res = await fetch('/Backend/api/admin_business.php?action=list_feed_allocations');
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">No feedings recorded yet.</td></tr>'; return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">No feedings recorded yet.</td></tr>'; return; }
         tbody.innerHTML = data.map(a => {
             const kg = parseFloat(a.kg_fed || 0);
             const bagsEq = (kg / 50).toFixed(1);
@@ -552,12 +552,12 @@ async function loadStandards() {
     const type = document.getElementById('std-type')?.value || 'broiler';
     const tbody = document.getElementById('standards-body');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch('/Backend/api/admin_business.php?action=list_feeding_standards');
         const r = await res.json();
         let data = (r.data || []).filter(s => s.bird_type === type);
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;">No standards recorded for this bird type.</td></tr>'; return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:28px;color:#64748b;">No standards recorded for this bird type.</td></tr>'; return; }
         tbody.innerHTML = data.map(s => `<tr>
             <td><strong>Week ${s.week_number}</strong></td>
             <td>${parseFloat(s.feed_per_bird_per_day_grams).toFixed(1)} g</td>
@@ -565,7 +565,7 @@ async function loadStandards() {
             <td><strong>${(parseFloat(s.feed_per_bird_per_day_grams) * 1000 / 1000).toFixed(1)} kg</strong></td>
             <td><span class="badge-pill badge-pill-info">${escapeHtml(s.feed_type||'—')}</span></td>
             <td style="text-align:right;">
-                <button class="btn btn-trans btn-sm" onclick='openStandardModal(${JSON.stringify(s)})'><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
+                <button class="btn btn-trans btn-sm" onclick='openStandardModal(${JSON.stringify(s)})' aria-label="Edit feeding standard"><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
             </td>
         </tr>`).join('');
         if (typeof lucide !== 'undefined') lucide.createIcons();

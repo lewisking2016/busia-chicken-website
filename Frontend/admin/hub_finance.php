@@ -157,7 +157,7 @@ $tabs = [
             <thead><tr><th>Order #</th><th>Customer</th><th>Total (KES)</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
             <tbody>
             <?php if (empty($orders)): ?>
-                <tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;">No customer orders found.</td></tr>
+                <tr><td colspan="6" style="text-align:center;padding:28px;color:#64748b;">No customer orders found.</td></tr>
             <?php else: foreach ($orders as $o): ?>
                 <tr>
                     <td><strong>#<?= htmlspecialchars($o['order_number'], ENT_QUOTES, 'UTF-8') ?></strong></td>
@@ -231,7 +231,7 @@ document.addEventListener('click',e=>{ const m=document.getElementById('order-st
             <thead><tr><th>Order #</th><th>Customer</th><th>Amount (KES)</th><th>Transaction Date</th><th>Status</th></tr></thead>
             <tbody>
             <?php if (empty($orders)): ?>
-                <tr><td colspan="5" style="text-align:center;padding:28px;color:#94a3b8;">No completed sales tracked yet.</td></tr>
+                <tr><td colspan="5" style="text-align:center;padding:28px;color:#64748b;">No completed sales tracked yet.</td></tr>
             <?php else: foreach ($orders as $o): ?>
                 <tr>
                     <td><strong>#<?= htmlspecialchars($o['order_number'], ENT_QUOTES, 'UTF-8') ?></strong></td>
@@ -261,7 +261,7 @@ document.addEventListener('click',e=>{ const m=document.getElementById('order-st
             <thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Method</th><th>Status</th><th>Notes</th><th>Actions</th></tr></thead>
             <tbody>
             <?php if (empty($paymentsList)): ?>
-                <tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">No payment logs yet.</td></tr>
+                <tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">No payment logs yet.</td></tr>
             <?php else: foreach ($paymentsList as $p): ?>
                 <tr>
                     <td><?= htmlspecialchars($p['transaction_date'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td>

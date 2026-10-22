@@ -57,7 +57,7 @@ include __DIR__ . '/includes/admin_header.php';
                 <th>Status</th><th>Date</th><th>Actions</th>
             </tr></thead>
             <tbody id="orders-body">
-                <tr><td colspan="9" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="9" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -73,13 +73,13 @@ async function loadOrders() {
     if (status) url += '&status=' + status;
     if (from) url += '&from=' + from;
     if (to) url += '&to=' + to;
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch(url);
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:#94a3b8;">No orders yet.</td></tr>'; updateKpis([]); return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:#64748b;">No orders yet.</td></tr>'; updateKpis([]); return; }
         tbody.innerHTML = data.map(o => {
             const sc = {pending:'badge-pill-warning',paid:'badge-pill-info',processing:'badge-pill-info',shipped:'badge-pill-success',completed:'badge-pill-success',cancelled:'badge-pill-danger'}[o.status] || 'badge-pill-info';
             return `<tr>
@@ -92,7 +92,7 @@ async function loadOrders() {
                 <td><span class="badge-pill ${sc}">${o.status}</span></td>
                 <td>${o.created_at?.split(' ')[0]||o.created_at}</td>
                 <td>
-                    <button class="btn btn-trans btn-sm" onclick="viewOrder(${o.id})"><i data-lucide="eye" style="width:13px;height:13px;"></i></button>
+                    <button class="btn btn-trans btn-sm" onclick="viewOrder(${o.id})" aria-label="View order"><i data-lucide="eye" style="width:13px;height:13px;"></i></button>
                     <button class="btn btn-primary btn-sm" onclick="updateOrderStatus(${o.id},'processing')" title="Mark Processing"><i data-lucide="play" style="width:13px;height:13px;"></i></button>
                     <button class="btn btn-primary btn-sm" onclick="updateOrderStatus(${o.id},'completed')" title="Mark Completed"><i data-lucide="check" style="width:13px;height:13px;"></i></button>
                 </td>

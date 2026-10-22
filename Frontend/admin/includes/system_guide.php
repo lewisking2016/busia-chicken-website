@@ -560,7 +560,7 @@ foreach ($guideSections as $_group) {
                 <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
                     <?php $gi = 0; foreach ($guideSections as $gLabel => $mods): ?>
                     <div class="guide-group">
-                        <div style="font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; padding: 2px 8px 4px;"><?= htmlspecialchars($gLabel, ENT_QUOTES, 'UTF-8') ?></div>
+                        <div style="font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; padding: 2px 8px 4px;"><?= htmlspecialchars($gLabel, ENT_QUOTES, 'UTF-8') ?></div>
                         <?php foreach ($mods as $mod): ?>
                         <button class="guide-nav-btn<?= $gi === 0 ? ' active' : '' ?>" onclick="showGuide('<?= $mod['id'] ?>')" data-guide-id="<?= $mod['id'] ?>" style="display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 10px; border: none; background: none; border-radius: 7px; text-align: left; font-weight: 600; font-size: 0.83rem; color: #475569; cursor: pointer; transition: all 0.15s;">
                             <i data-lucide="<?= $mod['icon'] ?>" style="width: 15px; height: 15px; flex-shrink: 0;"></i>

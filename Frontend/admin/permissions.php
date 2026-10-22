@@ -113,9 +113,9 @@ $matrix = function_exists('busiaRolePermissions') ? busiaRolePermissions($pdo) :
         <div style="display:flex;align-items:center;gap:10px;">
             <span class="badge-pill <?= $role==='super_admin'?'badge-pill-danger':($role==='farm_manager'?'badge-pill-success':'badge-pill-info') ?>" style="font-size:0.8rem;padding:6px 12px;"><?= $roleLabels[$role] ?></span>
             <?php if ($role === 'super_admin'): ?>
-                <small style="color:#94a3b8;">Always has full access to every module.</small>
+                <small style="color:#64748b;">Always has full access to every module.</small>
             <?php else: ?>
-                <small style="color:#94a3b8;">Check a module to let this role open it.</small>
+                <small style="color:#64748b;">Check a module to let this role open it.</small>
             <?php endif; ?>
         </div>
         <button type="button" class="btn btn-outline btn-sm perm-expand" style="border-radius:6px;">
@@ -138,7 +138,7 @@ $matrix = function_exists('busiaRolePermissions') ? busiaRolePermissions($pdo) :
                         <label style="display:flex;align-items:center;gap:8px;font-size:0.88rem;color:#1e293b;padding:5px 0;cursor:pointer;">
                             <input type="checkbox" name="view[<?= $role ?>][<?= $modKey ?>]" <?= $canView ? 'checked' : '' ?> <?= $locked ? 'disabled' : '' ?> style="width:16px;height:16px;accent-color:var(--admin-primary);">
                             <span style="flex:1;font-weight:600;"><?= htmlspecialchars($modLabel, ENT_QUOTES, 'UTF-8') ?></span>
-                            <small style="color:#94a3b8;display:flex;align-items:center;gap:4px;">
+                            <small style="color:#64748b;display:flex;align-items:center;gap:4px;">
                                 edit <input type="checkbox" name="edit[<?= $role ?>][<?= $modKey ?>]" <?= $canEdit ? 'checked' : '' ?> <?= $locked ? 'disabled' : '' ?> style="width:14px;height:14px;accent-color:var(--admin-accent);">
                             </small>
                         </label>

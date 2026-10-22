@@ -86,7 +86,7 @@ $tabs = [
     <div class="table-responsive">
         <table class="admin-table">
             <thead><tr><th>Flock Name</th><th>Breed / Type</th><th>Birds</th><th>Eggs Today</th><th>Age (wks)</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="flocks-body"><tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">Loading flocks...</td></tr></tbody>
+            <tbody id="flocks-body"><tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">Loading flocks...</td></tr></tbody>
         </table>
     </div>
 </div>
@@ -158,7 +158,7 @@ async function loadFlocks() {
 
 function renderFlocks(eggMap={}) {
     const tbody = document.getElementById('flocks-body');
-    if (!window.flocks_list.length) { tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">No flocks yet. Click "Add Flock" to create one.</td></tr>'; return; }
+    if (!window.flocks_list.length) { tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">No flocks yet. Click "Add Flock" to create one.</td></tr>'; return; }
 
     tbody.innerHTML = window.flocks_list.map(f => {
         const sc = f.status==='active'?'badge-pill-success':(f.status==='sold'?'badge-pill-warning':'badge-pill-danger');
@@ -166,14 +166,14 @@ function renderFlocks(eggMap={}) {
         const eggsToday = eggMap[f.id] || 0;
         return `<tr>
             <td><strong>${f.flock_name}</strong><br><small style="color:#64748b;">${f.location||'—'}</small></td>
-            <td>${f.breed||'—'}<br><small style="color:#94a3b8;text-transform:capitalize;">${f.flock_type||'layer'}</small></td>
+            <td>${f.breed||'—'}<br><small style="color:#64748b;text-transform:capitalize;">${f.flock_type||'layer'}</small></td>
             <td><strong>${Number(f.current_count||0).toLocaleString()}</strong></td>
-            <td><span style="color:${eggsToday>0?'#16a34a':'#94a3b8'};font-weight:700;">${eggsToday.toLocaleString()}</span></td>
+            <td><span style="color:${eggsToday>0?'#16a34a':'#64748b'};font-weight:700;">${eggsToday.toLocaleString()}</span></td>
             <td>${ageWks}</td>
             <td><span class="badge-pill ${sc}">${f.status}</span></td>
             <td><div class="tbl-actions">
                 <button class="btn btn-trans btn-sm" onclick='openFlockModal(${JSON.stringify(f)})'><i data-lucide="pencil" style="width:13px;height:13px;"></i> Edit</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteFlock(${f.id})"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteFlock(${f.id})" aria-label="Delete flock"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
             </div></td>
         </tr>`;
     }).join('');
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', loadFlocks);
     <div class="table-responsive">
         <table class="admin-table">
             <thead><tr><th>Date</th><th>Flock</th><th>Eggs</th><th>Cracked</th><th>Feed (kg)</th><th>Mortality</th><th>Notes</th><th>Actions</th></tr></thead>
-            <tbody id="production-body"><tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr></tbody>
+            <tbody id="production-body"><tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr></tbody>
         </table>
     </div>
 </div>
@@ -336,7 +336,7 @@ function populateProdFlocks(){
 
 function renderProduction(){
     const tbody = document.getElementById('production-body');
-    if (!window.production_list.length){ tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">No production logs yet. Click "Log Today\'s Production" to start.</td></tr>'; return; }
+    if (!window.production_list.length){ tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">No production logs yet. Click "Log Today\'s Production" to start.</td></tr>'; return; }
     tbody.innerHTML = window.production_list.map(p=>`<tr>
         <td>${p.record_date}</td>
         <td><strong>${p.flock_name||'—'}</strong></td>
@@ -347,7 +347,7 @@ function renderProduction(){
         <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.notes||'—'}</td>
         <td><div class="tbl-actions">
             <button class="btn btn-trans btn-sm" onclick="editProduction(${p.id})"><i data-lucide="pencil" style="width:13px;height:13px;"></i> Edit</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteProduction(${p.id})"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="deleteProduction(${p.id})" aria-label="Delete production record"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
         </div></td>
     </tr>`).join('');
     if(typeof lucide!=='undefined') lucide.createIcons();
@@ -415,7 +415,7 @@ document.addEventListener('DOMContentLoaded',loadProductionData);
     <div class="table-responsive">
         <table class="admin-table">
             <thead><tr><th>Scheduled Date</th><th>Flock</th><th>Vaccine / Treatment</th><th>Administered Date</th><th>Next Due</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="vac-body"><tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr></tbody>
+            <tbody id="vac-body"><tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr></tbody>
         </table>
     </div>
 </div>
@@ -425,7 +425,7 @@ document.addEventListener('DOMContentLoaded',loadProductionData);
 <div class="admin-card" style="margin-top:18px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
         <div>
-            <h3 style="margin:0;font-family:'Outfit',sans-serif;font-size:1.1rem;">Vaccine Program <span style="font-weight:600;font-size:0.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">for new flocks</span></h3>
+            <h3 style="margin:0;font-family:'Outfit',sans-serif;font-size:1.1rem;">Vaccine Program <span style="font-weight:600;font-size:0.72rem;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;">for new flocks</span></h3>
             <p style="margin:4px 0 0;font-size:0.85rem;color:#64748b;">These vaccines are scheduled automatically whenever you add a flock of that type. Existing flocks are never changed.</p>
         </div>
         <?php if ($vpCanManage): ?>
@@ -467,10 +467,10 @@ document.addEventListener('DOMContentLoaded',loadProductionData);
     <div class="table-responsive">
         <table class="admin-table">
             <thead><tr><th>Bird Type</th><th>Vaccine / Treatment</th><th>Day After Hatch</th><th style="width:80px;"></th></tr></thead>
-            <tbody id="vaccine-plan-body"><tr><td colspan="4" style="text-align:center;padding:22px;color:#94a3b8;">Loading vaccine program...</td></tr></tbody>
+            <tbody id="vaccine-plan-body"><tr><td colspan="4" style="text-align:center;padding:22px;color:#64748b;">Loading vaccine program...</td></tr></tbody>
         </table>
     </div>
-    <p style="margin:10px 0 0;font-size:0.8rem;color:#94a3b8;">No vaccines listed for a type? Then adding that flock won't schedule any — set the program first and it applies to all future flocks.</p>
+    <p style="margin:10px 0 0;font-size:0.8rem;color:#64748b;">No vaccines listed for a type? Then adding that flock won't schedule any — set the program first and it applies to all future flocks.</p>
 </div>
 
 <script>
@@ -502,7 +502,7 @@ function renderVaccinePlan() {
     if (!tb) return;
     const canManage = document.getElementById('vp-form') !== null;
     if (!window.vaccinePlanList.length) {
-        tb.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:22px;color:#94a3b8;">' + (canManage ? 'No program set yet. Add your first vaccine above — it will apply to every new flock from now on.' : 'No vaccine program set yet. Ask the Farm Manager to add one.') + '</td></tr>';
+        tb.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:22px;color:#64748b;">' + (canManage ? 'No program set yet. Add your first vaccine above — it will apply to every new flock from now on.' : 'No vaccine program set yet. Ask the Farm Manager to add one.') + '</td></tr>';
         return;
     }
     tb.innerHTML = window.vaccinePlanList.map(p => `<tr>
@@ -612,7 +612,7 @@ function populateVacFlocks(){
 }
 function renderVaccinations(){
     const tbody=document.getElementById('vac-body');
-    if(!window.vac_list.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">No vaccinations scheduled. Click "Schedule Vaccine" to start.</td></tr>'; return; }
+    if(!window.vac_list.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">No vaccinations scheduled. Click "Schedule Vaccine" to start.</td></tr>'; return; }
     const today=new Date().toISOString().split('T')[0];
     tbody.innerHTML=window.vac_list.map(v=>{
         const sc=v.status==='completed'?'badge-pill-success':(v.status==='missed'?'badge-pill-danger':'badge-pill-warning');
@@ -621,12 +621,12 @@ function renderVaccinations(){
             <td>${overdue?'<span style="color:#dc2626;font-weight:700;">⚠ </span>':''}${v.scheduled_date}</td>
             <td><strong>${v.flock_name||'—'}</strong></td>
             <td>${v.vaccine_name}</td>
-            <td>${v.administered_date||'<span style="color:#94a3b8;">Pending</span>'}</td>
+            <td>${v.administered_date||'<span style="color:#64748b;">Pending</span>'}</td>
             <td>${v.next_due_date||'—'}</td>
             <td><span class="badge-pill ${sc}">${v.status}</span></td>
             <td><div class="tbl-actions">
                 <button class="btn btn-trans btn-sm" onclick="editVac(${v.id})"><i data-lucide="pencil" style="width:13px;height:13px;"></i> Edit</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteVac(${v.id})"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteVac(${v.id})" aria-label="Delete vaccination"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
             </div></td>
         </tr>`;
     }).join('');
@@ -689,7 +689,7 @@ document.addEventListener('DOMContentLoaded',loadVaccinations);
     </div>
     <div class="table-responsive"><table class="admin-table">
         <thead><tr><th>Tag / ID</th><th>Name</th><th>Species</th><th>Breed</th><th>Gender</th><th>DOB</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody><?php if(empty($animals)): ?><tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">No animals registered yet.</td></tr><?php else: foreach($animals as $a): ?>
+        <tbody><?php if(empty($animals)): ?><tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">No animals registered yet.</td></tr><?php else: foreach($animals as $a): ?>
         <tr>
             <td><strong><?= htmlspecialchars($a['tag_id']??'-',ENT_QUOTES,'UTF-8') ?></strong></td>
             <td><?= htmlspecialchars($a['name']??'-',ENT_QUOTES,'UTF-8') ?></td>
@@ -745,7 +745,7 @@ document.addEventListener('click',e=>{ const m=document.getElementById('animal-m
     </div>
     <div class="table-responsive"><table class="admin-table">
         <thead><tr><th>Date</th><th>Animal / Flock</th><th>Diagnosis</th><th>Treatment</th><th>Vet</th><th>Cost (KES)</th><th>Actions</th></tr></thead>
-        <tbody><?php if(empty($healthRecs)): ?><tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">No health records yet.</td></tr><?php else: foreach($healthRecs as $h): ?>
+        <tbody><?php if(empty($healthRecs)): ?><tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">No health records yet.</td></tr><?php else: foreach($healthRecs as $h): ?>
         <tr>
             <td><?= htmlspecialchars($h['record_date']??'-',ENT_QUOTES,'UTF-8') ?></td>
             <td><?= htmlspecialchars(trim(($h['tag_id']??'').' '.($h['aname']??'General')),ENT_QUOTES,'UTF-8') ?></td>
@@ -799,7 +799,7 @@ document.addEventListener('click',e=>{ const m=document.getElementById('health-m
     </div>
     <div class="table-responsive"><table class="admin-table">
         <thead><tr><th>Date</th><th>Sire (Father)</th><th>Dam (Mother)</th><th>Expected Birth</th><th>Status</th><th>Notes</th><th>Actions</th></tr></thead>
-        <tbody><?php if(empty($breedingRecs)): ?><tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">No breeding records yet.</td></tr><?php else: foreach($breedingRecs as $b): ?>
+        <tbody><?php if(empty($breedingRecs)): ?><tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">No breeding records yet.</td></tr><?php else: foreach($breedingRecs as $b): ?>
         <tr>
             <td><?= htmlspecialchars($b['breeding_date']??'-',ENT_QUOTES,'UTF-8') ?></td>
             <td><?= htmlspecialchars($b['sire']??'-',ENT_QUOTES,'UTF-8') ?></td>
@@ -878,7 +878,7 @@ document.addEventListener('click',e=>{ const m=document.getElementById('breeding
     </div>
     <div class="table-responsive"><table class="admin-table">
         <thead><tr><th>Name</th><th>Type</th><th>Location / Pen</th><th>Head Count</th><th>Actions</th></tr></thead>
-        <tbody><?php if(empty($herds)): ?><tr><td colspan="5" style="text-align:center;padding:28px;color:#94a3b8;">No herds created yet.</td></tr><?php else: foreach($herds as $hd): ?>
+        <tbody><?php if(empty($herds)): ?><tr><td colspan="5" style="text-align:center;padding:28px;color:#64748b;">No herds created yet.</td></tr><?php else: foreach($herds as $hd): ?>
         <tr>
             <td><strong><?= htmlspecialchars($hd['name'],ENT_QUOTES,'UTF-8') ?></strong></td>
             <td><?= htmlspecialchars($hd['type']??'-',ENT_QUOTES,'UTF-8') ?></td>

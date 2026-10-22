@@ -9,6 +9,36 @@
  */
 declare(strict_types=1);
 
+// NOTE: deliberately does NOT require database.php. database.php calls
+// ensureBusiaSchema() during connection setup, so requiring it back here
+// creates a circular include and leaves BUSIA_SCHEMA_SEED_VERSION undefined.
+// database.php defines tableExists()/columnExists(); the guards below make this
+// file usable standalone (CLI tools, tests) without duplicating that file.
+
+if (!function_exists('tableExists')) {
+    function tableExists(PDO $pdo, string $table): bool {
+        try {
+            $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?');
+            $stmt->execute([$table]);
+            return (int)$stmt->fetchColumn() > 0;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+}
+
+if (!function_exists('columnExists')) {
+    function columnExists(PDO $pdo, string $table, string $column): bool {
+        try {
+            $stmt = $pdo->prepare('SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ? LIMIT 1');
+            $stmt->execute([$table, $column]);
+            return $stmt->fetchColumn() !== false;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+}
+
 /**
  * Split a migration .sql file into individual executable statements.
  *

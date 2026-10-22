@@ -53,7 +53,7 @@ if ($pdo) {
                 <th>Total (KES)</th><th>Issue Date</th><th>Due Date</th><th>Actions</th>
             </tr></thead>
             <tbody id="lpo-body">
-                <tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -160,14 +160,14 @@ const typePill = { quotation: 'badge-pill-info', lpo: 'badge-pill-warning', invo
 
 async function loadDocs() {
     const tbody = document.getElementById('lpo-body');
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const url = '/Backend/api/admin_business.php?action=list_lpo_documents' + (currentTab !== 'all' ? '&type=' + currentTab : '');
         const res = await fetch(url);
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">No documents yet. Click "New Document" to create a quotation, LPO or invoice.</td></tr>'; return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">No documents yet. Click "New Document" to create a quotation, LPO or invoice.</td></tr>'; return; }
         tbody.innerHTML = data.map(d => `<tr>
             <td><strong>#${escapeHtml(d.doc_number)}</strong></td>
             <td>${escapeHtml(d.customer_name)}${d.customer_phone ? '<div style="font-size:0.78rem;color:#64748b;">' + escapeHtml(d.customer_phone) + '</div>' : ''}</td>

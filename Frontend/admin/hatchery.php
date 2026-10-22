@@ -41,7 +41,7 @@ include __DIR__ . '/includes/admin_header.php';
                 <th>Destination</th><th>Actions</th>
             </tr></thead>
             <tbody id="h-body">
-                <tr><td colspan="10" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="10" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -91,13 +91,13 @@ include __DIR__ . '/includes/admin_header.php';
 <script>
 async function loadHatchery() {
     const tbody = document.getElementById('h-body');
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch('/Backend/api/admin_business.php?action=list_hatchery');
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:28px;color:#94a3b8;">No hatchery records yet.</td></tr>'; updateKpis([]); return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:28px;color:#64748b;">No hatchery records yet.</td></tr>'; updateKpis([]); return; }
         tbody.innerHTML = data.map(h => {
             const destBadge = h.destination==='sold'?'badge-pill-success':(h.destination==='disposed'?'badge-pill-danger':'badge-pill-info');
             return `<tr>
@@ -111,7 +111,7 @@ async function loadHatchery() {
                 <td><strong>${parseFloat(h.hatchability_pct||0).toFixed(1)}%</strong></td>
                 <td><span class="badge-pill ${destBadge}">${h.destination.replace('_',' ')}</span></td>
                 <td>
-                    <button class="btn btn-trans btn-sm" onclick='openHatchModal(${JSON.stringify(h)})'><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
+                    <button class="btn btn-trans btn-sm" onclick='openHatchModal(${JSON.stringify(h)})' aria-label="Edit hatch batch"><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
                 </td>
             </tr>`;
         }).join('');

@@ -478,7 +478,7 @@ async function loadDashboard() {
     const tbody = document.getElementById('recent-activity');
     if (tbody) {
         if (!acts.length) {
-            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#94a3b8;padding:20px;">No recent activity.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#64748b;padding:20px;">No recent activity.</td></tr>';
         } else {
             tbody.innerHTML = acts.map(a => {
                 const name = ((a.first_name || '') + ' ' + (a.last_name || '')).trim() || 'Guest';

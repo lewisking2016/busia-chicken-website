@@ -177,7 +177,7 @@ function renderVaccinations() {
             <td>${v.scheduled_date}</td>
             <td><strong>${v.flock_name}</strong></td>
             <td>${v.vaccine_name}</td>
-            <td>${v.administered_date || '<span style="color:#94a3b8;">Not Administered</span>'}</td>
+            <td>${v.administered_date || '<span style="color:#64748b;">Not Administered</span>'}</td>
             <td><span class="badge-pill ${statusBadge}">${v.status}</span></td>
             <td>${v.user_name || '-'}</td>
             <td>

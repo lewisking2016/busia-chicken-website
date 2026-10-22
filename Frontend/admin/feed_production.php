@@ -185,7 +185,7 @@ if ($pdo) {
         <p style="font-size:0.85rem;color:#64748b;margin:0 0 16px;">Real-time stock check against warehouse inventory before production starts.</p>
 
         <div id="pr-ingredients">
-            <div style="text-align:center;padding:40px 20px;color:#94a3b8;border:2px dashed #e2e8f0;border-radius:10px;">
+            <div style="text-align:center;padding:40px 20px;color:#64748b;border:2px dashed #e2e8f0;border-radius:10px;">
                 <i data-lucide="flask-conical" style="width:36px;height:36px;margin:0 auto 10px;display:block;opacity:0.6;"></i>
                 Select a recipe on the left to verify ingredient availability.
             </div>
@@ -217,7 +217,7 @@ if ($pdo) {
             </tr></thead>
             <tbody>
             <?php if (empty($finishedFeeds)): ?>
-                <tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">No finished feeds stocked yet. Run a production batch to stock bags!</td></tr>
+                <tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">No finished feeds stocked yet. Run a production batch to stock bags!</td></tr>
             <?php else: foreach ($finishedFeeds as $f): 
                 $stock = (int)$f['stock_quantity'];
                 $val = $stock * (float)$f['price'];
@@ -258,7 +258,7 @@ if ($pdo) {
             <thead><tr><th>Recipe Name</th><th>Target Species</th><th>Base Bag Size</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
             <?php if (empty($recipes)): ?>
-                <tr><td colspan="6" style="text-align:center;padding:28px;color:#94a3b8;">No recipes defined yet.</td></tr>
+                <tr><td colspan="6" style="text-align:center;padding:28px;color:#64748b;">No recipes defined yet.</td></tr>
             <?php else: foreach ($recipes as $r): ?>
                 <tr>
                     <td><strong><?= htmlspecialchars($r['recipe_name'], ENT_QUOTES, 'UTF-8') ?></strong></td>
@@ -287,7 +287,7 @@ if ($pdo) {
         <table class="admin-table">
             <thead><tr><th>Date</th><th>Recipe</th><th>Bags Milled</th><th>Bag Size</th><th>Total kg</th><th>Batch Cost</th><th>Cost / Bag</th><th>Cost / kg</th></tr></thead>
             <tbody id="history-body">
-                <tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading history...</td></tr>
+                <tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading history...</td></tr>
             </tbody>
         </table>
     </div>
@@ -362,7 +362,7 @@ function addIngredientRow(data = null) {
     tr.innerHTML = `
         <td style="padding:6px;"><select class="admin-form-control" data-field="raw_material_id" style="font-size:0.85rem;padding:6px 8px;">${opts}</select></td>
         <td style="padding:6px;"><input class="admin-form-control" type="number" step="0.001" data-field="amount" value="${data?.amount_per_bag_kg||0}" style="font-size:0.85rem;padding:6px 8px;" placeholder="kg"></td>
-        <td style="padding:6px;"><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()" style="padding:4px 8px;"><i data-lucide="x" style="width:12px;height:12px;"></i></button></td>
+        <td style="padding:6px;"><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()" style="padding:4px 8px;" aria-label="Remove row"><i data-lucide="x" style="width:12px;height:12px;"></i></button></td>
     `;
     document.getElementById('recipe-ingredients').appendChild(tr);
     if (data) tr.querySelector('[data-field=raw_material_id]').value = data.raw_material_id;
@@ -416,9 +416,9 @@ document.getElementById('recipe-form').addEventListener('submit', async e => {
 async function loadRecipeIngredients() {
     const rid = document.getElementById('pr-recipe').value;
     const container = document.getElementById('pr-ingredients');
-    if (!rid) { container.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#94a3b8;border:2px dashed #e2e8f0;border-radius:10px;">Select a recipe on the left to verify ingredient availability.</div>'; recalcProduction(); return; }
+    if (!rid) { container.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#64748b;border:2px dashed #e2e8f0;border-radius:10px;">Select a recipe on the left to verify ingredient availability.</div>'; recalcProduction(); return; }
     
-    container.innerHTML = '<p style="text-align:center;padding:20px;color:#94a3b8;">Checking raw materials...</p>';
+    container.innerHTML = '<p style="text-align:center;padding:20px;color:#64748b;">Checking raw materials...</p>';
     const res = await fetch('/Backend/api/admin_poultry_v2.php?action=get_recipe_ingredients&recipe_id=' + rid);
     const r = await res.json();
     if (!r.success || !r.data?.length) { 
@@ -525,7 +525,7 @@ async function loadHistory() {
         const res = await fetch('/Backend/api/admin_poultry_v2.php?action=get_production_history');
         const r = await res.json();
         if (!r.success || !r.data?.length) { 
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">No production runs recorded yet.</td></tr>'; 
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">No production runs recorded yet.</td></tr>'; 
             return; 
         }
         tbody.innerHTML = r.data.map(p => {

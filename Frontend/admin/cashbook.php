@@ -59,7 +59,7 @@ include __DIR__ . '/includes/admin_header.php';
                 <th>Actions</th>
             </tr></thead>
             <tbody id="cb-body">
-                <tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -206,13 +206,13 @@ async function loadCashbook() {
     if (to) url += '&to=' + to;
     if (dir) url += '&direction=' + dir;
     const tbody = document.getElementById('cb-body');
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch(url);
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">No entries yet. Start by adding money in or out.</td></tr>'; return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">No entries yet. Start by adding money in or out.</td></tr>'; return; }
         tbody.innerHTML = data.map(e => {
             const isIn = e.direction === 'in';
             return `<tr>
@@ -224,7 +224,7 @@ async function loadCashbook() {
                 <td>${e.paid_through}</td>
                 <td><strong>KES ${parseFloat(e.running_balance).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</strong></td>
                 <td>
-                    <button class="btn btn-danger btn-sm" onclick="deleteEntry(${e.id})"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteEntry(${e.id})" aria-label="Delete entry"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
                 </td>
             </tr>`;
         }).join('');

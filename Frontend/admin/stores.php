@@ -56,7 +56,7 @@ if (!in_array($tab, $validTabs, true)) $tab = 'ingredients';
                 <th>Min Level</th><th>Unit Price</th><th>Stock Value</th><th>Status</th><th>Actions</th>
             </tr></thead>
             <tbody id="materials-body">
-                <tr><td colspan="11" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="11" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -78,7 +78,7 @@ if (!in_array($tab, $validTabs, true)) $tab = 'ingredients';
         <table class="admin-table">
             <thead><tr><th>Date</th><th>Material</th><th>Type</th><th>Quantity (kg/unit)</th><th>Balance After</th><th>Unit Cost</th><th>Total</th><th>Description</th></tr></thead>
             <tbody id="movements-body">
-                <tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -179,7 +179,7 @@ let allMaterials = [];
 async function loadMaterials() {
     const tbody = document.getElementById('materials-body');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch('/Backend/api/admin_poultry_v2.php?action=get_materials');
         const r = await res.json();
@@ -198,7 +198,7 @@ async function loadMaterials() {
         // Filter by tab
         const cats = currentTab === 'ingredients' ? ['feed_ingredient'] : ['drug','other','vaccine','packaging'];
         const filtered = allMaterials.filter(m => cats.includes(m.category));
-        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:28px;color:#94a3b8;">No materials yet.</td></tr>'; return; }
+        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:28px;color:#64748b;">No materials yet.</td></tr>'; return; }
         tbody.innerHTML = filtered.map(m => {
             const stock = parseFloat(m.current_stock);
             const min = parseFloat(m.min_stock_level);
@@ -216,8 +216,8 @@ async function loadMaterials() {
                 <td>KES ${value.toFixed(2)}</td>
                 <td>${lowStock?'<span class="badge-pill badge-pill-danger">LOW</span>':'<span class="badge-pill badge-pill-success">OK</span>'}</td>
                 <td>
-                    <button class="btn btn-trans btn-sm" onclick='openMaterialModal(${JSON.stringify(m)})'><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
-                    <button class="btn btn-primary btn-sm" onclick='openMovementModalFor(${m.id})'><i data-lucide="plus" style="width:13px;height:13px;"></i></button>
+                    <button class="btn btn-trans btn-sm" onclick='openMaterialModal(${JSON.stringify(m)})' aria-label="Edit material"><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
+                    <button class="btn btn-primary btn-sm" onclick='openMovementModalFor(${m.id})' aria-label="Record stock movement"><i data-lucide="plus" style="width:13px;height:13px;"></i></button>
                 </td>
             </tr>`;
         }).join('');
@@ -235,7 +235,7 @@ async function loadMovements() {
     const to = document.getElementById('mv-to')?.value || '';
     let url = '/Backend/api/admin_poultry_v2.php?action=get_movements';
     if (mat) url += '&material_id=' + mat;
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch(url);
         const r = await res.json();
@@ -243,7 +243,7 @@ async function loadMovements() {
         let data = r.data || [];
         if (from) data = data.filter(m => m.movement_date >= from);
         if (to) data = data.filter(m => m.movement_date <= to);
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#94a3b8;">No movements yet.</td></tr>'; return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:#64748b;">No movements yet.</td></tr>'; return; }
         tbody.innerHTML = data.map(m => {
             const isIn = m.movement_type.includes('in') || m.movement_type==='received' || m.movement_type==='opening_balance' || m.movement_type==='adjustment_add' || m.movement_type==='transfer_in';
             const qty = parseFloat(m.quantity_kg);

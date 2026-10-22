@@ -49,7 +49,7 @@ if ($pdo) {
         <table class="admin-table">
             <thead><tr><th>Date</th><th>Batch</th><th>Type</th><th>Where it happened</th><th>Quantity</th><th>Value (KES)</th><th>Reason</th></tr></thead>
             <tbody id="loss-body">
-                <tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -68,7 +68,7 @@ if ($pdo) {
         <table class="admin-table">
             <thead><tr><th>Date</th><th>Material</th><th>Test</th><th>Result</th><th>Result</th><th>Tested By</th><th>Notes</th></tr></thead>
             <tbody id="q-body">
-                <tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -172,13 +172,13 @@ const currentTab = '<?= $tab ?>';
 async function loadLosses() {
     const tbody = document.getElementById('loss-body');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch('/Backend/api/admin_business.php?action=list_egg_losses');
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">No losses recorded yet.</td></tr>'; return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">No losses recorded yet.</td></tr>'; return; }
         const stageMap = {collection:'During collection', transport:'On route (transport)', storage:'At storage / farm', other:'Other'};
         const stagePill = {collection:'badge-pill-warning', transport:'badge-pill-danger', storage:'badge-pill-info', other:'badge-pill-warning'};
         tbody.innerHTML = data.map(l => `<tr>
@@ -214,13 +214,13 @@ document.getElementById('loss-form').addEventListener('submit', async e => {
 async function loadQuality() {
     const tbody = document.getElementById('q-body');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch('/Backend/api/admin_business.php?action=list_quality_tests');
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#94a3b8;">No tests recorded yet.</td></tr>'; return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#64748b;">No tests recorded yet.</td></tr>'; return; }
         tbody.innerHTML = data.map(q => {
             const pf = q.pass_fail==='pass'?'badge-pill-success':(q.pass_fail==='fail'?'badge-pill-danger':'badge-pill-warning');
             return `<tr>

@@ -112,7 +112,7 @@ include __DIR__ . '/includes/admin_header.php';
 .empty-state {
     text-align: center;
     padding: 40px 20px;
-    color: #94a3b8;
+    color: #64748b;
     font-size: 0.9rem;
 }
 </style>

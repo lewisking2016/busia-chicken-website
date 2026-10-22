@@ -57,7 +57,7 @@ $batches = $pdo ? $pdo->query("SELECT id, batch_name, batch_code, current_birds,
                 <th>Paid From</th><th>Notes</th><th>Actions</th>
             </tr></thead>
             <tbody id="costs-body">
-                <tr><td colspan="9" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>
+                <tr><td colspan="9" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -191,13 +191,13 @@ async function loadCosts() {
     if (from) url += '&from=' + from;
     if (to) url += '&to=' + to;
     const tbody = document.getElementById('costs-body');
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:#94a3b8;">Loading...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:#64748b;">Loading...</td></tr>';
     try {
         const res = await fetch(url);
         const r = await res.json();
         if (!r.success) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#dc2626;">' + (r.message||'Failed') + '</td></tr>'; return; }
         const data = r.data || [];
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:#94a3b8;">No costs recorded yet.</td></tr>'; updateKpis([]); return; }
+        if (!data.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:#64748b;">No costs recorded yet.</td></tr>'; updateKpis([]); return; }
         tbody.innerHTML = data.map(c => `<tr>
             <td>${c.cost_date}</td>
             <td><strong>${escapeHtml(c.batch_name||'—')}</strong><br><small style="color:#64748b;">${escapeHtml(c.batch_code||'')}</small></td>
@@ -208,8 +208,8 @@ async function loadCosts() {
             <td>${c.paid_from}</td>
             <td>${escapeHtml(c.reference_no||'')}</td>
             <td>
-                <button class="btn btn-trans btn-sm" onclick='openCostModal(${JSON.stringify(c)})'><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
-                <button class="btn btn-danger btn-sm" onclick="deleteCost(${c.id})"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
+                <button class="btn btn-trans btn-sm" onclick='openCostModal(${JSON.stringify(c)})' aria-label="Edit cost"><i data-lucide="pencil" style="width:13px;height:13px;"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="deleteCost(${c.id})" aria-label="Delete cost"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
             </td>
         </tr>`).join('');
         if (typeof lucide !== 'undefined') lucide.createIcons();
