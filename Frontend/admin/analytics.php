@@ -517,14 +517,22 @@ function renderProductionChart(prod) {
     const labels = (prod || []).map(p => BusiaCharts.dayLabel(p.day));
     const eggs = (prod || []).map(p => +p.eggs || 0);
     const ctx = document.getElementById('chart-production');
-    charts.production = BusiaCharts.areaChart(ctx, labels, eggs, { color: C.amber });
+    charts.production = BusiaCharts.areaChart(ctx, labels, eggs, {
+        color: C.amber,
+        emptyTitle: 'No eggs recorded yet',
+        emptyHint: 'Daily egg collection is what powers this chart. Log it under Production.',
+    });
 }
 
 function renderTopProductsChart(top) {
     const labels = (top || []).map(p => p.name || '');
     const values = (top || []).map(p => +p.qty || 0);
     const ctx = document.getElementById('chart-top-products');
-    charts.top = BusiaCharts.hBarChart(ctx, labels, values, { color: C.primary });
+    charts.top = BusiaCharts.hBarChart(ctx, labels, values, {
+        color: C.primary,
+        emptyTitle: 'No sales recorded yet',
+        emptyHint: 'Place an order in Shop, or record a sale, and your best sellers appear here.',
+    });
 }
 
 function renderMortalityChart(m) {
@@ -584,7 +592,10 @@ function renderGrowthChart(growth, batchName) {
     const labels = (growth || []).map(g => 'Day ' + g.day_number);
     const values = (growth || []).map(g => +g.avg_weight_kg || 0);
     const ctx = document.getElementById('chart-growth');
-    charts.growth = BusiaCharts.lineChart(ctx, labels, [{ data: values, label: 'Avg Weight (kg)', color: C.primary }], {});
+    charts.growth = BusiaCharts.lineChart(ctx, labels, [{ data: values, label: 'Avg Weight (kg)', color: C.primary }], {
+        emptyTitle: 'No weights recorded yet',
+        emptyHint: 'Weigh a sample of birds weekly under Broiler to build the growth curve.',
+    });
 }
 
 function renderCreditAging(ca) {
@@ -595,49 +606,76 @@ function renderCreditAging(ca) {
     };
     const colors = [C.green, C.amber, C.red];
     const ctx = document.getElementById('chart-credit-aging');
-    charts.credit = BusiaCharts.donutChart(ctx, data.labels, data.values, { colors, legendPos: 'bottom' });
+    charts.credit = BusiaCharts.donutChart(ctx, data.labels, data.values, {
+        colors, legendPos: 'bottom',
+        emptyTitle: 'No credit outstanding',
+        emptyHint: 'Nothing is owed. Record credit sales under Credit to track who owes what.',
+    });
 }
 
 function renderLowStockChart(items) {
     const labels = (items || []).map(i => i.material_name || '');
     const values = (items || []).map(i => +i.current_stock || 0);
     const ctx = document.getElementById('chart-low-stock');
-    charts.lowstock = BusiaCharts.hBarChart(ctx, labels, values, { color: C.red });
+    charts.lowstock = BusiaCharts.hBarChart(ctx, labels, values, {
+        color: C.red,
+        emptyTitle: 'Stock levels are healthy',
+        emptyHint: 'No raw material is below its reorder level. Check levels under Stores.',
+    });
 }
 
 function renderProductMix(items) {
     const labels = (items || []).map(i => i.product_type || 'Other');
     const values = (items || []).map(i => +i.qty || 0);
     const ctx = document.getElementById('chart-product-mix');
-    charts.productmix = BusiaCharts.donutChart(ctx, labels, values, { legendPos: 'bottom' });
+    charts.productmix = BusiaCharts.donutChart(ctx, labels, values, {
+        legendPos: 'bottom',
+        emptyTitle: 'No sales mix yet',
+        emptyHint: 'Sell eggs, birds or feed and this shows what moves most.',
+    });
 }
 
 function renderCustomerTypes(items) {
     const labels = (items || []).map(i => i.customer_type || 'Other');
     const values = (items || []).map(i => +i.cnt || 0);
     const ctx = document.getElementById('chart-customer-types');
-    charts.customertypes = BusiaCharts.donutChart(ctx, labels, values, { legendPos: 'bottom' });
+    charts.customertypes = BusiaCharts.donutChart(ctx, labels, values, {
+        legendPos: 'bottom',
+        emptyTitle: 'No customers yet',
+        emptyHint: 'As customers register or buy, this breaks down who shops with you.',
+    });
 }
 
 function renderBirdTrend(bt) {
     const labels = (bt || []).map(b => BusiaCharts.dayLabel(b.day));
     const values = (bt || []).map(b => +b.birds || 0);
     const ctx = document.getElementById('chart-bird-trend');
-    charts.birdtrend = BusiaCharts.lineChart(ctx, labels, [{ data: values, label: 'Live Birds', color: C.green }], {});
+    charts.birdtrend = BusiaCharts.lineChart(ctx, labels, [{ data: values, label: 'Live Birds', color: C.green }], {
+        emptyTitle: 'No bird count over time',
+        emptyHint: 'Record flock numbers and mortality to track how your flock changes.',
+    });
 }
 
 function renderTopDebtors(td) {
     const labels = (td || []).map(d => d.customer_name || '');
     const values = (td || []).map(d => +d.total_owed || 0);
     const ctx = document.getElementById('chart-top-debtors');
-    charts.topdebtors = BusiaCharts.hBarChart(ctx, labels, values, { color: C.amber });
+    charts.topdebtors = BusiaCharts.hBarChart(ctx, labels, values, {
+        color: C.amber,
+        emptyTitle: 'Nobody owes you',
+        emptyHint: 'Customers who buy on credit show up here, largest balance first.',
+    });
 }
 
 function renderRevenue7d(sales) {
     const labels = (sales || []).map(s => BusiaCharts.dayLabel(s.day));
     const values = (sales || []).map(s => +s.total || 0);
     const ctx = document.getElementById('chart-revenue-7d');
-    charts.revenue7d = BusiaCharts.barChart(ctx, labels, values, { color: C.green, radius: 6 });
+    charts.revenue7d = BusiaCharts.barChart(ctx, labels, values, {
+        color: C.green, radius: 6,
+        emptyTitle: 'No orders in the last 7 days',
+        emptyHint: 'Online orders from the public website are counted here.',
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
