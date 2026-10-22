@@ -17,7 +17,7 @@ $pdo = getDB();
 
         <!-- Slide 1 -->
         <div class="swiper-slide hero-slide">
-            <img src="/Frontend/images/download (8).png" alt="Busia Chicken Farm — poultry farm overview" fetchpriority="high">
+            <img src="/Frontend/images/download (8).png" alt="Busia Chicken Farm feed products in a sunlit store room" fetchpriority="high">
             <div class="hero-scrim"></div>
             <div class="container">
                 <div class="hero-content">

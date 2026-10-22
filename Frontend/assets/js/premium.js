@@ -111,29 +111,74 @@
     /* ── Counters ────────────────────────────────────────────── */
     const counters = document.querySelectorAll('[data-counter]');
     if (counters.length) {
+
+        // Final value, so a counter can never be left showing a half-finished
+        // number if the animation is interrupted (tab hidden, user scrolls away).
+        const finalValue = (el) => {
+            const target = parseFloat(el.dataset.counter || '0');
+            const decimals = (el.dataset.decimals ? parseInt(el.dataset.decimals, 10) : 0);
+            return (el.dataset.prefix || '') + target.toFixed(decimals) + (el.dataset.suffix || '');
+        };
+
+        // Anything already on screen (or above the fold in the hero) should start
+        // immediately — a 40% threshold left the hero stats stuck on "0" because
+        // they sit at the very bottom of the viewport.
+        const runCounter = (el) => {
+            if (el.dataset.counted === '1') return;
+            el.dataset.counted = '1';
+
+            const target = parseFloat(el.dataset.counter || '0');
+            const decimals = (el.dataset.decimals ? parseInt(el.dataset.decimals, 10) : 0);
+            const prefix = el.dataset.prefix || '';
+            const suffix = el.dataset.suffix || '';
+            const duration = parseInt(el.dataset.duration || '2200', 10);
+
+            // Respect reduced-motion: land on the real number, skip the animation.
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                el.textContent = finalValue(el);
+                return;
+            }
+
+            const start = performance.now();
+            const tick = (now) => {
+                const p = Math.min((now - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - p, 4); // easeOutQuart
+                const value = target * eased;
+                el.textContent = prefix + value.toFixed(decimals) + suffix;
+                if (p < 1) {
+                    requestAnimationFrame(tick);
+                } else {
+                    el.textContent = finalValue(el);
+                }
+            };
+            requestAnimationFrame(tick);
+        };
+
         const counterObserver = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (!entry.isIntersecting) return;
-                const el = entry.target;
-                const target = parseFloat(el.dataset.counter || '0');
-                const decimals = (el.dataset.decimals ? parseInt(el.dataset.decimals, 10) : 0);
-                const prefix = el.dataset.prefix || '';
-                const suffix = el.dataset.suffix || '';
-                const duration = parseInt(el.dataset.duration || '2200', 10);
-                const start = performance.now();
-
-                const tick = (now) => {
-                    const p = Math.min((now - start) / duration, 1);
-                    const eased = 1 - Math.pow(1 - p, 4); // easeOutQuart
-                    const value = target * eased;
-                    el.textContent = prefix + value.toFixed(decimals) + suffix;
-                    if (p < 1) requestAnimationFrame(tick);
-                };
-                requestAnimationFrame(tick);
-                counterObserver.unobserve(el);
+                runCounter(entry.target);
+                counterObserver.unobserve(entry.target);
             });
-        }, { threshold: 0.4 });
-        counters.forEach((c) => counterObserver.observe(c));
+        }, { threshold: 0.15 });
+
+        counters.forEach((c) => {
+            // If it's already within the viewport when the page loads, count now.
+            const rect = c.getBoundingClientRect();
+            if (rect.top < window.innerHeight && rect.bottom > 0) {
+                runCounter(c);
+            } else {
+                counterObserver.observe(c);
+            }
+        });
+
+        // Safety net: anything still showing the placeholder after load settles
+        // gets its true value. Prevents a permanent "0" if an observer never fires.
+        window.addEventListener('load', () => {
+            counters.forEach((c) => {
+                if (c.dataset.counted !== '1') runCounter(c);
+            });
+        });
     }
 
     /* ── Parallax drift on [data-parallax] images ────────────── */

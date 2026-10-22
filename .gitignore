@@ -62,9 +62,19 @@ error_log
 Backend/config/database.local.php
 
 # Sensitive files
+# Scope these to real secret material instead of matching any filename that
+# happens to contain the word. A bare *password* also swallowed the legitimate
+# Frontend/pages/forgot-password.php page, so it never reached the live site.
 *secret*
-*password*
+*password*.txt
+*password*.json
+*password*.sql
+*password*.env
 credentials.json
+# One-time admin password-reset utility — never ship this to the live host.
+update_admin_password.php
+# ...but the password-recovery page is real source, not a secret.
+!Frontend/pages/forgot-password.php
 
 # Documentation and notes (local only)
 QUICK_START.txt
