@@ -3,12 +3,14 @@
 # To make changes to this file, use the cPanel MultiPHP INI Editor (Home >> Software >> MultiPHP INI Editor)
 # For more information, read our documentation (https://go.cpanel.net/EA4ModifyINI)
 <IfModule php8_module>
-php_value error_log "/home/qymwtpra/logs/php.error.log"
+php_value error_log "/home/mrhzdunf/logs/php.error.log"
 php_flag log_errors On
+php_flag session.upload_progress.enabled Off
 </IfModule>
 <IfModule lsapi_module>
-php_value error_log "/home/qymwtpra/logs/php.error.log"
+php_value error_log "/home/mrhzdunf/logs/php.error.log"
 php_flag log_errors On
+php_flag session.upload_progress.enabled Off
 </IfModule>
 # END cPanel-generated php ini directives, do not edit
 
@@ -20,50 +22,95 @@ AddHandler application/x-httpd-ea-php83 .php .php8 .phtml
 # php -- END cPanel-generated handler, do not edit
 
 # ============================================================================
-# BUSIA CHICKEN FARM - CUSTOM ROUTING RULES
+# BUSIA CHICKEN FARM - ROUTING & SECURITY HARDENING
 # ============================================================================
 
 # Set default index file
 DirectoryIndex Frontend/index.php index.php index.html
 
-# Enable URL rewriting
+# Prevent directory browsing
+Options -Indexes -MultiViews
+AddDefaultCharset UTF-8
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
-    
+
+    # ----------------------------------------------------------------------
+    # 1. PHP VULNERABILITY MITIGATIONS (PHP2Shell & CVE-2024-4577)
+    # ----------------------------------------------------------------------
+    # Block PHP-CGI Argument Injection (CVE-2024-4577)
+    RewriteCond %{QUERY_STRING} (%ad|%2d|-)[dDsSnpv] [NC,OR]
+    RewriteCond %{QUERY_STRING} (auto_prepend_file|allow_url_include|auto_append_file) [NC,OR]
+    RewriteCond %{QUERY_STRING} (php:\/\/input|php:\/\/filter|phar:\/\/|data:\/\/) [NC]
+    RewriteRule .* - [F,L]
+
+    # Block PHP2Shell multipart session upload progress abuse (CVE-2026-109619)
+    RewriteCond %{HTTP:Content-Type} multipart/form-data [NC]
+    RewriteCond %{HTTP:Cookie} PHP_SESSION_UPLOAD_PROGRESS [NC,OR]
+    RewriteCond %{QUERY_STRING} PHP_SESSION_UPLOAD_PROGRESS [NC]
+    RewriteRule .* - [F,L]
+
+    # ----------------------------------------------------------------------
+    # 2. APPLICATION ROUTING
+    # ----------------------------------------------------------------------
     # Redirect root to Frontend homepage
     RewriteRule ^$ Frontend/index.php [L]
     RewriteRule ^index\.php$ Frontend/index.php [L]
-    
+
+    # Admin quick shortcut: /admin or /busiaadmin -> /Frontend/admin/login.php
+    RewriteRule ^admin/?$ Frontend/admin/login.php [R=302,L]
+    RewriteRule ^busiaadmin\.php$ Frontend/admin/login.php [R=302,L]
+
     # Allow direct access to Backend API
     RewriteRule ^Backend/ - [L]
-    
+
     # Allow direct access to Frontend
     RewriteRule ^Frontend/ - [L]
 </IfModule>
 
-# Security Settings
-Options -Indexes
-AddDefaultCharset UTF-8
-
-# Block access to sensitive files
-<FilesMatch "\.(env|git|gitignore|md|sql|log)$">
-    Order allow,deny
-    Deny from all
+# ----------------------------------------------------------------------
+# 3. BLOCK ACCESS TO SENSITIVE FILES AND FOLDERS
+# ----------------------------------------------------------------------
+<FilesMatch "(^\.|\.(env|git|gitignore|md|sql|log|bak|conf|ini|sh|yaml|yml))$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
 </FilesMatch>
 
-# Block access to setup script (after initial setup)
-# <Files "setup_database.php">
-#     Order allow,deny
-#     Deny from all
-# </Files>
+# Block access to database config directly
+<Files "database.local.php">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Files>
 
-# Enable GZIP Compression
+# ----------------------------------------------------------------------
+# 4. HTTP SECURITY HEADERS
+# ----------------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+# ----------------------------------------------------------------------
+# 5. GZIP COMPRESSION & CACHING
+# ----------------------------------------------------------------------
 <IfModule mod_deflate.c>
     AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
 </IfModule>
 
-# Browser Caching
 <IfModule mod_expires.c>
     ExpiresActive On
     ExpiresByType image/jpg "access plus 1 year"
@@ -74,16 +121,4 @@ AddDefaultCharset UTF-8
     ExpiresByType text/css "access plus 1 month"
     ExpiresByType application/javascript "access plus 1 month"
     ExpiresByType text/javascript "access plus 1 month"
-    ExpiresByType application/pdf "access plus 1 month"
-    ExpiresByType image/x-icon "access plus 1 year"
 </IfModule>
-
-# Security Headers
-<IfModule mod_headers.c>
-    Header set X-Content-Type-Options "nosniff"
-    Header set X-Frame-Options "SAMEORIGIN"
-    Header set X-XSS-Protection "1; mode=block"
-    Header set Referrer-Policy "strict-origin-when-cross-origin"
-</IfModule>
-
-# END BUSIA CHICKEN FARM CUSTOM RULES

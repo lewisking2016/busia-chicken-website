@@ -159,11 +159,11 @@ $total_amount = $subtotal + $delivery_charge;
                             <div style="position: relative;">
                             <?php
                                 $fallbackImage = match($p['product_type'] ?? 'feed') {
-                                    'feed' => '/Frontend/images/Growers Mash.png',
-                                    'eggs' => '/Frontend/images/download (3).png',
-                                    'chicks' => '/Frontend/images/download (7).png',
-                                    'live_chicken' => '/Frontend/images/download (4).png',
-                                    default => '/Frontend/images/Chick Starter Crumbs.png'
+                                    'feed' => '/Frontend/images/poultry-feed.jpg',
+                                    'eggs' => '/Frontend/images/farm-fresh-eggs.jpg',
+                                    'chicks' => '/Frontend/images/day-old-chicks.jpg',
+                                    'live_chicken' => '/Frontend/images/broiler-chickens.jpg',
+                                    default => '/Frontend/images/farm-exterior.jpg'
                                 };
                             ?>
                             <img src="<?php echo $p['image_url'] ?: $fallbackImage; ?>" style="width: 56px; height: 56px; border-radius: 4px; object-fit: cover; border: 1px solid var(--gray-200);">
@@ -236,10 +236,10 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
         
         if (result.success) {
             // Success - show confirmation
-            BusiaApp.showNotification('Order placed successfully!', 'success');
+            BusiaApp.showNotification(result.message || 'Order placed successfully!', 'success');
             setTimeout(() => {
                 window.location.href = '/Frontend/pages/confirmation.php';
-            }, 1500);
+            }, 2000);
         } else {
             BusiaApp.showNotification(result.message || 'Checkout failed', 'error');
             submitBtn.disabled = false;

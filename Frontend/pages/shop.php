@@ -98,11 +98,11 @@ $products = loadDisplayProducts($pdo);
                             $img = $product['img'] ?? '';
                             if (!$img) {
                                 $img = match($product['product_type'] ?? 'feed') {
-                                    'feed' => '/Frontend/images/Growers Mash.png',
-                                    'eggs' => '/Frontend/images/download (3).png',
-                                    'chicks' => '/Frontend/images/download (7).png',
-                                    'live_chicken' => '/Frontend/images/download (4).png',
-                                    default => '/Frontend/images/Chick Starter Crumbs.png'
+                                    'feed' => '/Frontend/images/poultry-feed.jpg',
+                                    'eggs' => '/Frontend/images/farm-fresh-eggs.jpg',
+                                    'chicks' => '/Frontend/images/day-old-chicks.jpg',
+                                    'live_chicken' => '/Frontend/images/broiler-chickens.jpg',
+                                    default => '/Frontend/images/farm-exterior.jpg'
                                 };
                             }
                             $stock = $product['stock_quantity'] ?? 0;

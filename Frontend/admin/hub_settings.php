@@ -14,7 +14,7 @@ if (empty($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'super_admin') 
 }
 
 $tab = $_GET['tab'] ?? 'calendar';
-$validTabs = ['calendar','dropdowns','settings','logs'];
+$validTabs = ['calendar','dropdowns','settings','logs','mpesa'];
 if (!in_array($tab, $validTabs, true)) $tab = 'calendar';
 
 $pdo = getDB();
@@ -45,10 +45,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
         }
         $tab = 'settings';
     }
+
+    /* Save M-Pesa settings */
+    if ($postAction === 'save_mpesa') {
+        $mpesaFields = [
+            'mpesa_consumer_key', 'mpesa_consumer_secret',
+            'mpesa_shortcode', 'mpesa_passkey',
+            'mpesa_environment', 'mpesa_transaction_type'
+        ];
+        try {
+            foreach ($mpesaFields as $field) {
+                $val = trim($_POST[$field] ?? '');
+                $stmt = $pdo->prepare('SELECT id FROM settings WHERE setting_key=?');
+                $stmt->execute([$field]);
+                if ($stmt->fetchColumn()) {
+                    $pdo->prepare('UPDATE settings SET setting_value=? WHERE setting_key=?')->execute([$val, $field]);
+                } else {
+                    $pdo->prepare('INSERT INTO settings (setting_key,setting_value) VALUES (?,?)')->execute([$field, $val]);
+                }
+            }
+            $message = 'M-Pesa settings saved successfully.';
+            if (function_exists('logActivity')) {
+                logActivity($pdo, 'save', 'settings', 'M-Pesa credentials updated', null, 'setting');
+            }
+        } catch (Exception $e) { $error_message = $e->getMessage(); }
+        $tab = 'mpesa';
+    }
 }
 
 /* ── Load tab data ─────────────────────────────────── */
 $settingsList = $logsList = $tasksDue = [];
+$mpesaSettings = [];
 
 if ($pdo) {
     try {
@@ -59,8 +86,11 @@ if ($pdo) {
             $logsList = $pdo->query('SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 200')->fetchAll(PDO::FETCH_ASSOC);
         }
         if ($tab === 'calendar') {
-            // Tasks with due dates for the calendar
             $tasksDue = $pdo->query("SELECT t.*, CONCAT(COALESCE(u.first_name,''),' ',COALESCE(u.last_name,'')) AS assigned_name FROM tasks t LEFT JOIN users u ON t.assigned_to=u.id WHERE t.due_date IS NOT NULL AND t.status NOT IN ('Completed','Cancelled') ORDER BY t.due_date ASC LIMIT 50")->fetchAll(PDO::FETCH_ASSOC);
+        }
+        if ($tab === 'mpesa') {
+            $rows = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'mpesa_%'")->fetchAll(PDO::FETCH_KEY_PAIR);
+            $mpesaSettings = $rows;
         }
     } catch (Exception $e) { /* non-fatal */ }
 }
@@ -69,6 +99,7 @@ $tabs = [
     'calendar'  => ['icon' => 'calendar',         'label' => 'Calendar'],
     'dropdowns' => ['icon' => 'list-filter',       'label' => 'Dropdowns'],
     'settings'  => ['icon' => 'sliders-horizontal','label' => 'App Settings'],
+    'mpesa'     => ['icon' => 'smartphone',        'label' => 'M-Pesa Setup'],
     'logs'      => ['icon' => 'terminal',          'label' => 'System Logs'],
 ];
 ?>
@@ -390,5 +421,181 @@ async function confirmDelete() {
     btn.disabled = false;
 }
 </script>
+
+<?php if ($tab === 'mpesa'): ?>
+<?php
+$mv = function(string $k) use ($mpesaSettings): string {
+    return htmlspecialchars($mpesaSettings[$k] ?? '', ENT_QUOTES, 'UTF-8');
+};
+$env  = $mpesaSettings['mpesa_environment']     ?? 'sandbox';
+$type = $mpesaSettings['mpesa_transaction_type'] ?? 'CustomerPayBillOnline';
+?>
+<div style="max-width:760px;">
+    <!-- Setup guide card -->
+    <div class="admin-card" style="margin-bottom:20px;background:linear-gradient(135deg,#e8f5e9,#f0fdf4);border:1px solid #bbf7d0;">
+        <h3 style="margin:0 0 12px;font-family:'Outfit',sans-serif;font-size:1.05rem;color:#166534;display:flex;align-items:center;gap:8px;">
+            <i data-lucide="book-open" style="width:18px;height:18px;"></i> How to get your M-Pesa credentials
+        </h3>
+        <ol style="margin:0;padding-left:18px;color:#166534;font-size:0.88rem;line-height:1.9;">
+            <li>Go to <a href="https://developer.safaricom.co.ke" target="_blank" style="color:#15803d;font-weight:600;">developer.safaricom.co.ke</a> and create a free account.</li>
+            <li>Click <strong>My Apps</strong> → <strong>Add a New App</strong> → give it any name (e.g. "Busia Farm").</li>
+            <li>Tick <strong>Lipa na M-Pesa Online</strong> (STK Push) and save.</li>
+            <li>Open your app — you will see your <strong>Consumer Key</strong> and <strong>Consumer Secret</strong>. Copy them here.</li>
+            <li>For sandbox testing, the Shortcode is <code style="background:#dcfce7;padding:1px 6px;border-radius:4px;">174379</code> and Passkey is provided on the Daraja portal under <em>Test Credentials</em>.</li>
+            <li>For live (production), Safaricom sends your real Shortcode and Passkey by email after you go live.</li>
+        </ol>
+        <p style="margin:12px 0 0;font-size:0.82rem;color:#166534;">
+            <i data-lucide="shield-check" style="width:13px;height:13px;display:inline;vertical-align:middle;"></i>
+            Your credentials are stored only in your database — they are never committed to GitHub.
+        </p>
+    </div>
+
+    <!-- Credentials form -->
+    <div class="admin-card">
+        <h3 style="margin:0 0 20px;font-family:'Outfit',sans-serif;font-size:1.1rem;display:flex;align-items:center;gap:8px;">
+            <i data-lucide="smartphone" style="width:18px;height:18px;color:var(--admin-primary);"></i>
+            M-Pesa Daraja API Credentials
+        </h3>
+        <form method="POST" id="mpesa-form">
+            <input type="hidden" name="_action" value="save_mpesa">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div>
+                    <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:6px;color:#374151;">Consumer Key *</label>
+                    <input type="text" name="mpesa_consumer_key" value="<?php echo $mv('mpesa_consumer_key'); ?>"
+                           placeholder="e.g. AbCdEfGhIjKlMnOpQrStUvWxYz..."
+                           style="width:100%;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.9rem;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:6px;color:#374151;">Consumer Secret *</label>
+                    <input type="password" name="mpesa_consumer_secret" value="<?php echo $mv('mpesa_consumer_secret'); ?>"
+                           placeholder="Your Consumer Secret"
+                           style="width:100%;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.9rem;">
+                    <button type="button" onclick="togglePwd(this)" style="margin-top:4px;background:none;border:none;color:#64748b;font-size:0.78rem;cursor:pointer;padding:0;">Show / Hide</button>
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:6px;color:#374151;">Business Shortcode *</label>
+                    <input type="text" name="mpesa_shortcode" value="<?php echo $mv('mpesa_shortcode'); ?>"
+                           placeholder="e.g. 174379 (sandbox) or your real Paybill"
+                           style="width:100%;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.9rem;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:6px;color:#374151;">Passkey *</label>
+                    <input type="password" name="mpesa_passkey" value="<?php echo $mv('mpesa_passkey'); ?>"
+                           placeholder="Your M-Pesa Online Passkey"
+                           style="width:100%;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.9rem;">
+                    <button type="button" onclick="togglePwd(this)" style="margin-top:4px;background:none;border:none;color:#64748b;font-size:0.78rem;cursor:pointer;padding:0;">Show / Hide</button>
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:6px;color:#374151;">Environment *</label>
+                    <select name="mpesa_environment" style="width:100%;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.9rem;">
+                        <option value="sandbox" <?php echo $env==='sandbox'?'selected':''; ?>>🧪 Sandbox (Testing)</option>
+                        <option value="production" <?php echo $env==='production'?'selected':''; ?>>🚀 Production (Live)</option>
+                    </select>
+                    <p style="margin:4px 0 0;font-size:0.78rem;color:#64748b;">Use Sandbox while testing. Switch to Production when going live.</p>
+                </div>
+                <div>
+                    <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:6px;color:#374151;">Transaction Type *</label>
+                    <select name="mpesa_transaction_type" style="width:100%;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:0.9rem;">
+                        <option value="CustomerPayBillOnline" <?php echo $type==='CustomerPayBillOnline'?'selected':''; ?>>Paybill (CustomerPayBillOnline)</option>
+                        <option value="CustomerBuyGoodsOnline" <?php echo $type==='CustomerBuyGoodsOnline'?'selected':''; ?>>Buy Goods / Till (CustomerBuyGoodsOnline)</option>
+                    </select>
+                    <p style="margin:4px 0 0;font-size:0.78rem;color:#64748b;">Use Paybill if you have a Paybill number. Use Buy Goods if you have a Till number.</p>
+                </div>
+            </div>
+
+            <!-- Callback URL info -->
+            <div style="margin-top:20px;padding:14px 16px;background:#f8fafc;border:1px solid var(--admin-border);border-radius:8px;">
+                <p style="margin:0 0 4px;font-size:0.85rem;font-weight:600;color:#374151;"><i data-lucide="link" style="width:14px;height:14px;display:inline;vertical-align:middle;"></i> Your M-Pesa Callback URL</p>
+                <code style="font-size:0.82rem;color:#1B5E20;word-break:break-all;">
+                    https://new.decapoli.co.ke/Backend/api/mpesa-callback.php
+                </code>
+                <p style="margin:6px 0 0;font-size:0.78rem;color:#64748b;">Copy this URL and paste it in your Daraja app as the Callback URL when registering for production.</p>
+            </div>
+
+            <div style="margin-top:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="save" style="width:15px;height:15px;"></i> Save M-Pesa Settings
+                </button>
+                <button type="button" class="btn btn-outline" onclick="testMpesaConnection()" id="test-mpesa-btn">
+                    <i data-lucide="zap" style="width:15px;height:15px;"></i> Test Connection
+                </button>
+                <span id="test-mpesa-result" style="font-size:0.85rem;"></span>
+            </div>
+        </form>
+    </div>
+
+    <!-- Recent M-Pesa transactions -->
+    <div class="admin-card" style="margin-top:20px;">
+        <h3 style="margin:0 0 16px;font-family:'Outfit',sans-serif;font-size:1.05rem;">
+            <i data-lucide="credit-card" style="width:16px;height:16px;display:inline;vertical-align:middle;color:var(--admin-primary);"></i>
+            Recent M-Pesa Transactions
+        </h3>
+        <?php
+        $mpesaTxns = [];
+        if ($pdo) {
+            try {
+                $mpesaTxns = $pdo->query("SELECT mt.*, o.order_number FROM mpesa_transactions mt LEFT JOIN orders o ON mt.order_id=o.id ORDER BY mt.created_at DESC LIMIT 20")->fetchAll(PDO::FETCH_ASSOC);
+            } catch (Exception $e) {}
+        }
+        ?>
+        <?php if (empty($mpesaTxns)): ?>
+        <p style="text-align:center;color:#64748b;padding:20px;">No M-Pesa transactions yet.</p>
+        <?php else: ?>
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead><tr><th>Order</th><th>Phone</th><th>Amount</th><th>Receipt</th><th>Status</th><th>Date</th></tr></thead>
+                <tbody>
+                <?php foreach ($mpesaTxns as $tx): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($tx['order_number'] ?? '#'.$tx['order_id'], ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td><?php echo htmlspecialchars($tx['phone_number'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                    <td>KES <?php echo number_format((float)($tx['amount'] ?? 0)); ?></td>
+                    <td><code style="font-size:0.78rem;"><?php echo htmlspecialchars($tx['mpesa_receipt_number'] ?? '—', ENT_QUOTES, 'UTF-8'); ?></code></td>
+                    <td>
+                        <?php
+                        $st = $tx['status'] ?? 'pending';
+                        $stClass = $st === 'completed' ? 'badge-pill-success' : ($st === 'failed' ? 'badge-pill-danger' : 'badge-pill-warning');
+                        ?>
+                        <span class="badge-pill <?php echo $stClass; ?>"><?php echo ucfirst($st); ?></span>
+                    </td>
+                    <td style="font-size:0.82rem;color:#64748b;"><?php echo htmlspecialchars(substr($tx['created_at'] ?? '', 0, 16), ENT_QUOTES, 'UTF-8'); ?></td>
+                </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<script>
+function togglePwd(btn) {
+    const inp = btn.previousElementSibling;
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+async function testMpesaConnection() {
+    const btn = document.getElementById('test-mpesa-btn');
+    const result = document.getElementById('test-mpesa-result');
+    btn.disabled = true;
+    result.textContent = 'Testing...';
+    result.style.color = '#64748b';
+    try {
+        const res = await fetch('/Backend/api/mpesa-test.php', { method: 'POST' });
+        const j = await res.json();
+        if (j.success) {
+            result.textContent = '✅ ' + j.message;
+            result.style.color = '#16a34a';
+        } else {
+            result.textContent = '❌ ' + j.message;
+            result.style.color = '#dc2626';
+        }
+    } catch (e) {
+        result.textContent = '❌ Could not reach test endpoint: ' + e.message;
+        result.style.color = '#dc2626';
+    }
+    btn.disabled = false;
+}
+</script>
+<?php endif; ?>
 
 <?php include __DIR__ . '/includes/admin_footer.php'; ?>

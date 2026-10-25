@@ -80,14 +80,39 @@ $order = $_SESSION['last_order'];
                 </div>
             </div>
             
-            <?php if ($order['payment_method'] === 'mpesa'): ?>
-                <div style="background-color: #EFF6FF; border: 1px solid #BFDBFE; border-radius: var(--radius-sm); padding: var(--space-lg); margin-bottom: var(--space-2xl); text-align: left; display: flex; gap: var(--space-md); align-items: flex-start;">
-                    <i data-lucide="info" style="color: #3B82F6; width: 24px; height: 24px; flex-shrink: 0;"></i>
+            <?php if ($order['payment_method'] === 'mpesa'): 
+                $pdoConf = getDB();
+                $mpesaShortcode = '174379';
+                $mpesaType = 'CustomerPayBillOnline';
+                if ($pdoConf) {
+                    try {
+                        $sRows = $pdoConf->query("SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('mpesa_shortcode', 'mpesa_transaction_type')")->fetchAll(PDO::FETCH_KEY_PAIR);
+                        if (!empty($sRows['mpesa_shortcode'])) $mpesaShortcode = $sRows['mpesa_shortcode'];
+                        if (!empty($sRows['mpesa_transaction_type'])) $mpesaType = $sRows['mpesa_transaction_type'];
+                    } catch (Exception $e) {}
+                }
+                $isBuyGoods = ($mpesaType === 'CustomerBuyGoodsOnline');
+            ?>
+                <div style="background-color: #ECFDF5; border: 1px solid #A7F3D0; border-radius: var(--radius-sm); padding: var(--space-lg); margin-bottom: var(--space-2xl); text-align: left; display: flex; gap: var(--space-md); align-items: flex-start;">
+                    <i data-lucide="smartphone" style="color: #059669; width: 24px; height: 24px; flex-shrink: 0;"></i>
                     <div>
-                        <h4 style="color: #1D4ED8; margin-bottom: 8px;">M-Pesa Payment Instructions</h4>
-                        <p style="color: #1E3A8A; font-size: 0.95rem; margin: 0;">
-                            Please go to your M-Pesa menu, select Lipa na M-Pesa, Paybill, enter Business Number <strong>123456</strong>, Account Number <strong><?php echo htmlspecialchars($order['order_number']); ?></strong>, and Amount <strong>KES <?php echo number_format((float)$order['total_amount'], 0); ?></strong>.
+                        <h4 style="color: #065F46; margin-bottom: 8px;">M-Pesa Payment Details</h4>
+                        <?php if ($isBuyGoods): ?>
+                        <p style="color: #064E3B; font-size: 0.95rem; margin: 0 0 6px;">
+                            Go to M-Pesa &rarr; <strong>Lipa na M-Pesa</strong> &rarr; <strong>Buy Goods and Services</strong>:
                         </p>
+                        <p style="color: #064E3B; font-size: 0.95rem; margin: 0;">
+                            Till Number: <strong><?php echo htmlspecialchars($mpesaShortcode); ?></strong> &bull; Amount: <strong>KES <?php echo number_format((float)$order['total_amount'], 0); ?></strong>
+                        </p>
+                        <?php else: ?>
+                        <p style="color: #064E3B; font-size: 0.95rem; margin: 0 0 6px;">
+                            Go to M-Pesa &rarr; <strong>Lipa na M-Pesa</strong> &rarr; <strong>Paybill</strong>:
+                        </p>
+                        <p style="color: #064E3B; font-size: 0.95rem; margin: 0;">
+                            Business No: <strong><?php echo htmlspecialchars($mpesaShortcode); ?></strong> &bull; Account No: <strong><?php echo htmlspecialchars($order['order_number']); ?></strong> &bull; Amount: <strong>KES <?php echo number_format((float)$order['total_amount'], 0); ?></strong>
+                        </p>
+                        <?php endif; ?>
+                        <p style="margin: 8px 0 0; font-size: 0.82rem; color: #047857;">If an STK prompt appeared on your phone, enter your PIN to complete payment automatically.</p>
                     </div>
                 </div>
             <?php elseif ($order['payment_method'] === 'bank'): ?>

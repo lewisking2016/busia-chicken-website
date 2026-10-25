@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS mpesa_transactions (
     mpesa_receipt_number VARCHAR(50),
     transaction_date TIMESTAMP NULL,
     phone_number VARCHAR(15),
-    status ENUM('initiated', 'completed', 'failed') DEFAULT 'initiated',
+    status ENUM('initiated', 'pending', 'completed', 'failed') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;

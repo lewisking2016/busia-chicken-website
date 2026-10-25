@@ -35,7 +35,7 @@ function getFallbackProducts(): array
             'product_type' => 'live_chicken',
             'price' => 450,
             'stock_quantity' => 50,
-            'image_url' => '/Frontend/images/download (4).png',
+            'image_url' => '/Frontend/images/broiler-chickens.jpg',
             'is_featured' => 1,
         ],
         [
@@ -46,7 +46,7 @@ function getFallbackProducts(): array
             'product_type' => 'eggs',
             'price' => 420,
             'stock_quantity' => 100,
-            'image_url' => '/Frontend/images/download (3).png',
+            'image_url' => '/Frontend/images/farm-fresh-eggs.jpg',
             'is_featured' => 1,
         ],
         [
@@ -57,7 +57,7 @@ function getFallbackProducts(): array
             'product_type' => 'chicks',
             'price' => 80,
             'stock_quantity' => 1000,
-            'image_url' => '/Frontend/images/download (7).png',
+            'image_url' => '/Frontend/images/day-old-chicks.jpg',
             'is_featured' => 1,
         ],
         [

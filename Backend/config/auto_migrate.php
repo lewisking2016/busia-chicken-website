@@ -230,6 +230,14 @@ function reconcileLegacySchema(PDO $pdo): void
             $pdo->exec('ALTER TABLE bulk_sales ' . implode(', ', $add));
         }
     }
+
+    // ── mpesa_transactions.status — ensure 'pending' is supported
+    if (tableExists($pdo, 'mpesa_transactions')) {
+        $col = $pdo->query("SHOW COLUMNS FROM mpesa_transactions LIKE 'status'")->fetch(PDO::FETCH_ASSOC);
+        if ($col && str_contains($col['Type'] ?? '', 'enum') && !str_contains($col['Type'], 'pending')) {
+            $pdo->exec("ALTER TABLE mpesa_transactions MODIFY status ENUM('initiated','pending','completed','failed') DEFAULT 'pending'");
+        }
+    }
 }
 
 /**

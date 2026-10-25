@@ -289,4 +289,43 @@ function getFlashMessage(): ?array
     return $message;
 }
 
-?>
+/**
+ * PHP Vulnerability Shield
+ * Runtime mitigation for PHP2Shell (CVE-2026-109618, CVE-2026-109619)
+ * and PHP-CGI Argument Injection (CVE-2024-4577).
+ */
+function applyPhpSecurityGuard(): void
+{
+    // 1. Mitigate PHP2Shell (CVE-2026-109619 use-after-free via session upload progress)
+    if (ini_get('session.upload_progress.enabled')) {
+        @ini_set('session.upload_progress.enabled', '0');
+    }
+
+    // 2. Mitigate CVE-2024-4577 & argument injection in query string
+    $queryString = $_SERVER['QUERY_STRING'] ?? '';
+    if (!empty($queryString)) {
+        if (preg_match('/(%ad|%2d|-)[dDsSnpv]|auto_prepend_file|allow_url_include|php:\/\/input/i', $queryString)) {
+            http_response_code(403);
+            die('Access Denied: Malformed or malicious query string detected.');
+        }
+    }
+
+    // 3. Block stream wrapper abuse in URI
+    $uri = $_SERVER['REQUEST_URI'] ?? '';
+    if (preg_match('/(php|phar|data|expect|glob|zip):\/\//i', $uri)) {
+        http_response_code(403);
+        die('Access Denied: Stream wrapper exploitation detected.');
+    }
+
+    // 4. Send defense-in-depth security headers
+    if (!headers_sent()) {
+        header('X-Content-Type-Options: nosniff');
+        header('X-Frame-Options: SAMEORIGIN');
+        header('X-XSS-Protection: 1; mode=block');
+        header('Referrer-Policy: strict-origin-when-cross-origin');
+    }
+}
+
+// Apply runtime security guard immediately
+applyPhpSecurityGuard();
+

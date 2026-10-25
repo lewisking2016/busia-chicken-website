@@ -1,75 +1,96 @@
 <?php
 /**
  * M-Pesa Payment Callback Handler
- * Receives and processes Safaricom Daraja API callbacks
+ * Receives async result from Safaricom Daraja after STK Push.
+ * Updates order status and mpesa_transactions table automatically.
  */
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/security.php';
 
-// Log all incoming requests
+// Always respond 200 to Safaricom immediately
+http_response_code(200);
+header('Content-Type: application/json');
+
 $input = file_get_contents('php://input');
-error_log('[M-Pesa Callback] Raw input: ' . $input);
+error_log('[M-Pesa Callback] Raw: ' . $input);
 
 try {
     $data = json_decode($input, true);
-
     if ($data === null) {
         throw new Exception('Invalid JSON received');
     }
 
-    $result_code = (int)($data['Body']['stkCallback']['ResultCode'] ?? 1);
-    $merchant_request_id = $data['Body']['stkCallback']['MerchantRequestID'] ?? '';
-    $checkout_request_id = $data['Body']['stkCallback']['CheckoutRequestID'] ?? '';
-    $result_desc = $data['Body']['stkCallback']['ResultDesc'] ?? '';
+    $callback         = $data['Body']['stkCallback'] ?? [];
+    $resultCode       = (int)($callback['ResultCode']       ?? 1);
+    $merchantReqId    = $callback['MerchantRequestID']      ?? '';
+    $checkoutReqId    = $callback['CheckoutRequestID']      ?? '';
+    $resultDesc       = $callback['ResultDesc']             ?? '';
 
-    // Handle successful payment
-    if ($result_code === 0) {
-        $callback_metadata = $data['Body']['stkCallback']['CallbackMetadata']['Item'] ?? [];
-        $mpesa_data = [];
+    $pdo = getDatabaseConnection();
 
-        foreach ($callback_metadata as $item) {
-            $key = $item['Name'] ?? '';
-            $value = $item['Value'] ?? '';
-            $mpesa_data[$key] = $value;
+    if ($resultCode === 0) {
+        // ── Payment successful — extract metadata ──────────────────
+        $items = $callback['CallbackMetadata']['Item'] ?? [];
+        $meta  = [];
+        foreach ($items as $item) {
+            $meta[$item['Name'] ?? ''] = $item['Value'] ?? '';
         }
 
-        $amount = (int)($mpesa_data['Amount'] ?? 0);
-        $mpesa_receipt = $mpesa_data['MpesaReceiptNumber'] ?? '';
-        $transaction_date = $mpesa_data['TransactionDate'] ?? '';
-        $phone_number = $mpesa_data['PhoneNumber'] ?? '';
+        $mpesaReceipt   = (string)($meta['MpesaReceiptNumber'] ?? '');
+        $amount         = (int)($meta['Amount']                ?? 0);
+        $phone          = (string)($meta['PhoneNumber']        ?? '');
+        $transactionDate = (string)($meta['TransactionDate']   ?? '');
 
-        // TODO: Update order status in database
-        logSecurityEvent(
-            "M-Pesa payment successful: Amount={$amount}, Receipt={$mpesa_receipt}, Phone={$phone_number}",
-            'INFO'
-        );
+        // Update mpesa_transactions row
+        $pdo->prepare("UPDATE mpesa_transactions
+                        SET status = 'completed',
+                            mpesa_receipt_number = ?,
+                            phone_number = ?,
+                            amount = ?,
+                            updated_at = NOW()
+                        WHERE checkout_request_id = ?")
+            ->execute([$mpesaReceipt, $phone, $amount, $checkoutReqId]);
 
-        $response = [
-            'ResultCode' => 0,
-            'ResultDesc' => 'Payment received successfully'
-        ];
+        // Find the linked order and mark it paid
+        $tx = $pdo->prepare("SELECT order_id FROM mpesa_transactions WHERE checkout_request_id = ?");
+        $tx->execute([$checkoutReqId]);
+        $row = $tx->fetch(PDO::FETCH_ASSOC);
+
+        if ($row && $row['order_id']) {
+            $pdo->prepare("UPDATE orders SET status = 'confirmed', payment_status = 'paid', updated_at = NOW() WHERE id = ?")
+                ->execute([$row['order_id']]);
+
+            // Also write a payment record
+            $pdo->prepare("INSERT IGNORE INTO mpesa_transactions
+                (order_id, checkout_request_id, merchant_request_id, mpesa_receipt_number,
+                 phone_number, amount, status, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, 'completed', NOW(), NOW())
+                ON DUPLICATE KEY UPDATE
+                    status = 'completed', mpesa_receipt_number = ?, updated_at = NOW()")
+                ->execute([
+                    $row['order_id'], $checkoutReqId, $merchantReqId,
+                    $mpesaReceipt, $phone, $amount, $mpesaReceipt
+                ]);
+        }
+
+        logSecurityEvent("M-Pesa payment SUCCESS: Receipt={$mpesaReceipt}, Amount={$amount}, Phone={$phone}", 'INFO');
+        echo json_encode(['ResultCode' => 0, 'ResultDesc' => 'Payment processed successfully']);
+
     } else {
-        // Payment failed
-        logSecurityEvent(
-            "M-Pesa payment failed: Result={$result_code}, Description={$result_desc}",
-            'WARNING'
-        );
+        // ── Payment failed or cancelled ─────────────────────────────
+        $pdo->prepare("UPDATE mpesa_transactions
+                        SET status = 'failed', result_desc = ?, updated_at = NOW()
+                        WHERE checkout_request_id = ?")
+            ->execute([$resultDesc, $checkoutReqId]);
 
-        $response = [
-            'ResultCode' => 1,
-            'ResultDesc' => 'Payment failed: ' . $result_desc
-        ];
+        logSecurityEvent("M-Pesa payment FAILED: Code={$resultCode}, Desc={$resultDesc}", 'WARNING');
+        echo json_encode(['ResultCode' => 0, 'ResultDesc' => 'Callback received']);
     }
 
-    // Send response back to M-Pesa
-    header('Content-Type: application/json');
-    echo json_encode($response);
-
 } catch (Exception $e) {
+    error_log('[M-Pesa Callback ERROR] ' . $e->getMessage());
     logSecurityEvent('M-Pesa callback error: ' . $e->getMessage(), 'ERROR');
-    http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode(['ResultCode' => 0, 'ResultDesc' => 'Acknowledged']);
 }
-?>

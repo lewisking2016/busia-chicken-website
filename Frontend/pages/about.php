@@ -11,7 +11,7 @@ include '../includes/header.php';
 ?>
 
 <!-- Page Hero -->
-<section class="page-hero" style="background-image:url('/Frontend/images/download (2).png');">
+<section class="page-hero" style="background-image:url('/Frontend/images/farm-exterior.jpg');">
     <div class="container">
         <nav class="breadcrumb" data-reveal="fade"><a href="/">Home</a><span class="sep">/</span><span>About</span></nav>
         <h1 data-reveal="fade" data-reveal-delay="100">About <em>Busia Chicken Farm</em></h1>
@@ -35,7 +35,7 @@ include '../includes/header.php';
         </div>
         <div data-reveal="right">
             <div class="img-frame frame-gold">
-                <img src="/Frontend/images/download (3).png" alt="Busia Chicken Farm — fresh eggs" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.05">
+                <img src="/Frontend/images/layer-hens-eggs.jpg" alt="Busia Chicken Farm — layer hens and fresh eggs" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.05">
             </div>
         </div>
     </div>

@@ -79,7 +79,7 @@ $inStock = ($product['stock_quantity'] ?? 0) > 0;
         
         <!-- Left: Image Box -->
         <div style="background: #f8fafc; border-radius: var(--radius-lg); padding: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.05); min-height: 380px;">
-            <img src="<?php echo htmlspecialchars($product['image_url'] ?? '/Frontend/images/download (4).png'); ?>" 
+            <img src="<?php echo htmlspecialchars($product['image_url'] ?? '/Frontend/images/broiler-chickens.jpg'); ?>" 
                  alt="<?php echo htmlspecialchars($product['name']); ?>" 
                  style="max-width: 100%; max-height: 320px; object-fit: contain; border-radius: var(--radius-md);">
         </div>

@@ -81,32 +81,32 @@ try {
     // Insert sample products
     $products = [
         // Broilers
-        ['category_id' => $chickenCatId, 'name' => 'Ross 308 Broilers', 'slug' => 'ross-308-broilers', 'product_type' => 'live_chicken', 'price' => 450, 'stock_quantity' => 50, 'description' => 'Premium fast-growing broiler breed. Excellent feed efficiency and meat quality.'],
-        ['category_id' => $chickenCatId, 'name' => 'Cobb 500 Broilers', 'slug' => 'cobb-500-broilers', 'product_type' => 'live_chicken', 'price' => 480, 'stock_quantity' => 40, 'description' => 'High-performance broilers with excellent feed conversion.'],
-        ['category_id' => $chickenCatId, 'name' => 'Hubbard Broilers', 'slug' => 'hubbard-broilers', 'product_type' => 'live_chicken', 'price' => 420, 'stock_quantity' => 60, 'description' => 'Reliable broiler breed with consistent meat quality.'],
+        ['category_id' => $chickenCatId, 'name' => 'Ross 308 Broilers', 'slug' => 'ross-308-broilers', 'product_type' => 'live_chicken', 'price' => 450, 'stock_quantity' => 50, 'image_url' => '/Frontend/images/broiler-chickens.jpg', 'description' => 'Premium fast-growing broiler breed. Excellent feed efficiency and meat quality.'],
+        ['category_id' => $chickenCatId, 'name' => 'Cobb 500 Broilers', 'slug' => 'cobb-500-broilers', 'product_type' => 'live_chicken', 'price' => 480, 'stock_quantity' => 40, 'image_url' => '/Frontend/images/broiler-chickens.jpg', 'description' => 'High-performance broilers with excellent feed conversion.'],
+        ['category_id' => $chickenCatId, 'name' => 'Hubbard Broilers', 'slug' => 'hubbard-broilers', 'product_type' => 'live_chicken', 'price' => 420, 'stock_quantity' => 60, 'image_url' => '/Frontend/images/broiler-chickens.jpg', 'description' => 'Reliable broiler breed with consistent meat quality.'],
         
-        // Layers
-        ['category_id' => $chickenCatId, 'name' => 'ISA Brown Layers', 'slug' => 'isa-brown-layers', 'product_type' => 'live_chicken', 'price' => 350, 'stock_quantity' => 45, 'description' => 'Premium brown egg layer producing 300+ eggs/year.'],
-        ['category_id' => $chickenCatId, 'name' => 'Fresh Farm Eggs (Trays)', 'slug' => 'fresh-farm-eggs', 'product_type' => 'eggs', 'price' => 420, 'stock_quantity' => 100, 'description' => 'Premium quality eggs from our layer flock. 30-egg trays.'],
-        ['category_id' => $chickenCatId, 'name' => 'Lohmann Layers', 'slug' => 'lohmann-layers', 'product_type' => 'live_chicken', 'price' => 340, 'stock_quantity' => 55, 'description' => 'White egg layers with exceptional livability.'],
+        // Layers & Eggs
+        ['category_id' => $chickenCatId, 'name' => 'ISA Brown Layers', 'slug' => 'isa-brown-layers', 'product_type' => 'live_chicken', 'price' => 350, 'stock_quantity' => 45, 'image_url' => '/Frontend/images/layer-hens-eggs.jpg', 'description' => 'Premium brown egg layer producing 300+ eggs/year.'],
+        ['category_id' => $chickenCatId, 'name' => 'Fresh Farm Eggs (Trays)', 'slug' => 'fresh-farm-eggs', 'product_type' => 'eggs', 'price' => 420, 'stock_quantity' => 100, 'image_url' => '/Frontend/images/farm-fresh-eggs.jpg', 'description' => 'Premium quality eggs from our layer flock. 30-egg trays.'],
+        ['category_id' => $chickenCatId, 'name' => 'Lohmann Layers', 'slug' => 'lohmann-layers', 'product_type' => 'live_chicken', 'price' => 340, 'stock_quantity' => 55, 'image_url' => '/Frontend/images/layer-hens-eggs.jpg', 'description' => 'White egg layers with exceptional livability.'],
         
         // Chicks
-        ['category_id' => $chickenCatId, 'name' => 'Day-Old Broiler Chicks', 'slug' => 'day-old-broiler-chicks', 'product_type' => 'chicks', 'price' => 80, 'stock_quantity' => 1000, 'description' => 'Vaccinated broiler chicks. 95%+ hatch rate.'],
-        ['category_id' => $chickenCatId, 'name' => 'Day-Old Layer Chicks', 'slug' => 'day-old-layer-chicks', 'product_type' => 'chicks', 'price' => 70, 'stock_quantity' => 800, 'description' => 'Premium layer chicks vaccinated and ready to grow.'],
-        ['category_id' => $chickenCatId, 'name' => 'Mixed Day-Old Chicks', 'slug' => 'mixed-day-old-chicks', 'product_type' => 'chicks', 'price' => 75, 'stock_quantity' => 500, 'description' => 'Combination of broiler and layer chicks.'],
+        ['category_id' => $chickenCatId, 'name' => 'Day-Old Broiler Chicks', 'slug' => 'day-old-broiler-chicks', 'product_type' => 'chicks', 'price' => 80, 'stock_quantity' => 1000, 'image_url' => '/Frontend/images/day-old-chicks.jpg', 'description' => 'Vaccinated broiler chicks. 95%+ hatch rate.'],
+        ['category_id' => $chickenCatId, 'name' => 'Day-Old Layer Chicks', 'slug' => 'day-old-layer-chicks', 'product_type' => 'chicks', 'price' => 70, 'stock_quantity' => 800, 'image_url' => '/Frontend/images/day-old-chicks.jpg', 'description' => 'Premium layer chicks vaccinated and ready to grow.'],
+        ['category_id' => $chickenCatId, 'name' => 'Mixed Day-Old Chicks', 'slug' => 'mixed-day-old-chicks', 'product_type' => 'chicks', 'price' => 75, 'stock_quantity' => 500, 'image_url' => '/Frontend/images/day-old-chicks.jpg', 'description' => 'Combination of broiler and layer chicks.'],
         
         // Feeds
-        ['category_id' => $feedCatId, 'name' => 'Starter Feed (0-4 weeks)', 'slug' => 'starter-feed', 'product_type' => 'feed', 'price' => 3200, 'stock_quantity' => 100, 'description' => 'High-protein formula for day-old chicks. 24% crude protein with probiotics.'],
-        ['category_id' => $feedCatId, 'name' => 'Grower Feed (4-8 weeks)', 'slug' => 'grower-feed', 'product_type' => 'feed', 'price' => 2800, 'stock_quantity' => 120, 'description' => 'Balanced formula for growing chicks. 20% crude protein.'],
-        ['category_id' => $feedCatId, 'name' => 'Layer Mash (16 weeks+)', 'slug' => 'layer-mash', 'product_type' => 'feed', 'price' => 2500, 'stock_quantity' => 150, 'description' => 'Premium feed for laying hens. 18% crude protein with calcium.'],
-        ['category_id' => $feedCatId, 'name' => 'Broiler Finisher (6-8 weeks)', 'slug' => 'broiler-finisher', 'product_type' => 'feed', 'price' => 2900, 'stock_quantity' => 110, 'description' => 'Final stage feed for broilers. High energy formula.'],
-        ['category_id' => $feedCatId, 'name' => 'Busia Premium Mix', 'slug' => 'busia-premium-mix', 'product_type' => 'feed', 'price' => 3100, 'stock_quantity' => 200, 'description' => 'Our signature blend. Multi-purpose feed suitable for all poultry types.'],
-        ['category_id' => $feedCatId, 'name' => 'Vitamin & Mineral Supplements', 'slug' => 'vitamin-mineral-supplements', 'product_type' => 'feed', 'price' => 1200, 'stock_quantity' => 80, 'description' => 'Complete vitamin complex and mineral pack for all poultry.'],
+        ['category_id' => $feedCatId, 'name' => 'Starter Feed (0-4 weeks)', 'slug' => 'starter-feed', 'product_type' => 'feed', 'price' => 3200, 'stock_quantity' => 100, 'image_url' => '/Frontend/images/Chick Starter Crumbs.png', 'description' => 'High-protein formula for day-old chicks. 24% crude protein with probiotics.'],
+        ['category_id' => $feedCatId, 'name' => 'Grower Feed (4-8 weeks)', 'slug' => 'grower-feed', 'product_type' => 'feed', 'price' => 2800, 'stock_quantity' => 120, 'image_url' => '/Frontend/images/Growers Mash.png', 'description' => 'Balanced formula for growing chicks. 20% crude protein.'],
+        ['category_id' => $feedCatId, 'name' => 'Layer Mash (16 weeks+)', 'slug' => 'layer-mash', 'product_type' => 'feed', 'price' => 2500, 'stock_quantity' => 150, 'image_url' => '/Frontend/images/poultry-feed.jpg', 'description' => 'Premium feed for laying hens. 18% crude protein with calcium.'],
+        ['category_id' => $feedCatId, 'name' => 'Broiler Finisher (6-8 weeks)', 'slug' => 'broiler-finisher', 'product_type' => 'feed', 'price' => 2900, 'stock_quantity' => 110, 'image_url' => '/Frontend/images/poultry-feed.jpg', 'description' => 'Final stage feed for broilers. High energy formula.'],
+        ['category_id' => $feedCatId, 'name' => 'Busia Premium Mix', 'slug' => 'busia-premium-mix', 'product_type' => 'feed', 'price' => 3100, 'stock_quantity' => 200, 'image_url' => '/Frontend/images/kienyeji mash.png', 'description' => 'Our signature blend. Multi-purpose feed suitable for all poultry types.'],
+        ['category_id' => $feedCatId, 'name' => 'Vitamin & Mineral Supplements', 'slug' => 'vitamin-mineral-supplements', 'product_type' => 'feed', 'price' => 1200, 'stock_quantity' => 80, 'image_url' => '/Frontend/images/poultry-feed.jpg', 'description' => 'Complete vitamin complex and mineral pack for all poultry.'],
     ];
 
-    $prodStmt = $pdo->prepare("INSERT IGNORE INTO products (category_id, name, slug, product_type, price, stock_quantity, description) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $prodStmt = $pdo->prepare("INSERT IGNORE INTO products (category_id, name, slug, product_type, price, stock_quantity, image_url, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
     foreach ($products as $prod) {
-        $prodStmt->execute([$prod['category_id'], $prod['name'], $prod['slug'], $prod['product_type'], $prod['price'], $prod['stock_quantity'], $prod['description']]);
+        $prodStmt->execute([$prod['category_id'], $prod['name'], $prod['slug'], $prod['product_type'], $prod['price'], $prod['stock_quantity'], $prod['image_url'], $prod['description']]);
         echo "✓ Inserted product: {$prod['name']}\n";
     }
 

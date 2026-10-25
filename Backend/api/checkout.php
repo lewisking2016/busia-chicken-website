@@ -127,18 +127,110 @@ try {
 
     // Store in session for confirmation page
     $_SESSION['last_order'] = [
+        'order_id' => $order_id,
         'order_number' => $order_number,
         'total_amount' => $total_amount,
         'payment_method' => $payment_method,
         'created_at' => date('Y-m-d H:i:s')
     ];
 
+    // Attempt M-Pesa STK push if mpesa method selected and credentials are configured
+    $mpesa_stk_sent = false;
+    if ($payment_method === 'mpesa') {
+        try {
+            $sRows = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'mpesa_%'")->fetchAll(PDO::FETCH_KEY_PAIR);
+            $cKey    = $sRows['mpesa_consumer_key']    ?? '';
+            $cSec    = $sRows['mpesa_consumer_secret'] ?? '';
+            $sCode   = $sRows['mpesa_shortcode']       ?? '';
+            $pKey    = $sRows['mpesa_passkey']         ?? '';
+            $mEnv    = $sRows['mpesa_environment']     ?? 'sandbox';
+            $tType   = $sRows['mpesa_transaction_type'] ?? 'CustomerPayBillOnline';
+
+            if ($cKey && $cSec && $sCode && $pKey) {
+                $baseUrl = ($mEnv === 'production') ? 'https://api.safaricom.co.ke' : 'https://sandbox.safaricom.co.ke';
+                $callbackUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
+                    . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')
+                    . '/Backend/api/mpesa-callback.php';
+
+                // Generate OAuth token
+                $auth = base64_encode($cKey . ':' . $cSec);
+                $ch = curl_init($baseUrl . '/oauth/v1/generate?grant_type=client_credentials');
+                curl_setopt_array($ch, [
+                    CURLOPT_HTTPHEADER     => ['Authorization: Basic ' . $auth],
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_TIMEOUT        => 10,
+                    CURLOPT_SSL_VERIFYPEER => ($mEnv === 'production'),
+                ]);
+                $tokenResp = curl_exec($ch);
+                curl_close($ch);
+                $tokenData = json_decode($tokenResp ?: '{}', true);
+                $accessToken = $tokenData['access_token'] ?? '';
+
+                if ($accessToken) {
+                    $ts = date('YmdHis');
+                    $pwd = base64_encode($sCode . $pKey . $ts);
+                    $normPhone = preg_replace('/\D/', '', $phone);
+                    if (str_starts_with($normPhone, '0')) $normPhone = '254' . substr($normPhone, 1);
+                    if (str_starts_with($normPhone, '+')) $normPhone = ltrim($normPhone, '+');
+
+                    $stkPayload = [
+                        'BusinessShortCode' => $sCode,
+                        'Password'          => $pwd,
+                        'Timestamp'         => $ts,
+                        'TransactionType'   => $tType,
+                        'Amount'            => (int)$total_amount,
+                        'PartyA'            => $normPhone,
+                        'PartyB'            => $sCode,
+                        'PhoneNumber'       => $normPhone,
+                        'CallBackURL'       => $callbackUrl,
+                        'AccountReference'  => $order_number,
+                        'TransactionDesc'   => 'Payment for ' . $order_number,
+                    ];
+
+                    $ch = curl_init($baseUrl . '/mpesa/stkpush/v1/processrequest');
+                    curl_setopt_array($ch, [
+                        CURLOPT_POST           => true,
+                        CURLOPT_POSTFIELDS     => json_encode($stkPayload),
+                        CURLOPT_HTTPHEADER     => [
+                            'Content-Type: application/json',
+                            'Authorization: Bearer ' . $accessToken,
+                        ],
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_TIMEOUT        => 12,
+                        CURLOPT_SSL_VERIFYPEER => ($mEnv === 'production'),
+                    ]);
+                    $stkResp = curl_exec($ch);
+                    curl_close($ch);
+                    $stkData = json_decode($stkResp ?: '{}', true);
+
+                    if (($stkData['ResponseCode'] ?? '') === '0') {
+                        $mpesa_stk_sent = true;
+                        $chkId = $stkData['CheckoutRequestID'] ?? '';
+                        $merId = $stkData['MerchantRequestID'] ?? '';
+                        try {
+                            $pdo->prepare("INSERT INTO mpesa_transactions
+                                (order_id, checkout_request_id, merchant_request_id, phone_number, amount, status, created_at)
+                                VALUES (?, ?, ?, ?, ?, 'pending', NOW())")
+                                ->execute([$order_id, $chkId, $merId, $normPhone, $total_amount]);
+                        } catch (Exception $ex) {}
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            error_log('[Checkout M-Pesa] ' . $e->getMessage());
+        }
+    }
+
     $response['success'] = true;
-    $response['message'] = 'Order created successfully';
+    $response['message'] = $mpesa_stk_sent
+        ? 'Order placed! STK prompt sent to your phone — please enter your M-Pesa PIN.'
+        : 'Order placed successfully!';
     $response['data'] = [
-        'order_number' => $order_number,
-        'total_amount' => $total_amount,
-        'payment_method' => $payment_method
+        'order_id'       => $order_id,
+        'order_number'   => $order_number,
+        'total_amount'   => $total_amount,
+        'payment_method' => $payment_method,
+        'mpesa_stk_sent' => $mpesa_stk_sent,
     ];
 
     // Clear cart after successful order
