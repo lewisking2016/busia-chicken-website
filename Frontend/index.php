@@ -17,7 +17,7 @@ $pdo = getDB();
 
         <!-- Slide 1 -->
         <div class="swiper-slide hero-slide">
-            <img src="/Frontend/images/farm-exterior.jpg" alt="Busia Chicken Farm lush exterior and facility" fetchpriority="high">
+            <img src="/Frontend/images/adbg.png" alt="Busia Chicken Farm feeds and chickens" fetchpriority="high">
             <div class="hero-scrim"></div>
             <div class="container">
                 <div class="hero-content">
@@ -39,7 +39,7 @@ $pdo = getDB();
 
         <!-- Slide 2 -->
         <div class="swiper-slide hero-slide">
-            <img src="/Frontend/images/layer-hens-eggs.jpg" alt="High productivity layer hens and fresh egg production">
+            <img src="/Frontend/images/download (4).png" alt="Busia Chicken Farm layer facilities and egg production">
             <div class="hero-scrim"></div>
             <div class="container">
                 <div class="hero-content">
@@ -61,7 +61,7 @@ $pdo = getDB();
 
         <!-- Slide 3 -->
         <div class="swiper-slide hero-slide">
-            <img src="/Frontend/images/broiler-chickens.jpg" alt="Healthy broiler chickens at Busia Chicken Farm">
+            <img src="/Frontend/images/download (2).png" alt="Busia Chicken Farm dedicated team">
             <div class="hero-scrim"></div>
             <div class="container">
                 <div class="hero-content">
@@ -195,11 +195,11 @@ $pdo = getDB();
                     if (!$img) {
                         $type = $product['product_type'] ?? 'feed';
                         $img = match($type) {
-                            'feed' => '/Frontend/images/poultry-feed.jpg',
-                            'eggs' => '/Frontend/images/farm-fresh-eggs.jpg',
+                            'feed' => '/Frontend/images/download (8).png',
+                            'eggs' => '/Frontend/images/download (3).png',
                             'chicks' => '/Frontend/images/day-old-chicks.jpg',
                             'live_chicken' => '/Frontend/images/broiler-chickens.jpg',
-                            default => '/Frontend/images/farm-exterior.jpg'
+                            default => '/Frontend/images/adbg.png'
                         };
                     }
                 ?>
@@ -272,7 +272,7 @@ $pdo = getDB();
 <section class="section-pad" style="background:var(--cream-50);">
     <div class="container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(2.4rem,5vw,4.5rem);align-items:center;">
         <div class="img-frame frame-gold" data-reveal="left">
-            <img src="/Frontend/images/farm-exterior.jpg" alt="Busia Chicken Farm team and facility" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.06">
+            <img src="/Frontend/images/download (3).png" alt="Busia Chicken Farm fresh eggs delivery" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.06">
         </div>
         <div data-reveal="right">
             <span class="eyebrow">Our Story</span>

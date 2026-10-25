@@ -51,7 +51,7 @@ include '../includes/header.php';
         <div class="row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(2.4rem,5vw,4.5rem);align-items:center;">
             <div data-reveal="left" style="order:2;">
                 <div class="img-frame frame-gold">
-                    <img src="/Frontend/images/farm-fresh-eggs.jpg" alt="Fresh farm eggs" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.05">
+                    <img src="/Frontend/images/download (4).png" alt="Busia Chicken Farm layer hens and eggs" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.05">
                 </div>
             </div>
             <div data-reveal="right" style="order:1;">
@@ -88,7 +88,7 @@ include '../includes/header.php';
             </div>
             <div data-reveal="right">
                 <div class="img-frame frame-gold">
-                    <img src="/Frontend/images/poultry-feed.jpg" alt="Premium animal feeds" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.05">
+                    <img src="/Frontend/images/download (8).png" alt="Busia Chicken Farm feeds" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.05">
                 </div>
             </div>
         </div>

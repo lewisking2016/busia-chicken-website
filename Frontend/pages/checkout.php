@@ -159,11 +159,11 @@ $total_amount = $subtotal + $delivery_charge;
                             <div style="position: relative;">
                             <?php
                                 $fallbackImage = match($p['product_type'] ?? 'feed') {
-                                    'feed' => '/Frontend/images/poultry-feed.jpg',
-                                    'eggs' => '/Frontend/images/farm-fresh-eggs.jpg',
+                                    'feed' => '/Frontend/images/download (8).png',
+                                    'eggs' => '/Frontend/images/download (3).png',
                                     'chicks' => '/Frontend/images/day-old-chicks.jpg',
                                     'live_chicken' => '/Frontend/images/broiler-chickens.jpg',
-                                    default => '/Frontend/images/farm-exterior.jpg'
+                                    default => '/Frontend/images/adbg.png'
                                 };
                             ?>
                             <img src="<?php echo $p['image_url'] ?: $fallbackImage; ?>" style="width: 56px; height: 56px; border-radius: 4px; object-fit: cover; border: 1px solid var(--gray-200);">
