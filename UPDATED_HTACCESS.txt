@@ -60,6 +60,7 @@ AddDefaultCharset UTF-8
 
     # Admin quick shortcut: /admin or /busiaadmin -> /Frontend/admin/login.php
     RewriteRule ^admin/?$ Frontend/admin/login.php [R=302,L]
+    RewriteRule ^busiaadmin/?$ Frontend/admin/login.php [R=302,L]
     RewriteRule ^busiaadmin\.php$ Frontend/admin/login.php [R=302,L]
 
     # Allow direct access to Backend API
