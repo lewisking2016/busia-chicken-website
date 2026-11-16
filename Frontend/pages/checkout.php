@@ -159,14 +159,14 @@ $total_amount = $subtotal + $delivery_charge;
                             <div style="position: relative;">
                             <?php
                                 $fallbackImage = match($p['product_type'] ?? 'feed') {
-                                    'feed' => '/Frontend/images/download (8).png',
-                                    'eggs' => '/Frontend/images/download (3).png',
-                                    'chicks' => '/Frontend/images/day-old-chicks.jpg',
-                                    'live_chicken' => '/Frontend/images/broiler-chickens.jpg',
-                                    default => '/Frontend/images/adbg.png'
+                                    'feed' => '/Frontend/images/download-8.webp',
+                                    'eggs' => '/Frontend/images/download-3.webp',
+                                    'chicks' => '/Frontend/images/day-old-chicks.webp',
+                                    'live_chicken' => '/Frontend/images/broiler-chickens.webp',
+                                    default => '/Frontend/images/adbg.webp'
                                 };
                             ?>
-                            <img src="<?php echo $p['image_url'] ?: $fallbackImage; ?>" style="width: 56px; height: 56px; border-radius: 4px; object-fit: cover; border: 1px solid var(--gray-200);">
+                            <img src="<?php echo htmlspecialchars($p['image_url'] ?: $fallbackImage, ENT_QUOTES, 'UTF-8'); ?>" alt="" width="56" height="56" loading="lazy" decoding="async" style="width: 56px; height: 56px; border-radius: 4px; object-fit: cover; border: 1px solid var(--gray-200);">
                                 <span style="position: absolute; top: -8px; right: -8px; background: var(--dark); color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700;"><?php echo $qty; ?></span>
                             </div>
                             <div style="flex-grow: 1;">

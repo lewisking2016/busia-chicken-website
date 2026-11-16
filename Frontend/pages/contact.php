@@ -39,7 +39,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['contact_submi
 ?>
 
 <!-- Page Hero -->
-<section class="page-hero" style="background-image:url('/Frontend/images/adbg.png');">
+<section class="page-hero" style="background-image:url('/Frontend/images/adbg.webp');">
     <div class="container">
         <nav class="breadcrumb" data-reveal="fade"><a href="/">Home</a><span class="sep">/</span><span>Contact</span></nav>
         <h1 data-reveal="fade" data-reveal-delay="100">Contact &amp; <em>Locations</em></h1>

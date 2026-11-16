@@ -14,7 +14,7 @@ include __DIR__ . '/../includes/header.php';
 ?>
 
 <!-- Page Hero -->
-<section class="page-hero" style="background-image:url('/Frontend/images/adbg.png');">
+<section class="page-hero" style="background-image:url('/Frontend/images/adbg.webp');">
     <div class="container">
         <nav class="breadcrumb" data-reveal="fade"><a href="/">Home</a><span class="sep">/</span><span>Products</span></nav>
         <h1 data-reveal="fade" data-reveal-delay="100">Our Premium <em>Products</em></h1>
@@ -42,7 +42,7 @@ include __DIR__ . '/../includes/header.php';
             </div>
             <div data-reveal="right">
                 <div class="img-frame frame-gold">
-                    <img src="/Frontend/images/broiler-chickens.jpg" alt="Broiler chickens" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.05">
+                    <img src="/Frontend/images/broiler-chickens.webp" alt="Broiler chickens" width="800" height="600" loading="lazy" decoding="async" style="aspect-ratio:4/3;" data-parallax="0.05">
                 </div>
             </div>
         </div>
@@ -57,7 +57,7 @@ include __DIR__ . '/../includes/header.php';
         <div class="row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(2.4rem,5vw,4.5rem);align-items:center;">
             <div data-reveal="left" style="order:2;">
                 <div class="img-frame frame-gold">
-                    <img src="/Frontend/images/farm-fresh-eggs.jpg" alt="Busia Chicken Farm layer hens and fresh eggs" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.05">
+                    <img src="/Frontend/images/farm-fresh-eggs.webp" alt="Busia Chicken Farm layer hens and fresh eggs" width="800" height="600" loading="lazy" decoding="async" style="aspect-ratio:4/3;" data-parallax="0.05">
                 </div>
             </div>
             <div data-reveal="right" style="order:1;">
@@ -101,7 +101,7 @@ include __DIR__ . '/../includes/header.php';
             </div>
             <div data-reveal="right">
                 <div class="img-frame frame-gold">
-                    <img src="/Frontend/images/download (8).png" alt="Busia Chicken Farm formulated feeds" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.05">
+                    <img src="/Frontend/images/download-8.webp" alt="Busia Chicken Farm formulated feeds" width="800" height="600" loading="lazy" decoding="async" style="aspect-ratio:4/3;" data-parallax="0.05">
                 </div>
             </div>
         </div>

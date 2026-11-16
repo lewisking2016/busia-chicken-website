@@ -13,7 +13,7 @@ include __DIR__ . '/../includes/header.php';
 ?>
 
 <!-- Page Hero -->
-<section class="page-hero" style="background-image:url('/Frontend/images/download (2).png');">
+<section class="page-hero" style="background-image:url('/Frontend/images/download-2.webp');">
     <div class="container">
         <nav class="breadcrumb" data-reveal="fade"><a href="/">Home</a><span class="sep">/</span><span>About</span></nav>
         <h1 data-reveal="fade" data-reveal-delay="100">About <em>Busia Chicken Farm</em></h1>
@@ -37,7 +37,7 @@ include __DIR__ . '/../includes/header.php';
         </div>
         <div data-reveal="right">
             <div class="img-frame frame-gold">
-                <img src="/Frontend/images/download (5).png" alt="Busia Chicken Farm automated egg sorting and grading facility" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.05">
+                <img src="/Frontend/images/download-5.webp" alt="Busia Chicken Farm automated egg sorting and grading facility" width="800" height="600" loading="lazy" decoding="async" style="aspect-ratio:4/3;" data-parallax="0.05">
             </div>
         </div>
     </div>

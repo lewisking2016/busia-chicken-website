@@ -40,6 +40,19 @@ function assetVer(string $path): string {
     return '?v=' . ($mtime ?: '1');
 }
 
+function optimizedSiteImage(string $url): string
+{
+    $path = parse_url($url, PHP_URL_PATH);
+    if (!is_string($path) || !str_starts_with($path, '/Frontend/images/')) return $url;
+    $stem = pathinfo(rawurldecode(basename($path)), PATHINFO_FILENAME);
+    $name = strtolower(str_replace(' ', '-', $stem)) . '.webp';
+    return is_file(__DIR__ . '/../images/' . $name) ? '/Frontend/images/' . rawurlencode($name) : $url;
+}
+
+if (!function_exists('optimizedShopImage')) {
+    function optimizedShopImage(string $url): string { return optimizedSiteImage($url); }
+}
+
 // Determine login state for public site (only customer role shows on website)
 $is_customer_logged_in = !empty($_SESSION['user_id']) && ($_SESSION['role'] ?? '') === 'customer';
 
@@ -53,10 +66,20 @@ $is_home = ($currentPage === 'home');
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8'); ?></title>
 
-    <!-- Google Fonts: Outfit (display) + Fraunces (editorial serif) + Inter (body) -->
+    <!-- DNS Prefetch & Preconnect for external resources -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&display=swap" rel="stylesheet">
+
+    <!-- Google Fonts: Non-render-blocking async load. Outfit + Inter only (dropped Fraunces to save a request) -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap"></noscript>
+
+    <!-- Preload critical above-fold assets -->
+    <?php if ($is_home): ?><link rel="preload" href="/Frontend/images/adbg.webp" as="image" type="image/webp" fetchpriority="high"><?php endif; ?>
+    <link rel="preload" href="<?php echo BASE_URL; ?>assets/css/premium.css<?php echo assetVer('assets/css/premium.css'); ?>" as="style">
 
     <!-- PWA & Mobile Capabilities -->
     <meta name="theme-color" content="#0F472B">
@@ -77,8 +100,8 @@ $is_home = ($currentPage === 'home');
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/premium.css<?php echo assetVer('assets/css/premium.css'); ?>">
 
     <!-- Favicon & Logos -->
-    <link rel="icon" type="image/svg+xml" href="/Frontend/images/logo.svg">
-    <link rel="alternate icon" type="image/png" href="/Frontend/images/favicon.png">
+    <link rel="icon" type="image/png" href="/Frontend/images/favicon.png">
+    <link rel="alternate icon" href="/Frontend/images/favicon.png">
 
     <!-- Schema Markup -->
     <?php
@@ -91,8 +114,12 @@ $is_home = ($currentPage === 'home');
     }
     ?>
     <?php
-    $announcement = function_exists('getSetting') ? getSetting('announcement_bar', '🐣 Fresh Day-Old Chicks & Grade-A Farm Eggs Available Daily in Nasira & Tangakona! Call +254 727 585 599') : '🐣 Fresh Day-Old Chicks & Grade-A Farm Eggs Available Daily in Nasira & Tangakona! Call +254 727 585 599';
-    $show_announcement = function_exists('getSetting') ? getSetting('show_announcement', '1') : '1';
+    $announcement = '🐣 Fresh Day-Old Chicks & Grade-A Farm Eggs Available Daily in Nasira & Tangakona! Call +254 727 585 599';
+    $show_announcement = '1';
+    if (function_exists('getDB') && ($pdo = ($GLOBALS['pdo'] ?? null)) instanceof PDO) {
+        $announcement = function_exists('getSetting') ? getSetting('announcement_bar', $announcement) : $announcement;
+        $show_announcement = function_exists('getSetting') ? getSetting('show_announcement', '1') : '1';
+    }
     $has_announcement = ($show_announcement === '1' && !empty($announcement));
     ?>
 </head>
@@ -122,7 +149,10 @@ $is_home = ($currentPage === 'home');
         <div class="container nav-inner">
             <!-- Brand Logo with Slogan -->
             <a href="/" class="nav-brand" aria-label="Busia Chicken Limited - The Chicken People">
-                <img src="/Frontend/images/logo.svg" onerror="this.onerror=null;this.src='/Frontend/images/busia_chicken_logo.png';" alt="Busia Chicken Limited - The Chicken People" class="nav-logo">
+                <picture>
+                    <source srcset="/Frontend/images/logo-sm.webp" type="image/webp">
+                    <img src="/Frontend/images/logo-sm.webp" onerror="this.onerror=null;this.src='/Frontend/images/favicon.png';" alt="Busia Chicken Limited - The Chicken People" class="nav-logo" width="52" height="52" fetchpriority="high" decoding="async">
+                </picture>
                 <div class="nav-brand-text">
                     <span class="nav-brand-name">BUSIA CHICKEN<span style="color:var(--brand-red);font-weight:900;">.</span></span>
                     <span class="nav-brand-slogan">The Chicken People</span>

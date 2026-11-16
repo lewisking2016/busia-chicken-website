@@ -68,6 +68,7 @@ if (empty($slides)) {
         ]
     ];
 }
+
 ?>
 
 <!-- ═══════════════ HERO SLIDER (DYNAMIC CMS-POWERED) ═══════════════ -->
@@ -75,7 +76,7 @@ if (empty($slides)) {
     <div class="swiper-wrapper">
         <?php foreach ($slides as $idx => $s): ?>
         <div class="swiper-slide hero-slide">
-            <img src="<?php echo htmlspecialchars($s['image_url'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($s['title_main'] . ' ' . $s['title_em'], ENT_QUOTES, 'UTF-8'); ?>" <?php echo $idx === 0 ? 'fetchpriority="high"' : 'loading="lazy"'; ?>>
+            <img src="<?php echo htmlspecialchars(optimizedSiteImage((string)$s['image_url']), ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($s['title_main'] . ' ' . $s['title_em'], ENT_QUOTES, 'UTF-8'); ?>" width="1600" height="900" decoding="async" <?php echo $idx === 0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'; ?>>
             <div class="hero-scrim"></div>
             <div class="container">
                 <div class="hero-content">
@@ -218,7 +219,7 @@ if (empty($slides)) {
                         $placeholders = implode(',', array_fill(0, count($featuredNames), '?'));
                         $stmt = $pdo->prepare("SELECT * FROM products WHERE name IN ($placeholders) AND is_active = 1 ORDER BY FIELD(name, $placeholders)");
                         $stmt->execute(array_merge($featuredNames, $featuredNames));
-                        $displayProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                        $displayProducts = array_map('optimizeProductImagePath', $stmt->fetchAll(PDO::FETCH_ASSOC));
                     } catch (Exception $e) {}
                 }
 
@@ -232,11 +233,11 @@ if (empty($slides)) {
                     if (!$img) {
                         $type = $product['product_type'] ?? 'feed';
                         $img = match($type) {
-                            'feed' => '/Frontend/images/download (8).png',
-                            'eggs' => '/Frontend/images/farm-fresh-eggs.jpg',
-                            'chicks' => '/Frontend/images/day-old-chicks.jpg',
-                            'live_chicken' => '/Frontend/images/broiler-chickens.jpg',
-                            default => '/Frontend/images/adbg.png'
+                            'feed' => '/Frontend/images/download-8.webp',
+                            'eggs' => '/Frontend/images/farm-fresh-eggs.webp',
+                            'chicks' => '/Frontend/images/day-old-chicks.webp',
+                            'live_chicken' => '/Frontend/images/broiler-chickens.webp',
+                            default => '/Frontend/images/adbg.webp'
                         };
                     }
                 ?>
@@ -245,7 +246,7 @@ if (empty($slides)) {
                         <a href="/Frontend/pages/product-detail.php?id=<?php echo $product['id']; ?>" style="display:block;text-decoration:none;color:inherit;">
                             <div class="product-image">
                                 <span class="product-badge badge-red">Best Seller</span>
-                                <img src="<?php echo htmlspecialchars($img, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($product['name'], ENT_QUOTES, 'UTF-8'); ?>" loading="lazy">
+                                <img src="<?php echo htmlspecialchars(optimizedSiteImage($img), ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($product['name'], ENT_QUOTES, 'UTF-8'); ?>" width="800" height="600" loading="lazy" decoding="async">
                             </div>
                         </a>
                         <div class="product-body">
@@ -381,7 +382,7 @@ if (empty($slides)) {
 <section class="section-pad" style="background:var(--cream-50);">
     <div class="container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(2.4rem,5vw,4.5rem);align-items:center;">
         <div class="img-frame frame-gold" data-reveal="left">
-            <img src="/Frontend/images/farm-fresh-eggs.jpg" alt="Busia Chicken Farm fresh eggs and layer flock" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.06">
+            <img src="/Frontend/images/farm-fresh-eggs.webp" alt="Busia Chicken Farm fresh eggs and layer flock" width="800" height="600" loading="lazy" decoding="async" style="aspect-ratio:4/3;" data-parallax="0.06">
         </div>
         <div data-reveal="right">
             <span class="eyebrow">Our Story</span>

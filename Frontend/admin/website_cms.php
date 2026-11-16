@@ -402,16 +402,16 @@ if ($pdo) {
                 <select name="image_url" class="form-control" style="background:#fff;">
                     <?php
                     $commonImages = [
-                        '/Frontend/images/adbg.png' => 'Farm Feed & Chickens (adbg.png)',
-                        '/Frontend/images/farm-fresh-eggs.jpg' => 'Farm Fresh Eggs (farm-fresh-eggs.jpg)',
-                        '/Frontend/images/download (2).png' => 'Team & Operations (download 2)',
-                        '/Frontend/images/download (4).png' => 'Layer Hens & Crates (download 4)',
-                        '/Frontend/images/broiler-chickens.jpg' => 'Broiler Flock (broiler-chickens.jpg)',
-                        '/Frontend/images/day-old-chicks.jpg' => 'Day-Old Chicks (day-old-chicks.jpg)',
-                        '/Frontend/images/farm-exterior.jpg' => 'Farm Exterior (farm-exterior.jpg)',
-                        '/Frontend/images/poultry-feed.jpg' => 'Formulated Feeds (poultry-feed.jpg)',
+                        '/Frontend/images/adbg.webp' => 'Farm Feed & Chickens (optimized)',
+                        '/Frontend/images/farm-fresh-eggs.webp' => 'Farm Fresh Eggs (optimized)',
+                        '/Frontend/images/download-2.webp' => 'Team & Operations (optimized)',
+                        '/Frontend/images/download-4.webp' => 'Layer Hens & Crates (optimized)',
+                        '/Frontend/images/broiler-chickens.webp' => 'Broiler Flock (optimized)',
+                        '/Frontend/images/day-old-chicks.webp' => 'Day-Old Chicks (optimized)',
+                        '/Frontend/images/farm-exterior.webp' => 'Farm Exterior (optimized)',
+                        '/Frontend/images/poultry-feed.webp' => 'Formulated Feeds (optimized)',
                     ];
-                    $curImg = $slideEdit['image_url'] ?? '/Frontend/images/adbg.png';
+                    $curImg = $slideEdit['image_url'] ?? '/Frontend/images/adbg.webp';
                     foreach ($commonImages as $path => $lbl): ?>
                         <option value="<?php echo $path; ?>" <?php echo $curImg === $path ? 'selected' : ''; ?>><?php echo $lbl; ?></option>
                     <?php endforeach; ?>

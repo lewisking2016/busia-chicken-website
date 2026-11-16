@@ -11,7 +11,7 @@ include __DIR__ . '/../includes/header.php';
 ?>
 
 <!-- Page Hero -->
-<section class="page-hero" style="background-image:url('/Frontend/images/adbg.png');">
+<section class="page-hero" style="background-image:url('/Frontend/images/adbg.webp');">
     <div class="container">
         <nav class="breadcrumb" data-reveal="fade"><a href="/">Home</a><span class="sep">/</span><span>FAQ</span></nav>
         <h1 data-reveal="fade" data-reveal-delay="100">Frequently Asked <em>Questions</em></h1>

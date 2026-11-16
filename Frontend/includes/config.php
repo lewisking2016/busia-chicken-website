@@ -118,25 +118,20 @@ try {
         require_once $backendPath . 'security.php';
     }
     
-    // Initialize Database Connection - NEVER let this fail
-    if (function_exists('getDatabaseConnection')) {
-        try {
-            $GLOBALS['pdo'] = getDatabaseConnection();
-        } catch (Exception $e) {
-            @error_log('Database connection error: ' . $e->getMessage());
-            $GLOBALS['pdo'] = null;
-        }
-    } else {
-        $GLOBALS['pdo'] = null;
-    }
+    // Defer the connection until the current page actually needs database data.
+    // Keep the sentinel key unset so getDB() can connect on first use.
+    unset($GLOBALS['pdo']);
 } catch (Exception $e) {
     @error_log('Configuration error: ' . $e->getMessage());
-    $GLOBALS['pdo'] = null;
 }
 
 // Helper function to get PDO instance
 function getDB(): ?PDO {
-    if (!empty($GLOBALS['pdo'])) return $GLOBALS['pdo'];
+    if (array_key_exists('pdo', $GLOBALS)) {
+        if ($GLOBALS['pdo'] instanceof PDO) return $GLOBALS['pdo'];
+        if ($GLOBALS['pdo'] === null && !empty($GLOBALS['pdo_connection_attempted'])) return null;
+    }
+    $GLOBALS['pdo_connection_attempted'] = true;
     $GLOBALS['pdo'] = getDatabaseConnection();
     if (!empty($GLOBALS['pdo'])) {
         // Auto-run new tables if missing — keeps the live site self-healing
@@ -203,14 +198,5 @@ function updateSetting(string $key, string $value): bool {
     return $stmt->execute([$key, $value, $value]);
 }
 
-// Apply live settings that affect runtime behavior.
-try {
-    $configuredTimezone = getSetting('timezone', 'Africa/Nairobi');
-    if ($configuredTimezone && in_array($configuredTimezone, timezone_identifiers_list(), true)) {
-        @date_default_timezone_set($configuredTimezone);
-    } else {
-        @date_default_timezone_set('Africa/Nairobi');
-    }
-} catch (Exception $e) {
-    @date_default_timezone_set('Africa/Nairobi');
-}
+// Use the application's configured timezone without requiring a DB request.
+@date_default_timezone_set('Africa/Nairobi');

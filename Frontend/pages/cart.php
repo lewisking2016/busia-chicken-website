@@ -108,18 +108,18 @@ if (!empty($_SESSION['cart'])) {
                                     $img = $item['image'];
                                     if (!$img) {
                                         $img = match($item['product_type']) {
-                                            'feed' => '/Frontend/images/download (8).png',
-                                            'eggs' => '/Frontend/images/download (3).png',
-                                            'chicks' => '/Frontend/images/day-old-chicks.jpg',
-                                            'live_chicken' => '/Frontend/images/broiler-chickens.jpg',
-                                            default => '/Frontend/images/adbg.png'
+                                            'feed' => '/Frontend/images/download-8.webp',
+                                            'eggs' => '/Frontend/images/download-3.webp',
+                                            'chicks' => '/Frontend/images/day-old-chicks.webp',
+                                            'live_chicken' => '/Frontend/images/broiler-chickens.webp',
+                                            default => '/Frontend/images/adbg.webp'
                                         };
                                     }
                                 ?>
                                 <tr style="border-bottom: 1px solid var(--gray-200);">
                                     <td style="padding: var(--space-lg);">
                                         <div style="display: flex; align-items: center; gap: var(--space-md);">
-                                            <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" style="width: 64px; height: 64px; border-radius: 4px; object-fit: cover; border: 1px solid var(--gray-200);">
+                                            <img src="<?php echo htmlspecialchars($img, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" width="64" height="64" loading="lazy" decoding="async" style="width: 64px; height: 64px; border-radius: 4px; object-fit: cover; border: 1px solid var(--gray-200);">
                                             <div>
                                                 <div style="font-weight: 600; color: var(--dark);"><?php echo htmlspecialchars($item['name']); ?></div>
                                                 <div style="font-size: 0.85rem; color: var(--gray-500); text-transform: capitalize;"><?php echo str_replace('_', ' ', $item['product_type']); ?></div>

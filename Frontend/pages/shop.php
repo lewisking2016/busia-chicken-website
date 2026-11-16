@@ -17,7 +17,7 @@ $products = loadDisplayProducts($pdo);
 ?>
 
 <!-- Page Hero -->
-<section class="page-hero" style="background-image:url('/Frontend/images/adbg.png');">
+<section class="page-hero" style="background-image:url('/Frontend/images/adbg.webp');">
     <div class="container">
         <nav class="breadcrumb" data-reveal="fade"><a href="/">Home</a><span class="sep">/</span><span>Shop</span></nav>
         <h1 data-reveal="fade" data-reveal-delay="100">The <em>Shop</em></h1>
@@ -98,11 +98,11 @@ $products = loadDisplayProducts($pdo);
                             $img = $product['image_url'] ?? $product['img'] ?? '';
                             if (!$img) {
                                 $img = match($product['product_type'] ?? 'feed') {
-                                    'feed' => '/Frontend/images/download (8).png',
-                                    'eggs' => '/Frontend/images/farm-fresh-eggs.jpg',
-                                    'chicks' => '/Frontend/images/day-old-chicks.jpg',
-                                    'live_chicken' => '/Frontend/images/broiler-chickens.jpg',
-                                    default => '/Frontend/images/adbg.png'
+                                    'feed' => '/Frontend/images/download-8.webp',
+                                    'eggs' => '/Frontend/images/farm-fresh-eggs.webp',
+                                    'chicks' => '/Frontend/images/day-old-chicks.webp',
+                                    'live_chicken' => '/Frontend/images/broiler-chickens.webp',
+                                    default => '/Frontend/images/adbg.webp'
                                 };
                             }
                             $stock = $product['stock_quantity'] ?? 0;
@@ -116,7 +116,7 @@ $products = loadDisplayProducts($pdo);
                                 <?php else: ?>
                                     <span class="product-badge badge-muted">Out of Stock</span>
                                 <?php endif; ?>
-                                <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" loading="lazy">
+                                <img src="<?php echo htmlspecialchars(optimizedShopImage($img), ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" width="640" height="480" loading="lazy" decoding="async">
                             </div>
                         </a>
                         <div class="product-body">

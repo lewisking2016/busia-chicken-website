@@ -13,7 +13,7 @@ include __DIR__ . '/../includes/header.php';
 ?>
 
 <!-- Page Hero -->
-<section class="page-hero" style="background-image:url('/Frontend/images/adbg.png');">
+<section class="page-hero" style="background-image:url('/Frontend/images/adbg.webp');">
     <div class="container">
         <nav class="breadcrumb" data-reveal="fade"><a href="/">Home</a><span class="sep">/</span><span>Services</span></nav>
         <h1 data-reveal="fade" data-reveal-delay="100">Our <em>Services</em></h1>

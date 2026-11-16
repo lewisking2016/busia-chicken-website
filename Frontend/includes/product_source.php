@@ -8,17 +8,31 @@ declare(strict_types=1);
 function loadDisplayProducts(?PDO $pdo = null): array
 {
     if (!$pdo) {
-        return getFallbackProducts();
+        return array_map('optimizeProductImagePath', getFallbackProducts());
     }
 
     try {
         $stmt = $pdo->query("SELECT * FROM products WHERE is_active = 1 ORDER BY name ASC");
         $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return !empty($products) ? $products : getFallbackProducts();
+        return array_map('optimizeProductImagePath', !empty($products) ? $products : getFallbackProducts());
     } catch (Exception $e) {
         @error_log("Failed to load products from database: " . $e->getMessage());
-        return getFallbackProducts();
+        return array_map('optimizeProductImagePath', getFallbackProducts());
     }
+}
+
+function optimizeProductImagePath(array $product): array
+{
+    $url = $product['image_url'] ?? '';
+    $path = parse_url($url, PHP_URL_PATH);
+    if (!is_string($path) || !str_starts_with($path, '/Frontend/images/')) return $product;
+
+    $stem = pathinfo(rawurldecode(basename($path)), PATHINFO_FILENAME);
+    $optimized = strtolower(str_replace(' ', '-', $stem)) . '.webp';
+    if (is_file(__DIR__ . '/../images/' . $optimized)) {
+        $product['image_url'] = '/Frontend/images/' . rawurlencode($optimized);
+    }
+    return $product;
 }
 
 /**
@@ -26,7 +40,7 @@ function loadDisplayProducts(?PDO $pdo = null): array
  */
 function getFallbackProducts(): array
 {
-    return [
+    return array_map('optimizeProductImagePath', [
         [
             'id' => 1,
             'name' => 'Bovans Brown Layers',
@@ -35,7 +49,7 @@ function getFallbackProducts(): array
             'product_type' => 'live_chicken',
             'price' => 410,
             'stock_quantity' => 250,
-            'image_url' => '/Frontend/images/layer-hens-eggs.jpg',
+            'image_url' => '/Frontend/images/layer-hens-eggs.webp',
             'is_featured' => 1,
         ],
         [
@@ -46,7 +60,7 @@ function getFallbackProducts(): array
             'product_type' => 'feed',
             'price' => 2900,
             'stock_quantity' => 180,
-            'image_url' => '/Frontend/images/download (8).png',
+            'image_url' => '/Frontend/images/download-8.webp',
             'is_featured' => 1,
         ],
         [
@@ -57,7 +71,7 @@ function getFallbackProducts(): array
             'product_type' => 'feed',
             'price' => 3100,
             'stock_quantity' => 200,
-            'image_url' => '/Frontend/images/kienyeji mash.png',
+            'image_url' => '/Frontend/images/kienyeji-mash.webp',
             'is_featured' => 1,
         ],
         [
@@ -68,7 +82,7 @@ function getFallbackProducts(): array
             'product_type' => 'feed',
             'price' => 1800,
             'stock_quantity' => 150,
-            'image_url' => '/Frontend/images/Growers Mash.png',
+            'image_url' => '/Frontend/images/growers-mash.webp',
             'is_featured' => 1,
         ],
         [
@@ -79,7 +93,7 @@ function getFallbackProducts(): array
             'product_type' => 'feed',
             'price' => 3200,
             'stock_quantity' => 220,
-            'image_url' => '/Frontend/images/Chick Starter Crumbs.png',
+            'image_url' => '/Frontend/images/chick-starter-crumbs.webp',
             'is_featured' => 1,
         ],
         [
@@ -90,7 +104,7 @@ function getFallbackProducts(): array
             'product_type' => 'live_chicken',
             'price' => 480,
             'stock_quantity' => 400,
-            'image_url' => '/Frontend/images/broiler-chickens.jpg',
+            'image_url' => '/Frontend/images/broiler-chickens.webp',
             'is_featured' => 1,
         ],
         [
@@ -101,7 +115,7 @@ function getFallbackProducts(): array
             'product_type' => 'chicks',
             'price' => 80,
             'stock_quantity' => 2000,
-            'image_url' => '/Frontend/images/day-old-chicks.jpg',
+            'image_url' => '/Frontend/images/day-old-chicks.webp',
             'is_featured' => 1,
         ],
         [
@@ -112,7 +126,7 @@ function getFallbackProducts(): array
             'product_type' => 'chicks',
             'price' => 70,
             'stock_quantity' => 2000,
-            'image_url' => '/Frontend/images/day-old-chicks.jpg',
+            'image_url' => '/Frontend/images/day-old-chicks.webp',
             'is_featured' => 1,
         ],
         [
@@ -123,10 +137,10 @@ function getFallbackProducts(): array
             'product_type' => 'eggs',
             'price' => 420,
             'stock_quantity' => 500,
-            'image_url' => '/Frontend/images/farm-fresh-eggs.jpg',
+            'image_url' => '/Frontend/images/farm-fresh-eggs.webp',
             'is_featured' => 1,
         ]
-    ];
+    ]);
 }
 
 ?>
