@@ -29,7 +29,7 @@ $products = loadDisplayProducts($pdo);
 <section class="section-pad" style="background:var(--cream-50);" id="products">
     <div class="container">
         <div class="section-head" data-reveal>
-            <span class="eyebrow">Our Products</span>
+            <span class="eyebrow" style="color:var(--brand-red);font-weight:800;letter-spacing:0.08em;"><i data-lucide="sparkles" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;"></i> DIRECT FROM BUSIA FARM HQ &amp; DEPOT</span>
             <h2 class="section-title">Shop <em>Poultry &amp; Feeds</em></h2>
             <p class="lead">Fresh eggs, day-old chicks, live birds and premium feeds — ready to order and delivered to your door.</p>
         </div>
@@ -112,9 +112,9 @@ $products = loadDisplayProducts($pdo);
                         <a href="/Frontend/pages/product-detail.php?id=<?php echo $product['id']; ?>" style="display:block;text-decoration:none;color:inherit;">
                             <div class="product-image">
                                 <?php if ($inStock): ?>
-                                    <span class="product-badge">In Stock</span>
+                                    <span class="product-badge badge-red">In Stock</span>
                                 <?php else: ?>
-                                    <span class="product-badge" style="color:var(--gray-600);">Out of Stock</span>
+                                    <span class="product-badge badge-muted">Out of Stock</span>
                                 <?php endif; ?>
                                 <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" loading="lazy">
                             </div>
@@ -126,8 +126,11 @@ $products = loadDisplayProducts($pdo);
                                 </a>
                             </h4>
                             <p class="product-description"><?php echo htmlspecialchars(substr($product['description'] ?? '', 0, 80) . '...', ENT_QUOTES, 'UTF-8'); ?></p>
-                            <div class="product-meta">
+                            <div class="product-meta" style="display:flex;justify-content:space-between;align-items:center;">
                                 <span class="product-price">KES <?php echo number_format((float)$product['price'], 0); ?></span>
+                                <?php if ($inStock): ?>
+                                    <span class="tag-red"><i data-lucide="check" style="width:11px;height:11px;"></i> Fresh Batch</span>
+                                <?php endif; ?>
                             </div>
                             <button class="add-to-cart-btn btn <?php echo $inStock ? 'btn-primary' : 'btn-outline'; ?>" data-id="<?php echo $product['id']; ?>" data-qty="1" style="width:100%;justify-content:center;" <?php echo !$inStock ? 'disabled' : ''; ?>>
                                 <i data-lucide="shopping-cart" style="width:18px;height:18px;"></i>

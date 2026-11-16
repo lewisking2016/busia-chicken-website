@@ -71,7 +71,7 @@ include __DIR__ . '/../includes/header.php';
 <section class="section-pad bg-white">
     <div class="container">
         <div class="section-head center" data-reveal>
-            <span class="eyebrow centered">Our Core Values</span>
+            <span class="eyebrow centered" style="color:var(--brand-red);font-weight:800;letter-spacing:0.08em;"><i data-lucide="shield" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;"></i> OUR GUIDING PRINCIPLES</span>
             <h2 class="section-title">The principles that <em>guide us</em></h2>
         </div>
         <div class="grid-3" data-reveal-group style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.8rem;">

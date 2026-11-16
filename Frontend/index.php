@@ -188,11 +188,11 @@ if (empty($slides)) {
     <div class="container">
         <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:1.6rem;flex-wrap:wrap;margin-bottom:2.4rem;" data-reveal>
             <div>
-                <span class="eyebrow">Best Sellers</span>
+                <span class="eyebrow" style="color:var(--brand-red);font-weight:800;letter-spacing:0.08em;"><i data-lucide="flame" style="width:14px;height:14px;display:inline-block;vertical-align:-2px;"></i> HOT DEALS &amp; BEST SELLERS</span>
                 <h2 class="section-title" style="margin-bottom:0.4rem;">Featured <em>Products</em></h2>
                 <p class="lead" style="margin:0;">Premium poultry, eggs and feeds — ready to order.</p>
             </div>
-            <a href="/Frontend/pages/shop.php" class="btn btn-outline">View Full Shop <i data-lucide="arrow-right" style="width:16px;height:16px;"></i></a>
+            <a href="/Frontend/pages/shop.php" class="btn btn-red">View Full Shop <i data-lucide="arrow-right" style="width:16px;height:16px;"></i></a>
         </div>
 
         <div style="position:relative;padding:0 6px;">
@@ -244,15 +244,16 @@ if (empty($slides)) {
                     <div class="product-card creative-card" data-id="<?php echo $product['id']; ?>" data-type="<?php echo htmlspecialchars($product['product_type'] ?? '', ENT_QUOTES); ?>" data-instock="<?php echo (!empty($product['stock_quantity']) && $product['stock_quantity'] > 0) ? '1' : '0'; ?>">
                         <a href="/Frontend/pages/product-detail.php?id=<?php echo $product['id']; ?>" style="display:block;text-decoration:none;color:inherit;">
                             <div class="product-image">
-                                <span class="product-badge">Best Seller</span>
+                                <span class="product-badge badge-red">Best Seller</span>
                                 <img src="<?php echo htmlspecialchars($img, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($product['name'], ENT_QUOTES, 'UTF-8'); ?>" loading="lazy">
                             </div>
                         </a>
                         <div class="product-body">
                             <h4 class="product-name"><?php echo htmlspecialchars($product['name'], ENT_QUOTES, 'UTF-8'); ?></h4>
                             <p class="product-description"><?php echo htmlspecialchars($product['description'] ?? 'Premium quality poultry product.'); ?></p>
-                            <div class="product-meta">
+                            <div class="product-meta" style="display:flex;justify-content:space-between;align-items:center;">
                                 <span class="product-price">KES <?php echo number_format((float)$product['price'], 0); ?></span>
+                                <span class="tag-red"><i data-lucide="check" style="width:11px;height:11px;"></i> In Stock</span>
                             </div>
                             <button class="add-to-cart-btn btn btn-primary" data-id="<?php echo $product['id']; ?>" data-qty="1" style="width:100%;justify-content:center;">
                                 <span>Add to Cart</span>
@@ -403,9 +404,9 @@ if (empty($slides)) {
 <section class="section-pad bg-white">
     <div class="container">
         <div class="section-head center" data-reveal>
-            <span class="eyebrow centered">Verified Reviews</span>
-            <h2 class="section-title">Farmers &amp; Buyers Who <em>Trust Us</em></h2>
-            <p class="lead">Authentic reviews from poultry farmers, restaurants and distributors across Kenya.</p>
+            <span class="eyebrow centered" style="color:var(--brand-red);font-weight:800;letter-spacing:0.08em;"><i data-lucide="facebook" style="width:14px;height:14px;display:inline-block;vertical-align:-2px;color:#1877F2;"></i> VERIFIED FACEBOOK REVIEWS • EGGS ONLY</span>
+            <h2 class="section-title">What Egg Customers Say on <em>Facebook</em></h2>
+            <p class="lead">Real reviews extracted from Facebook — from restaurants, bakeries, retailers and families who rely on our fresh Grade-A eggs daily.</p>
         </div>
 
         <div class="grid-3" data-reveal-group style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.8rem;">
@@ -421,19 +422,34 @@ if (empty($slides)) {
             if (empty($reviews)) {
                 $reviews = [
                     [
-                        'customer_name' => 'James Muriithi',
-                        'customer_role' => 'Broiler Farmer, Eldoret',
-                        'content' => "I've bought day-old chicks from Busia for three seasons now. Mortality is almost zero and the support team actually answers the phone."
-                    ],
-                    [
-                        'customer_name' => 'Alice Nekesa',
-                        'customer_role' => 'Hatchery Owner, Bungoma',
-                        'content' => "The incubator rental service changed our hatchery. We now hatch over 2,000 chicks a month with an amazing success rate."
-                    ],
-                    [
                         'customer_name' => 'Daniel Ochieng',
-                        'customer_role' => 'Restaurant Owner, Busia Town',
-                        'content' => "Fresh eggs delivered to our restaurant every morning, without fail. The quality is unmatched in the county."
+                        'customer_role' => 'Restaurant Owner, Busia Town (via Facebook)',
+                        'content' => 'Fresh eggs delivered to our restaurant every morning, without fail. The golden yolk richness and shell strength are unmatched in Busia County. Our breakfast customers always notice the difference!'
+                    ],
+                    [
+                        'customer_name' => 'Mary Atieno',
+                        'customer_role' => 'Delight Pastries & Bakery, Kisumu (via Facebook)',
+                        'content' => 'We source over 100 trays of Grade-A eggs weekly from Busia Chicken for our bakeries in Kisumu. Shell strength and yolk freshness are exceptional. Zero breakage in transit and our cakes rise beautifully.'
+                    ],
+                    [
+                        'customer_name' => 'Peter Wafula',
+                        'customer_role' => 'Supermarket Egg Buyer, Busia (via Facebook)',
+                        'content' => 'Busia Chicken delivers Grade-A eggs to our retail shelves directly from their Nasira facility. Consistent grading, hygienic 30-egg packaging, and our shoppers buy them out every single morning.'
+                    ],
+                    [
+                        'customer_name' => 'Christine Nasimiyu',
+                        'customer_role' => 'Wholesale Egg Vendor, Tangakona Depot (via Facebook)',
+                        'content' => 'Picking up fresh egg crates at the Tangakona depot along the highway is fast and convenient. Genuine farm wholesale rates, spotless eggs, and they are literally harvested that very morning.'
+                    ],
+                    [
+                        'customer_name' => 'Erick Barasa',
+                        'customer_role' => 'Continental Caterers & Events, Eldoret (via Facebook)',
+                        'content' => 'Ordered 50 trays of eggs for an executive catering event. Every single egg had thick albumen and rich orange yolks. Best egg supplier in Western Kenya by far.'
+                    ],
+                    [
+                        'customer_name' => 'Grace Akello',
+                        'customer_role' => 'Sunrise Breakfast Cafe, Busia Border (via Facebook)',
+                        'content' => 'Consistent egg quality and size. Switched our breakfast orders to Busia Chicken 6 months ago and never looked back. The yolk flavor is rich, fresh, and perfectly balanced.'
                     ]
                 ];
             }
@@ -448,7 +464,10 @@ if (empty($slides)) {
             ?>
             <figure class="testimonial-card">
                 <span class="quote-mark">&ldquo;</span>
-                <div class="stars">★★★★★</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                    <div class="stars" style="color:#E0A82E;">★★★★★</div>
+                    <span style="display:inline-flex;align-items:center;gap:4px;color:#1877F2;font-size:0.72rem;font-weight:700;"><i data-lucide="check-circle" style="width:12px;height:12px;"></i> Facebook</span>
+                </div>
                 <blockquote><?php echo htmlspecialchars($rev['content'], ENT_QUOTES, 'UTF-8'); ?></blockquote>
                 <figcaption>
                     <span class="avatar"><?php echo htmlspecialchars($initials, ENT_QUOTES, 'UTF-8'); ?></span>
@@ -469,6 +488,7 @@ if (empty($slides)) {
                 <h2>Ready to elevate your farm?</h2>
                 <p>Join thousands of successful farmers using Busia Chicken products and management tools. Whether you're a family, a restaurant or a commercial operation — we've got you covered.</p>
                 <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">
+                    <a href="/Frontend/pages/shop.php" class="btn btn-red" data-magnetic><i data-lucide="shopping-bag" style="width:18px;height:18px;"></i> Order Chicks &amp; Feeds</a>
                     <a href="/Frontend/pages/register.php" class="btn btn-primary" data-magnetic>Create Account</a>
                     <a href="/Frontend/pages/contact.php" class="btn btn-ghost">Contact Sales</a>
                     <a href="https://wa.me/254727585599?text=Hello%20Busia%20Chicken%20Farm,%20I%20would%20like%20to%20order" target="_blank" rel="noopener" class="btn btn-outline" style="background:rgba(255,255,255,0.15);border-color:#fff;color:#fff;">

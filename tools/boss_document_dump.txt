@@ -1,0 +1,414 @@
+[0] Welcome to Busia Chicken Farm
+[1] Quality Poultry for East Africa
+[2] Premium broilers, layers and day-old chicks — raised with care, delivered with confidence, and backed by a decade of sustainable farming excellence.
+[3] Statistics
+[4] 100k Chickens raised annually
+[5] 5000 Happy customers
+[6] 13 Years in business
+[7] 
+[8] The Egg People
+[9] Farm-Fresh Eggs, Every Day
+[10] State-of-the-art layer facilities producing the freshest, most nutritious eggs — harvested daily and delivered to your family or business.
+[11] Statistics
+[12] 96% Eggs per bird per year
+[13] 100% Biosafety compliant
+[14] 100% Response time
+[15] 
+[16] Expert Farm Management
+[17] Trusted by Thousands
+[18] From consulting, egg & meat production to premium feeds — our dedicated team helps farmers grow with confidence.
+[19] Statistics
+[20] 90% Hatch success rate
+[21] 30% Saved on feed costs
+[22] 4 Weeks to market weight
+[23] 
+[24] Why Busia Chicken
+[25] Farming done right, from hatch to harvest
+[26] We combine traditional farming wisdom with modern technology to deliver the best poultry products in the region.
+[27] Premium Quality
+[28] Rigorous health checks, premium feeds and strict biosafety protocols ensure our birds are the healthiest in the region.
+[29] Reliable Delivery
+[30] Timely, safe transportation of feeds and fresh eggs — direct to your farm or business, in carefully monitored transit.
+[31] Expert Support
+[32] Consulting, egg meat production and feed-formulation training help you maximize yield and cut operating costs.
+[33] Farm-Fresh Eggs
+[34] Grade-A eggs harvested daily from modern layer houses — packed in 30-egg trays for homes, shops and hotels.
+[35] Superior Genetics
+[36] Hy-Line, Ross 308, Cobb 500, ISA Brown and Lohmann breeds — vaccinated, disease-free and bred for performance.
+[37] Customer First
+[38] Transparent pricing, honest advice and long-term partnerships with the farmers and families we serve.
+[39] Statistics
+[40] 100k Chickens Raised Annually
+[41] 5000 Satisfied Customers
+[42] 13 Years in Business
+[43] 100% Quality Guarantee
+[44] 
+[45] Best Sellers
+[46] Featured Products
+[47] Premium poultry, eggs and feeds — ready to order.
+[48] Bovans Brown Layers
+[49] Robust brown egg layers. Excellent feed conversion and egg quality.
+[50] Price: KES 410
+[51] Broiler Finisher (6-8 weeks)
+[52] Final stage feed for broilers. High energy formula.
+[53] Price: KES 2,900
+[54] Busia Premium Mix
+[55] Our signature blend. Multi-purpose feed suitable for all poultry types.
+[56] Price: KES 3,100
+[57] Chick Mash (0-4 weeks)
+[58] Fine mash feed for young chicks. Easy to digest with high energy content. 25kg bags.
+[59] Price: KES 1,800
+[60] Chick Starter Crumbs (0-4 weeks)
+[61] High-protein formula for day-old chicks. 24% crude protein with vitamins and probiotics. 50kg bags.
+[62] Price: KES 3,200
+[63] Cobb 500 Broilers
+[64] High-performance broilers with excellent feed conversion.
+[65] Price: KES 480
+[66] Day-Old Broiler Chicks
+[67] Vaccinated broiler chicks. 95%+ hatch rate.
+[68] Price: KES 80
+[69] Day-Old Layer Chicks
+[70] Premium layer chicks vaccinated and ready to grow.
+[71] Price: KES 70
+[72] 
+[73] How It Works
+[74] From our farm to your table
+[75] A simple, transparent journey — so you always know exactly what you're getting.
+[76] 01. Select & Order
+[77] Choose your chicks, birds, eggs or feeds online or by phone. Our team confirms availability instantly.
+[78] 02. Vaccinated & Checked
+[79] Every bird passes health and vaccination protocols before it leaves the farm gates.
+[80] 03. Packed & Delivered
+[81] Carefully packed and transported in monitored conditions — on time, every time.
+[82] 04. Grow With Support
+[83] Ongoing consulting, feed advice and after-sale support to help your flock thrive.
+[84] 
+[85] Our Story
+[86] From 500 birds to East Africa's trusted farm
+[87] Founded in 2015 in Nasira AC, Busia, we've grown from a small family operation into a modern poultry facility serving thousands of customers — without ever losing the personal touch.
+[88] State-of-the-art incubation & biosafety facilities
+[89] Vaccinated, disease-free birds with 95%+ hatch rates
+[90] Feed formulas that cut costs by up to 40%
+[91] 
+[92] Testimonials
+[93] 
+[94] (Extract testimonials from Facebook and base mostly on eggs only)
+[95] Farmers who trust us
+[96] Testimonial 1
+[97] ★★★★★
+[98] "I've bought day-old chicks from Busia for three seasons now. Mortality is almost zero and the support team actually answers the phone."
+[99] JM James Muriithi
+[100] Broiler Farmer, Eldoret
+[101] Testimonial 2
+[102] ★★★★★
+[103] "The incubator rental service changed our hatchery. We now hatch over 2,000 chicks a month with an amazing success rate."
+[104] AN Alice Nekesa
+[105] Hatchery Owner, Bungoma
+[106] Testimonial 3
+[107] ★★★★★
+[108] "Fresh eggs delivered to our restaurant every morning, without fail. The quality is unmatched in the county."
+[109] DO Daniel Ochieng
+[110] Restaurant Owner, Busia Town
+[111] 
+[112] Let's Get Started
+[113] Ready to elevate your farm?
+[114] Join thousands of successful farmers using Busia Chicken products and management tools. Whether you're a family, a restaurant or a commercial operation — we've got you covered.
+[115] 
+[116] Footer Content
+[117] BUSIA CHICKEN
+[118] Leading supplier of premium-grade poultry, fresh eggs, and specially formulated feeds across East Africa. From our family farm to your table — quality you can trust.
+[119] Company
+[120] About Us
+[121] Our Services
+[122] FAQ
+[123] Contact
+[124] Shop
+[125] All Products
+[126] Day-Old Chicks
+[127] Feeds
+[128] Fresh Eggs
+[129] Your Cart
+[130] Get In Touch
+[131] Phone: +254 727 585 599
+[132] Email: info@busiachicken.com
+[133] Address: Nasira AC Sub-location, Busia, Kenya
+[134] Newsletter
+[135] Join our newsletter for farm updates & special offers.
+[136] Your email address
+[137] Subscribe
+[138] 
+[139] © 2026 Busia Chicken Farm. All rights reserved.
+[140] Privacy Policy
+[141] Terms of Service
+[142] 
+[143] 
+[144] 
+[145] 
+[146] 
+[147] 
+[148] 
+[149] 
+[150] 
+[151] 
+[152] 
+[153] 
+[154] 
+[155] 
+[156] 
+[157] 
+[158] 
+[159] ABOUT US
+[160] Website: https://new.decapoli.co.ke/Frontend/pages/about.php
+[161] About Busia Chicken Farm
+[162] Leading poultry supplier in East Africa — premium quality chickens, eggs and animal feeds since 2015.
+[163] 
+[164] Our Story
+[165] From a small family operation to industry leaders
+[166] Founded in 2015, Busia Chicken Farm started as a small family operation in Nasira AC, Busia. What began with just 300 birds has grown into a modern poultry production facility serving thousands of customers across East Africa.
+[167] Our journey has been driven by a commitment to quality, innovation, and sustainable farming practices. We've invested in state-of-the-art facilities, modern automated equipment, and strict biosafety protocols to ensure every product meets international standards.
+[168] 100% biosafety compliant standards
+[169] Fully vaccinated, optimal health & early growth
+[170] Nutrient-dense organic feed formulas
+[171] Statistics
+[172] 100 Chickens Raised Annually
+[173] 5000 Satisfied Customers
+[174] 13 Years in Business
+[175] 100% Quality Guarantee
+[176] 
+[177] Our Core Values
+[178] The principles that guide us
+[179] Quality First
+[180] Every product meets strict quality standards. We prioritize health, genetics and product excellence above all else.
+[181] Sustainability
+[182] Responsible farming with proper waste management, animal welfare and environmental stewardship at the core.
+[183] Customer Focus
+[184] Excellent service, transparent communication and lasting relationships with every farmer and family we serve.
+[185] 
+[186] (Remove this section) Leadership Team 
+[187] The people behind the farm
+[188] Samuel Kiplagat
+[189] Farm Director
+[190] 20+ years poultry farming experience. Oversees all farm operations and biosafety protocols.
+[191] Grace Wanjiru
+[192] Sales Manager
+[193] Customer relations specialist ensuring quality service and timely delivery to all clients.
+[194] Peter Omondi
+[195] Operations Manager
+[196] Manages inventory, logistics and digital farm management systems for maximum efficiency.
+[197] 
+[198] Certifications
+[199] Operating to the highest standards
+[200] KEBS Certified
+[201] Kenya Bureau of Standards
+[202] ISO 22000
+[203] Food Safety Management
+[204] Biosafety
+[205] Ministry of Agriculture
+[206] VAT Registered
+[207] KRA Compliant
+[208] 
+[209] Let's Work Together
+[210] Ready to partner with us?
+[211] Whether you're a commercial farm, a retailer or a family looking for quality poultry products — we're here to help.
+[212] Contact Us
+[213] Shop Now
+[214] 
+[215] Footer Content
+[216] BUSIA CHICKEN
+[217] Leading supplier of premium-grade poultry, fresh eggs, and specially formulated feeds across East Africa. From our family farm to your table — quality you can trust.
+[218] Company
+[219] About Us
+[220] Our Services
+[221] FAQ
+[222] Contact
+[223] Shop
+[224] All Products
+[225] Day-Old Chicks
+[226] Feeds
+[227] Fresh Eggs
+[228] Your Cart
+[229] Get In Touch
+[230] Phone: +254 727 585 599
+[231] Email: info@busiachicken.com
+[232] Address: Nasira AC Sub-location, Busia, Kenya
+[233] Newsletter
+[234] Join our newsletter for farm updates & special offers.
+[235] Your email address
+[236] Subscribe
+[237] 
+[238] © 2026 Busia Chicken Farm. All rights reserved.
+[239] Privacy Policy
+[240] Terms of Service
+[241] 
+[242] 
+[243] 
+[244] 
+[245] 
+[246] 
+[247] 
+[248] 
+[249] 
+[250] 
+[251] 
+[252] 
+[253] 
+[254] 
+[255] 
+[256] OUR SERVICES
+[257] Website: https://new.decapoli.co.ke/Frontend/pages/services.php
+[258] 
+[259] Our Services
+[260] OUR SERVICES
+[261] 
+[262] Comprehensive Poultry Farming & Agricultural Solutions
+[263] 
+[264] At Busia Chicken Limited, we are committed to delivering quality poultry products and sustainable agricultural solutions. Our operations cover egg production, poultry farming, animal feeds manufacturing, organic manure production, organic foliar fertilizers, chicken meat production and poultry farming consultancy. We combine modern farming practices, innovation and expertise to support farmers, businesses and consumers.
+[265] 
+[266] 1. Egg Production
+[267] 
+[268] We specialize in the production and supply of high-quality, farm-fresh eggs. Through proper flock management, quality nutrition and strict biosecurity measures, we ensure consistent production of nutritious eggs that meet the needs of households, retailers, hotels and other businesses.
+[269] 
+[270] 2. Organic Manure Production
+[271] 
+[272] We produce organic manure from poultry waste, transforming bird droppings and other poultry remains into valuable organic fertilizer. Our manure improves soil fertility, enhances soil structure and supports sustainable crop production while promoting environmentally responsible waste management.
+[273] 
+[274] 3. Organic Folia Production
+[275] 
+[276] We produce Organic Folia, an organic agricultural product designed to support plant growth and improve crop productivity. Our focus is on providing sustainable agricultural solutions that help farmers improve crop performance and promote environmentally friendly farming practices.
+[277] 
+[278] 4. Animal Feeds Production
+[279] 
+[280] We manufacture quality poultry feeds formulated to support healthy growth, improved productivity and optimal bird performance. Our feeds cater to different poultry growth stages, providing essential nutrients for broilers, layers and other poultry breeds while promoting efficient and affordable poultry farming.
+[281] 
+[282] 5. Chicken Farming Consultancy
+[283] 
+[284] We provide professional poultry farming consultancy to individuals, farmers and agricultural businesses looking to establish, manage or expand their poultry farming operations. Our consultancy covers farm planning, housing, breed selection, feeding programs, disease prevention, flock management, biosecurity and production optimization.
+[285] 
+[286] 6. Chicken Meat Production
+[287] 
+[288] We engage in chicken meat production, supplying quality poultry meat to households, hotels, restaurants, retailers and other consumers. Through proper bird management, quality feeding and responsible farming practices, we aim to provide healthy, fresh and quality chicken products. 
+[289] Statistics
+[290] 90% Hatch Success Rate
+[291] 30% Saved on Feed Costs
+[292] 100% Support Availability
+[293] 
+[294] How We Help
+[295] Every farmer, fully supported
+[296] 01. Book a Consultation
+[297] Reach us by phone, WhatsApp or the contact form. We respond within 24 hours.
+[298] 02. Site & Stock Assessment
+[299] We visit or review your setup and recommend the right birds, feeds and housing.
+[300] 03. Ongoing Support
+[301] Vaccination schedules, feed adjustments and problem-solving whenever you need it.
+[302] 04. Grow & Scale
+[303] Expand confidently with our hatchery, equipment and market guidance.
+[304] 
+[305] Need custom support or consulting?
+[306] Send us an inquiry or visit our offices in Nasira AC sub-location for in-person support.
+[307] Book Consultation
+[308] Call: +254 727 585 599
+[309] 
+[310] Footer Content
+[311] BUSIA CHICKEN
+[312] Leading supplier of premium-grade poultry, fresh eggs, and specially formulated feeds across East Africa. From our family farm to your table — quality you can trust.
+[313] Company
+[314] About Us
+[315] Our Services
+[316] FAQ
+[317] Contact
+[318] Shop
+[319] All Products
+[320] Day-Old Chicks
+[321] Feeds
+[322] Fresh Eggs
+[323] Your Cart
+[324] Get In Touch
+[325] Phone: +254 727 585 599
+[326] Email: info@busiachicken.com
+[327] Address: Nasira AC Sub-location, Busia, Kenya
+[328] Newsletter
+[329] Join our newsletter for farm updates & special offers.
+[330] Your email address
+[331] Subscribe
+[332] 
+[333] © 2026 Busia Chicken Farm. All rights reserved.
+[334] Privacy Policy
+[335] Terms of Service
+[336] 
+[337] 
+[338] 
+[339] 
+[340] 
+[341] 
+[342] 
+[343] 
+[344] PRODUCTS
+[345] Website: https://new.decapoli.co.ke/Frontend/pages/products.php
+[346] Our Premium Products
+[347] Discover our range of high-quality chicken products and specially formulated animal feeds designed for optimal growth and productivity.
+[348] 
+[349] Meat Production
+[350] Broiler Chickens
+[351] High-quality broilers bred for superior meat yield and rapid growth cycles — vaccinated, disease-free and raised on premium nutrition standards. Perfect for commercial processing and retail meat supply.
+[352] Ross 308 & Cobb 500 breeds
+[353] Market weight in 5–6 weeks
+[354] Excellent feed conversion ratio
+[355] Shop Broilers
+[356] 
+[357] Egg Production
+[358] Layers & Fresh Eggs
+[359] High-yielding layer chickens producing premium quality eggs. Optimized for consistent production and excellent shell quality — harvested daily from our modern facilities.
+[360] ISA Brown, Hy-line & Lohmann layers
+[361] 300+ eggs per bird per year
+[362] Grade A farm-fresh eggs (30-egg trays)
+[363] Shop Layers & Eggs
+[364] 
+[365] Nutrition
+[366] Premium Animal Feeds
+[367] Specially formulated animal feeds designed for optimal growth, productivity and health — balanced with essential nutrients, amino acids and vitamins for maximum performance.
+[368] Starter, grower and finisher feeds
+[369] Premium layer mash with calcium
+[370] Premium Kienyeji mash
+[371] Available in 20kg, 50kg & 70kg bulk bags
+[372] Shop Feeds
+[373] 
+[374] Bulk Orders
+[375] Commercial farming needs?
+[376] We offer specialized pricing and dedicated support for large-scale operations. Bulk orders for feeds & fresh eggs include free delivery within Busia County.
+[377] Request Bulk Quote
+[378] Browse the Shop
+[379] 
+[380] Footer Content
+[381] BUSIA CHICKEN
+[382] Leading supplier of premium-grade poultry, fresh eggs, and specially formulated feeds across East Africa. From our family farm to your table — quality you can trust.
+[383] Company
+[384] About Us
+[385] Our Services
+[386] FAQ
+[387] Contact
+[388] Shop
+[389] All Products
+[390] Day-Old Chicks
+[391] Feeds
+[392] Fresh Eggs
+[393] Your Cart
+[394] Get In Touch
+[395] Phone: +254 727 585 599
+[396] Email: info@busiachicken.com
+[397] Address: Nasira AC Sub-location, Busia, Kenya
+[398] Newsletter
+[399] Join our newsletter for farm updates & special offers.
+[400] Your email address
+[401] Subscribe
+[402] 
+[403] © 2026 Busia Chicken Farm. All rights reserved.
+[404] Privacy Policy
+[405] Terms of Service
+[406] 
+[407] 
+[408] NB
+[409] 
+[410] Include the two business locations, nasira and tangakona from google business
+[411] Change appearance of the logo on admin landing page.
+[412] Enable editing of the website including change of slider photos and content from the admin side.
+[413] 

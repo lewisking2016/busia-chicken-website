@@ -23,8 +23,13 @@
 
     /* ── Navbar scroll state ─────────────────────────────────── */
     const nav = document.getElementById('site-nav');
+    const header = document.getElementById('site-header');
     if (nav) {
-        const onScroll = () => nav.classList.toggle('nav-scrolled', window.scrollY > 40);
+        const onScroll = () => {
+            const isScrolled = window.scrollY > 40;
+            nav.classList.toggle('nav-scrolled', isScrolled);
+            if (header) header.classList.toggle('header-scrolled', isScrolled);
+        };
         window.addEventListener('scroll', onScroll, { passive: true });
         onScroll();
     }

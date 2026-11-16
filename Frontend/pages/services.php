@@ -35,11 +35,11 @@ include __DIR__ . '/../includes/header.php';
             <!-- 1. Egg Production -->
             <div class="p-card" style="display:flex;flex-direction:column;">
                 <div class="p-icon"><i data-lucide="egg" style="width:28px;height:28px;"></i></div>
-                <span style="font-weight:800;color:var(--brand-600);font-size:0.82rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">01. Core Operation</span>
+                <span style="font-weight:800;color:var(--brand-red);font-size:0.82rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">01. Core Operation</span>
                 <h3 style="margin-bottom:0.8rem;">Egg Production</h3>
                 <p style="flex-grow:1;color:#475569;line-height:1.65;">We specialize in the production and supply of high-quality, farm-fresh eggs. Through proper flock management, quality nutrition and strict biosecurity measures, we ensure consistent production of nutritious eggs that meet the needs of households, retailers, hotels and other businesses.</p>
                 <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid #f1f5f9;">
-                    <a href="/Frontend/pages/shop.php?category=eggs" class="btn btn-outline btn-sm" style="width:100%;justify-content:center;">Order Fresh Eggs</a>
+                    <a href="/Frontend/pages/shop.php?category=eggs" class="btn btn-red btn-sm" style="width:100%;justify-content:center;"><i data-lucide="shopping-cart" style="width:14px;height:14px;"></i> Order Fresh Eggs</a>
                 </div>
             </div>
 
@@ -90,11 +90,11 @@ include __DIR__ . '/../includes/header.php';
             <!-- 6. Chicken Meat Production -->
             <div class="p-card" style="display:flex;flex-direction:column;">
                 <div class="p-icon"><i data-lucide="shield-check" style="width:28px;height:28px;"></i></div>
-                <span style="font-weight:800;color:var(--brand-600);font-size:0.82rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">06. Premium Table Meat</span>
+                <span style="font-weight:800;color:var(--brand-red);font-size:0.82rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">06. Premium Table Meat</span>
                 <h3 style="margin-bottom:0.8rem;">Chicken Meat Production</h3>
                 <p style="flex-grow:1;color:#475569;line-height:1.65;">We engage in chicken meat production, supplying quality poultry meat to households, hotels, restaurants, retailers and other consumers. Through proper bird management, quality feeding and responsible farming practices, we aim to provide healthy, fresh and quality chicken products.</p>
                 <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid #f1f5f9;">
-                    <a href="/Frontend/pages/shop.php?category=chicken" class="btn btn-outline btn-sm" style="width:100%;justify-content:center;">Shop Chicken Meat</a>
+                    <a href="/Frontend/pages/shop.php?category=chicken" class="btn btn-red btn-sm" style="width:100%;justify-content:center;"><i data-lucide="shopping-cart" style="width:14px;height:14px;"></i> Shop Chicken Meat</a>
                 </div>
             </div>
         </div>
@@ -125,7 +125,7 @@ include __DIR__ . '/../includes/header.php';
 <section class="section-pad bg-white">
     <div class="container">
         <div class="section-head center" data-reveal>
-            <span class="eyebrow centered">How We Help</span>
+            <span class="eyebrow centered" style="color:var(--brand-red);font-weight:800;letter-spacing:0.08em;"><i data-lucide="check-circle" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;"></i> HOW WE EMPOWER FARMERS</span>
             <h2 class="section-title">Every farmer, <em>fully supported</em></h2>
             <p class="lead">A proven 4-stage process to ensure your agricultural venture flourishes.</p>
         </div>

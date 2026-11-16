@@ -27,7 +27,7 @@ include __DIR__ . '/../includes/header.php';
     <div class="container">
         <div class="row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(2.4rem,5vw,4.5rem);align-items:center;">
             <div data-reveal="left">
-                <span class="eyebrow">Meat Production</span>
+                <span class="eyebrow" style="color:var(--brand-red);font-weight:800;letter-spacing:0.08em;"><i data-lucide="flame" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;"></i> MEAT PRODUCTION</span>
                 <h2 class="section-title">Broiler <em>Chickens</em></h2>
                 <p class="lead">High-quality broilers bred for superior meat yield and rapid growth cycles — vaccinated, disease-free and raised on premium nutrition standards. Perfect for commercial processing and retail meat supply.</p>
                 <ul class="check-list" style="margin:1.6rem 0 2.2rem;">
@@ -37,7 +37,7 @@ include __DIR__ . '/../includes/header.php';
                 </ul>
                 <div style="display:flex;gap:12px;flex-wrap:wrap;">
                     <a href="/Frontend/pages/shop.php?category=broilers" class="btn btn-primary" data-magnetic>Shop Broilers</a>
-                    <a href="https://wa.me/254727585599?text=Hello%20Busia%20Chicken%20Farm,%20I%20would%20like%20to%20order%20Broiler%20Chickens" class="btn btn-outline" target="_blank" rel="noopener">Quick Order (WhatsApp)</a>
+                    <a href="https://wa.me/254727585599?text=Hello%20Busia%20Chicken%20Farm,%20I%20would%20like%20to%20order%20Broiler%20Chickens" class="btn btn-red" target="_blank" rel="noopener"><i data-lucide="phone"></i> Quick Order (WhatsApp)</a>
                 </div>
             </div>
             <div data-reveal="right">
@@ -61,7 +61,7 @@ include __DIR__ . '/../includes/header.php';
                 </div>
             </div>
             <div data-reveal="right" style="order:1;">
-                <span class="eyebrow">Egg Production</span>
+                <span class="eyebrow" style="color:var(--brand-red);font-weight:800;letter-spacing:0.08em;"><i data-lucide="egg" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;"></i> EGG PRODUCTION</span>
                 <h2 class="section-title">Layers &amp; Fresh <em>Eggs</em></h2>
                 <p class="lead">High-yielding layer chickens producing premium quality eggs. Optimized for consistent production and excellent shell quality — harvested daily from our modern facilities.</p>
                 <ul class="check-list" style="margin:1.6rem 0 2.2rem;">
@@ -71,7 +71,7 @@ include __DIR__ . '/../includes/header.php';
                 </ul>
                 <div style="display:flex;gap:12px;flex-wrap:wrap;">
                     <a href="/Frontend/pages/shop.php?category=eggs" class="btn btn-primary" data-magnetic>Shop Layers &amp; Eggs</a>
-                    <a href="https://wa.me/254727585599?text=Hello%20Busia%20Chicken%20Farm,%20I%20would%20like%20to%20order%20Eggs" class="btn btn-outline" target="_blank" rel="noopener">Order Egg Crates</a>
+                    <a href="https://wa.me/254727585599?text=Hello%20Busia%20Chicken%20Farm,%20I%20would%20like%20to%20order%20Eggs" class="btn btn-red" target="_blank" rel="noopener"><i data-lucide="phone"></i> Order Egg Crates</a>
                 </div>
             </div>
         </div>
@@ -85,7 +85,7 @@ include __DIR__ . '/../includes/header.php';
     <div class="container">
         <div class="row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(2.4rem,5vw,4.5rem);align-items:center;">
             <div data-reveal="left">
-                <span class="eyebrow">Nutrition</span>
+                <span class="eyebrow" style="color:var(--brand-red);font-weight:800;letter-spacing:0.08em;"><i data-lucide="wheat" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;"></i> NUTRITION &amp; FEEDS</span>
                 <h2 class="section-title">Premium Animal <em>Feeds</em></h2>
                 <p class="lead">Specially formulated animal feeds designed for optimal growth, productivity and health — balanced with essential nutrients, amino acids and vitamins for maximum performance.</p>
                 <ul class="check-list" style="margin:1.6rem 0 2.2rem;">
@@ -118,6 +118,8 @@ include __DIR__ . '/../includes/header.php';
                 <p>We offer specialized pricing and dedicated support for large-scale operations. Bulk orders for feeds &amp; fresh eggs include free delivery within Busia County.</p>
                 <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:1.5rem;">
                     <a href="/Frontend/pages/contact.php?subject=Bulk+Order+Quote" class="btn btn-primary" data-magnetic>Request Bulk Quote</a>
+                    <a href="https://wa.me/254727585599?text=Hello%20Busia%20Chicken%20Farm,%20I%20would%20like%20to%20request%20a%20Bulk%20Order%20Quote" class="btn btn-red" target="_blank" rel="noopener"><i data-lucide="phone"></i> WhatsApp Wholesale Desk</a>
+                </div>
                     <a href="/Frontend/pages/shop.php" class="btn btn-ghost">Browse the Shop</a>
                 </div>
             </div>

@@ -579,7 +579,8 @@ if ($pdo) {
 <?php if ($tab === 'testimonials'): ?>
 <div style="display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;">
     <div class="admin-card" style="padding:22px;">
-        <h3 style="margin:0 0 16px;font-family:'Outfit',sans-serif;font-size:1.15rem;">Approved Reviews (Egg &amp; Poultry Focus)</h3>
+        <h3 style="margin:0 0 8px;font-family:'Outfit',sans-serif;font-size:1.15rem;">Approved Reviews (Facebook • Eggs Only Focus)</h3>
+        <p style="margin:0 0 16px;color:#64748b;font-size:0.85rem;">Per the official transcript requirements: <em>Extract testimonials from Facebook and base mostly on eggs only.</em></p>
         <div style="display:flex;flex-direction:column;gap:12px;">
             <?php foreach ($allTestimonials as $t): ?>
             <div style="padding:14px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;">

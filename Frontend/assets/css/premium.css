@@ -25,6 +25,13 @@
     --cream-50: #FBF8F1;
     --cream-100: #F6F0E3;
 
+    /* Crisp Poultry Crimson Red Tokens (Solid, Non-Ambient, Complements Forest Green & Gold) */
+    --brand-red: #D32F2F;
+    --brand-red-dark: #B71C1C;
+    --brand-red-light: #FEF2F2;
+    --brand-red-border: #FCA5A5;
+    --brand-red-text: #991B1B;
+
     --ink: #0F1B12;
 
     --font-display: 'Outfit', sans-serif;
@@ -40,7 +47,48 @@
     --shadow-glow: 0 10px 40px -8px rgba(27, 94, 32, 0.45);
 
     --nav-h: 78px;
+    --announcement-h: 36px;
+    --header-h-full: calc(var(--nav-h) + var(--announcement-h));
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UNIFIED SITE HEADER (Zero Overlap with Top Announcement Bar)
+   ═══════════════════════════════════════════════════════════════ */
+.site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1000;
+    pointer-events: none;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.site-header > * {
+    pointer-events: auto;
+}
+
+.site-header .top-announcement-bar {
+    position: relative;
+    width: 100%;
+    z-index: 1002;
+    background: #082F13;
+    color: #fff;
+    font-size: 0.82rem;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(224, 168, 46, 0.3);
+}
+
+.site-header .navbar,
+.site-header .premium-nav {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    z-index: 1001;
 }
 
 body {
@@ -49,8 +97,20 @@ body {
     background: var(--cream-50);
 }
 
+body.has-announcement {
+    padding-top: var(--header-h-full);
+}
+
 body.has-hero {
     padding-top: 0;
+}
+
+body.has-hero .hero-content {
+    padding-top: calc(var(--nav-h) + 20px);
+}
+
+body.has-hero.has-announcement .hero-content {
+    padding-top: calc(var(--header-h-full) + 20px);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -210,8 +270,18 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Transparent state over the homepage hero */
 body.has-hero .premium-nav:not(.nav-scrolled) {
-    background: linear-gradient(to bottom, rgba(6, 28, 12, 0.55), rgba(6, 28, 12, 0));
-    border-bottom-color: rgba(255, 255, 255, 0.14);
+    background: rgba(8, 47, 19, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+body.has-hero .premium-nav:not(.nav-scrolled) .nav-brand-name {
+    color: #FFFFFF !important;
+}
+
+body.has-hero .premium-nav:not(.nav-scrolled) .nav-brand-slogan {
+    color: var(--gold-400) !important;
 }
 
 body.has-hero .premium-nav:not(.nav-scrolled) .nav-link {
@@ -477,13 +547,13 @@ body.has-hero .premium-nav:not(.nav-scrolled) .mobile-menu-btn span {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--gold-400);
+    background: var(--brand-red);
     animation: heroPulse 2s ease-in-out infinite;
 }
 
 @keyframes heroPulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(240, 180, 41, 0.55); }
-    50%      { box-shadow: 0 0 0 7px rgba(240, 180, 41, 0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); }
+    50%      { box-shadow: 0 0 0 7px rgba(211, 47, 47, 0); }
 }
 
 .hero-title {
@@ -917,12 +987,25 @@ body.has-hero .premium-nav:not(.nav-scrolled) .mobile-menu-btn span {
 
 .product-badge {
     border-radius: 4px;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(6px);
-    color: var(--brand-600);
+    background: var(--brand-red);
+    color: #FFFFFF;
     font-weight: 700;
+    font-size: 0.72rem;
     letter-spacing: 0.06em;
-    box-shadow: 0 4px 16px rgba(8, 47, 19, 0.14);
+    padding: 4px 10px;
+    box-shadow: 0 2px 6px rgba(183, 28, 28, 0.35);
+}
+
+.product-badge.badge-outline {
+    background: #FFFFFF;
+    color: var(--brand-red);
+    border: 1px solid var(--brand-red);
+}
+
+.product-badge.badge-muted {
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--gray-600);
+    box-shadow: none;
 }
 
 .product-name {
@@ -1835,15 +1918,27 @@ button {
     flex-wrap: wrap;
 }
 .announcement-pill {
-    background: #E0A82E;
-    color: #082F13;
+    background: var(--brand-red);
+    color: #FFFFFF;
     font-weight: 800;
     font-size: 0.68rem;
     text-transform: uppercase;
     letter-spacing: 0.6px;
-    padding: 3px 8px;
-    border-radius: 3px;
+    padding: 3px 9px;
+    border-radius: 4px;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 1px 3px rgba(183, 28, 28, 0.4);
+}
+.announcement-pill::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #FFFFFF;
 }
 .announcement-text {
     flex: 1;
@@ -2146,5 +2241,107 @@ button {
     min-width: 130px;
     text-align: center;
     justify-content: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CRISP POULTRY RED ACCENT SYSTEM (Solid, Non-Ambient, Harmonics)
+   ═══════════════════════════════════════════════════════════════ */
+.btn-red {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    background: #D32F2F !important;
+    color: #FFFFFF !important;
+    border: 1px solid #B71C1C !important;
+    font-weight: 700 !important;
+    padding: 0.75rem 1.4rem !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 6px rgba(183, 28, 28, 0.28) !important;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+.btn-red:hover {
+    background: #B71C1C !important;
+    color: #FFFFFF !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(183, 28, 28, 0.4) !important;
+}
+.btn-red:active {
+    transform: scale(0.98) !important;
+}
+
+.btn-outline-red {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    background: transparent !important;
+    color: #D32F2F !important;
+    border: 1.5px solid #D32F2F !important;
+    font-weight: 700 !important;
+    padding: 0.7rem 1.3rem !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+.btn-outline-red:hover {
+    background: #D32F2F !important;
+    color: #FFFFFF !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(183, 28, 28, 0.3) !important;
+}
+
+/* Nav Badge (e.g. HOT next to Shop) */
+.nav-badge-red {
+    display: inline-block;
+    background: #D32F2F;
+    color: #FFFFFF;
+    font-size: 0.62rem;
+    font-weight: 800;
+    line-height: 1;
+    padding: 2px 5px;
+    border-radius: 3px;
+    letter-spacing: 0.4px;
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+/* Red Tag / Pill for Products & Services */
+.tag-red {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #FEF2F2;
+    color: #991B1B;
+    border: 1px solid #FCA5A5;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+/* Solid Red Badge */
+.badge-red {
+    background: #D32F2F !important;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    padding: 3px 8px !important;
+    border-radius: 4px !important;
+    font-size: 0.72rem !important;
+    letter-spacing: 0.04em !important;
+}
+
+/* Text red utilities */
+.text-red {
+    color: #D32F2F !important;
+}
+.text-red-dark {
+    color: #B71C1C !important;
+}
+.border-red-top {
+    border-top: 3px solid #D32F2F !important;
 }
 

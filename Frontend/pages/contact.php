@@ -53,7 +53,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['contact_submi
 
         <!-- Contact Information & Both Locations -->
         <div data-reveal="left">
-            <span class="eyebrow">Direct Contact &amp; Hubs</span>
+            <span class="eyebrow" style="color:var(--brand-red);font-weight:800;letter-spacing:0.08em;"><i data-lucide="map-pin" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;"></i> DIRECT CONTACT &amp; HUBS</span>
             <h2 class="section-title">Let's <em>talk</em></h2>
             <p class="lead">Reach out by phone, WhatsApp, email or visit either of our two operational facilities in Busia County.</p>
 
@@ -169,7 +169,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['contact_submi
                         <textarea id="message" name="message" required class="form-control" placeholder="Tell us how many birds, chicks, egg trays or feed bags you need..." style="min-height:140px;resize:vertical;border-radius:4px;padding:0.9rem 1.2rem;width:100%;"></textarea>
                     </div>
 
-                    <button type="submit" name="contact_submit" value="1" class="btn btn-primary" style="width:100%;justify-content:center;" data-magnetic>
+                    <button type="submit" name="contact_submit" value="1" class="btn btn-red" style="width:100%;justify-content:center;" data-magnetic>
                         <span>Send Message</span>
                         <i data-lucide="send" style="width:18px;height:18px;"></i>
                     </button>

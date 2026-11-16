@@ -90,37 +90,41 @@ $is_home = ($currentPage === 'home');
         }
     }
     ?>
+    <?php
+    $announcement = function_exists('getSetting') ? getSetting('announcement_bar', '🐣 Fresh Day-Old Chicks & Grade-A Farm Eggs Available Daily in Nasira & Tangakona! Call +254 727 585 599') : '🐣 Fresh Day-Old Chicks & Grade-A Farm Eggs Available Daily in Nasira & Tangakona! Call +254 727 585 599';
+    $show_announcement = function_exists('getSetting') ? getSetting('show_announcement', '1') : '1';
+    $has_announcement = ($show_announcement === '1' && !empty($announcement));
+    ?>
 </head>
-<body class="<?php echo $is_home ? 'has-hero' : ''; ?>">
+<body class="<?php echo $is_home ? 'has-hero' : ''; ?><?php echo $has_announcement ? ' has-announcement' : ''; ?>">
 
     <!-- Scroll progress bar -->
     <div class="scroll-progress" id="scroll-progress"></div>
 
-    <?php
-    $announcement = function_exists('getSetting') ? getSetting('announcement_bar', '🐣 Fresh Day-Old Chicks & Grade-A Farm Eggs Available Daily in Nasira & Tangakona! Call +254 727 585 599') : '🐣 Fresh Day-Old Chicks & Grade-A Farm Eggs Available Daily in Nasira & Tangakona! Call +254 727 585 599';
-    $show_announcement = function_exists('getSetting') ? getSetting('show_announcement', '1') : '1';
-    if ($show_announcement === '1' && !empty($announcement)): ?>
-    <div class="top-announcement-bar">
-        <div class="container announcement-inner">
-            <span class="announcement-pill">Live Farm Update</span>
-            <span class="announcement-text"><?php echo htmlspecialchars($announcement, ENT_QUOTES, 'UTF-8'); ?></span>
-            <div class="announcement-locations">
-                <a href="/Frontend/pages/contact.php#nasira" class="ann-loc"><i data-lucide="map-pin" style="width:12px;height:12px;"></i> Nasira AC HQ</a>
-                <span class="sep">•</span>
-                <a href="/Frontend/pages/contact.php#tangakona" class="ann-loc"><i data-lucide="store" style="width:12px;height:12px;"></i> Tangakona Depot</a>
+    <!-- Unified Site Header Wrapper (Prevents Any Bar Overlap) -->
+    <header class="site-header" id="site-header">
+        <?php if ($has_announcement): ?>
+        <div class="top-announcement-bar">
+            <div class="container announcement-inner">
+                <span class="announcement-pill">Live Farm Update</span>
+                <span class="announcement-text"><?php echo htmlspecialchars($announcement, ENT_QUOTES, 'UTF-8'); ?></span>
+                <div class="announcement-locations">
+                    <a href="/Frontend/pages/contact.php#nasira" class="ann-loc"><i data-lucide="map-pin" style="width:12px;height:12px;"></i> Nasira AC HQ</a>
+                    <span class="sep">•</span>
+                    <a href="/Frontend/pages/contact.php#tangakona" class="ann-loc"><i data-lucide="store" style="width:12px;height:12px;"></i> Tangakona Depot</a>
+                </div>
             </div>
         </div>
-    </div>
-    <?php endif; ?>
+        <?php endif; ?>
 
-    <!-- Main Navigation -->
-    <nav class="navbar premium-nav" id="site-nav">
+        <!-- Main Navigation -->
+        <nav class="navbar premium-nav" id="site-nav">
         <div class="container nav-inner">
             <!-- Brand Logo with Slogan -->
             <a href="/" class="nav-brand" aria-label="Busia Chicken Limited - The Chicken People">
                 <img src="/Frontend/images/logo.svg" onerror="this.onerror=null;this.src='/Frontend/images/busia_chicken_logo.png';" alt="Busia Chicken Limited - The Chicken People" class="nav-logo">
                 <div class="nav-brand-text">
-                    <span class="nav-brand-name">BUSIA CHICKEN</span>
+                    <span class="nav-brand-name">BUSIA CHICKEN<span style="color:var(--brand-red);font-weight:900;">.</span></span>
                     <span class="nav-brand-slogan">The Chicken People</span>
                 </div>
             </a>
@@ -138,7 +142,7 @@ $is_home = ($currentPage === 'home');
                     <li><a class="nav-link<?php echo navActive('about', $currentPage); ?>" href="/Frontend/pages/about.php"><span>About</span></a></li>
                     <li><a class="nav-link<?php echo navActive('services', $currentPage); ?>" href="/Frontend/pages/services.php"><span>Services</span></a></li>
                     <li><a class="nav-link<?php echo navActive('products', $currentPage); ?>" href="/Frontend/pages/products.php"><span>Products</span></a></li>
-                    <li><a class="nav-link<?php echo navActive('shop', $currentPage); ?>" href="/Frontend/pages/shop.php"><span>Shop</span></a></li>
+                    <li><a class="nav-link<?php echo navActive('shop', $currentPage); ?>" href="/Frontend/pages/shop.php"><span>Shop</span> <span class="nav-badge-red">HOT</span></a></li>
                     <li><a class="nav-link<?php echo navActive('contact', $currentPage); ?>" href="/Frontend/pages/contact.php"><span>Contact</span></a></li>
                 </ul>
 
@@ -167,3 +171,4 @@ $is_home = ($currentPage === 'home');
             </div>
         </div>
     </nav>
+    </header>
