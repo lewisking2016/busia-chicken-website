@@ -11,9 +11,9 @@ if (is_writable($temp_dir)) {
 }
 
 $path_prefix = '../';
-$page_title = 'Checkout - Busia Chicken Farm';
+$page_title = 'Checkout | Busia Chicken Limited - The Chicken People';
 
-include '../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SESSION['csrf_token'] ?? '');
 $mpesa_enabled = function_exists('getSetting') ? getSetting('mpesa_enabled', '1') === '1' : true;
 $cod_enabled = function_exists('getSetting') ? getSetting('cod_enabled', '0') === '1' : false;
@@ -257,5 +257,5 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
 </script>
 
 <?php
-include '../includes/footer.php';
+include __DIR__ . '/../includes/footer.php';
 ?>

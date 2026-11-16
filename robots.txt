@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /Frontend/admin/
+Disallow: /Backend/
+Disallow: /busiaadmin
+
+Sitemap: https://new.decapoli.co.ke/sitemap.xml

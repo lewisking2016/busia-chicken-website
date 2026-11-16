@@ -1,0 +1,24 @@
+{
+  "name": "Busia Chicken Limited - The Chicken People",
+  "short_name": "Busia Chicken",
+  "description": "Quality poultry, farm-fresh eggs, and premium animal feeds across East Africa.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F472B",
+  "theme_color": "#0F472B",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/Frontend/images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/Frontend/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

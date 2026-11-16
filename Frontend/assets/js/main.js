@@ -299,11 +299,10 @@ const BusiaApp = {
             }
         }
 
-        const cartBadge = document.querySelector('.cart-count');
-        if (cartBadge) {
+        document.querySelectorAll('.cart-count').forEach(cartBadge => {
             cartBadge.textContent = count || 0;
             cartBadge.style.animation = 'pulse 0.5s ease';
-        }
+        });
     },
 
     // ═══════════════════════════════════════════════════════════════

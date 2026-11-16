@@ -5,12 +5,12 @@
 declare(strict_types=1);
 
 $path_prefix = '../';
-$page_title = 'Shop - Buy Chicken Products & Feeds | Busia Chicken Farm';
+$page_title = 'Shop - Buy Chicken Products, Eggs & Feeds | Busia Chicken Limited';
 
-include '../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 
 // Get database connection and load products via shared source
-$pdo = getDB();
+$pdo = function_exists('getDB') ? getDB() : (function_exists('getDatabaseConnection') ? getDatabaseConnection() : null);
 $products = [];
 require_once __DIR__ . '/../includes/product_source.php';
 $products = loadDisplayProducts($pdo);
@@ -95,11 +95,11 @@ $products = loadDisplayProducts($pdo);
                     <?php
                     if (!empty($products)) {
                         foreach ($products as $index => $product):
-                            $img = $product['img'] ?? '';
+                            $img = $product['image_url'] ?? $product['img'] ?? '';
                             if (!$img) {
                                 $img = match($product['product_type'] ?? 'feed') {
                                     'feed' => '/Frontend/images/download (8).png',
-                                    'eggs' => '/Frontend/images/download (3).png',
+                                    'eggs' => '/Frontend/images/farm-fresh-eggs.jpg',
                                     'chicks' => '/Frontend/images/day-old-chicks.jpg',
                                     'live_chicken' => '/Frontend/images/broiler-chickens.jpg',
                                     default => '/Frontend/images/adbg.png'
@@ -160,5 +160,5 @@ $products = loadDisplayProducts($pdo);
 </section>
 
 <?php
-include '../includes/footer.php';
+include __DIR__ . '/../includes/footer.php';
 ?>

@@ -14,6 +14,7 @@ $isInventory  = in_array($cp, ['hub_inventory.php','stores.php','feed_production
 $isSalesFinance = in_array($cp, ['hub_money.php','hub_finance.php','profit.php','cashbook.php','credit.php','purchase_orders.php','daily_sales.php','bulk_sales.php','lpo.php'], true);
 $isReports    = in_array($cp, ['analytics.php','bulk_import_export.php'], true);
 $isPeople     = $cp === 'hub_people.php';
+$isCMS        = $cp === 'website_cms.php';
 $isSettings   = $cp === 'hub_settings.php';
 
 function navLinkWithSub(string $href, string $icon, string $label, bool $active, array $submodules, string $currentTab): string {
@@ -163,11 +164,11 @@ HTML;
 <nav id="admin-nav" style="width:264px;background:#fff;border-right:1px solid rgba(203,213,225,0.7);padding:18px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;box-shadow:2px 0 16px rgba(15,23,42,0.03);box-sizing:border-box;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(27,94,32,0.15) transparent;flex-shrink:0;">
 
     <!-- Brand -->
-    <div style="display:flex;align-items:center;gap:11px;margin-bottom:28px;padding:0 4px;">
-        <img src="/Frontend/images/busia logo.png" alt="Busia Chicken" style="height:44px;width:auto;border-radius:8px;">
-        <div>
-            <p style="margin:0;font-family:'Outfit',sans-serif;font-size:1.05rem;font-weight:800;color:#0f172a;letter-spacing:-0.3px;">Busia Chicken</p>
-            <small style="display:block;color:#64748b;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">Admin Console</small>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding:0 4px;">
+        <img src="/Frontend/images/logo.svg" onerror="this.onerror=null;this.src='/Frontend/images/busia_chicken_logo.png';" alt="Busia Chicken" style="height:46px;width:46px;border-radius:50%;box-shadow:0 0 0 2px rgba(224,168,46,0.6);object-fit:contain;">
+        <div style="min-width:0;">
+            <p style="margin:0;font-family:'Outfit',sans-serif;font-size:1.02rem;font-weight:800;color:#0f172a;letter-spacing:-0.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Busia Chicken</p>
+            <small style="display:block;color:#15803d;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">The Chicken People</small>
         </div>
     </div>
 
@@ -282,6 +283,19 @@ HTML;
                 'messages' => 'Messages'
             ],
             $tab ?: 'staff'
+        ) ?>
+
+        <?= navLinkWithSub(
+            '/Frontend/admin/website_cms.php',
+            'layout-template',
+            'Website CMS',
+            $isCMS,
+            [
+                'sliders'      => ['label' => 'Hero Sliders', 'href' => '/Frontend/admin/website_cms.php?tab=sliders'],
+                'content'      => ['label' => 'Two Locations', 'href' => '/Frontend/admin/website_cms.php?tab=content'],
+                'testimonials' => ['label' => 'Egg Reviews', 'href' => '/Frontend/admin/website_cms.php?tab=testimonials']
+            ],
+            $tab ?: 'sliders'
         ) ?>
 
         <?= navLinkWithSub(

@@ -5,9 +5,9 @@
 declare(strict_types=1);
 
 $path_prefix = '../';
-$page_title = 'Recover Password | Busia Chicken Farm';
+$page_title = 'Recover Password | Busia Chicken Limited - The Chicken People';
 
-include '../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 
 $message = '';
 $error = '';
@@ -64,5 +64,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </section>
 
 <?php
-include '../includes/footer.php';
+include __DIR__ . '/../includes/footer.php';
 ?>

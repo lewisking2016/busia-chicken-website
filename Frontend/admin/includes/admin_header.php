@@ -164,7 +164,10 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/vendor/swiper/swiper-bundle.min.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/style.css">
-    <link rel="icon" type="image/png" href="/Frontend/images/busia logo.png">
+    <link rel="icon" type="image/svg+xml" href="/Frontend/images/logo.svg">
+    <link rel="alternate icon" type="image/png" href="/Frontend/images/favicon.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1B5E20">
     <style>
         :root {
             --admin-primary: #1B5E20;

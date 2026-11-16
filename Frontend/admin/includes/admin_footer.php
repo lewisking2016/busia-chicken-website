@@ -9,6 +9,89 @@ declare(strict_types=1);
 
 <?php include __DIR__ . '/system_guide.php'; ?>
 
+    <!-- Admin Mobile Native App Navigation Bar -->
+    <?php
+    $adminCurPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
+    ?>
+    <nav class="admin-mobile-app-bar" aria-label="Admin Mobile Navigation">
+        <a href="/Frontend/admin/dashboard.php" class="admin-bar-item <?php echo $adminCurPage === 'dashboard.php' ? 'active' : ''; ?>">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Cockpit</span>
+        </a>
+        <a href="/Frontend/admin/batches.php" class="admin-bar-item <?php echo in_array($adminCurPage, ['batches.php','flocks.php','production.php','health.php'], true) ? 'active' : ''; ?>">
+            <i data-lucide="egg"></i>
+            <span>Flocks</span>
+        </a>
+        <a href="/Frontend/admin/bulk_sales.php" class="admin-bar-item <?php echo in_array($adminCurPage, ['bulk_sales.php','daily_sales.php','cashbook.php'], true) ? 'active' : ''; ?>">
+            <i data-lucide="shopping-cart"></i>
+            <span>Sales</span>
+        </a>
+        <a href="/Frontend/admin/website_cms.php" class="admin-bar-item <?php echo $adminCurPage === 'website_cms.php' ? 'active' : ''; ?>">
+            <i data-lucide="layout-template"></i>
+            <span>CMS</span>
+        </a>
+        <button type="button" class="admin-bar-item" onclick="var nav = document.getElementById('admin-nav'); if (nav) nav.classList.toggle('open'); document.body.classList.toggle('nav-open');" aria-label="Open full menu">
+            <i data-lucide="menu"></i>
+            <span>Menu</span>
+        </button>
+    </nav>
+
+    <style>
+    .admin-mobile-app-bar {
+        display: none;
+    }
+    @media (max-width: 768px) {
+        body {
+            padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+        }
+        .admin-mobile-app-bar {
+            display: flex;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: calc(60px + env(safe-area-inset-bottom, 0px));
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(203, 213, 225, 0.8);
+            box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+            z-index: 9999;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .admin-bar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.68rem;
+            font-weight: 600;
+            flex: 1;
+            height: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .admin-bar-item i {
+            width: 20px;
+            height: 20px;
+        }
+        .admin-bar-item.active {
+            color: #15803d;
+        }
+        .admin-bar-item.active i {
+            stroke-width: 2.5;
+            transform: translateY(-1px);
+        }
+    }
+    </style>
+
     <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/vendor/gsap/gsap.min.js"></script>
     <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/vendor/lucide/lucide.min.js"></script>
     <script>

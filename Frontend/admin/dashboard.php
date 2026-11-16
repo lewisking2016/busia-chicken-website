@@ -280,6 +280,10 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
                 <i data-lucide="boxes" style="width: 18px; height: 18px;"></i>
                 <span>Stores &amp; Inventory</span>
             </a>
+            <a class="btn btn-trans" href="website_cms.php" style="background:rgba(224,168,46,0.25);border-color:#E0A82E;">
+                <i data-lucide="layout-template" style="width: 18px; height: 18px; color:#FDE047;"></i>
+                <span style="color:#FEF08A;">Edit Website CMS</span>
+            </a>
         </div>
     </div>
 

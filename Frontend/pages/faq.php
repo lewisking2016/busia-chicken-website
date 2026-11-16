@@ -5,27 +5,17 @@
 declare(strict_types=1);
 
 $path_prefix = '../';
-$page_title = 'FAQs - Busia Chicken Farm';
+$page_title = 'FAQs - Busia Chicken Limited | The Chicken People';
 
-include '../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 ?>
 
-<!-- Breadcrumb -->
-<section style="background-color: var(--surface); padding: var(--space-lg) 0;">
+<!-- Page Hero -->
+<section class="page-hero" style="background-image:url('/Frontend/images/adbg.png');">
     <div class="container">
-        <div class="breadcrumb">
-            <a href="/">Home</a>
-            <span>/</span>
-            <span>FAQ</span>
-        </div>
-    </div>
-</section>
-
-<!-- Hero Section -->
-<section class="hero" style="min-height: 60vh;">
-    <div class="container hero-content fade-up">
-        <h1>Frequently Asked Questions</h1>
-        <p style="color: white; opacity: 0.9;">Find answers to common questions about our products and services.</p>
+        <nav class="breadcrumb" data-reveal="fade"><a href="/">Home</a><span class="sep">/</span><span>FAQ</span></nav>
+        <h1 data-reveal="fade" data-reveal-delay="100">Frequently Asked <em>Questions</em></h1>
+        <p data-reveal="fade" data-reveal-delay="200">Find answers to common questions about day-old chicks, fresh eggs, animal feeds, and our two facilities in Busia County.</p>
     </div>
 </section>
 
@@ -332,5 +322,5 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <?php
-include '../includes/footer.php';
+include __DIR__ . '/../includes/footer.php';
 ?>

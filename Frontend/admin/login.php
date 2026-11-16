@@ -46,7 +46,7 @@ if (!empty($_SESSION['user_id']) && in_array($_SESSION['role'] ?? '', ['super_ad
 $errors = [];
 $username = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_login'])) {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['admin_login'])) {
     if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
         $errors[] = 'Security token expired. Please refresh and try again.';
     }
@@ -182,13 +182,51 @@ $modules = [
                 linear-gradient(160deg, rgba(11,61,23,0.94) 0%, rgba(11,61,23,0.72) 55%, rgba(8,47,19,0.94) 100%);
         }
 
+        .b-brand__logo-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 20px 10px 12px;
+            border-radius: 50px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+            align-self: flex-start;
+        }
+
         .b-brand__logo {
-            height: 58px;
-            width: auto;
-            background: rgba(255,255,255,0.94);
-            border-radius: 10px;
-            padding: 7px 12px;
-            box-sizing: content-box;
+            height: 72px;
+            width: 72px;
+            border-radius: 50%;
+            background: #fff;
+            padding: 3px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 0 0 2px rgba(224, 168, 46, 0.6);
+            object-fit: contain;
+        }
+
+        .b-brand__logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .b-brand__logo-name {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.15rem;
+            color: #fff;
+            letter-spacing: -0.3px;
+            line-height: 1.1;
+        }
+
+        .b-brand__logo-slogan {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--b-gold-400);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 3px;
         }
 
         .b-brand__body { max-width: 30rem; margin: auto 0; }
@@ -508,14 +546,20 @@ $modules = [
             <img src="/Frontend/images/adbg.png" alt="" class="b-brand__img" aria-hidden="true">
             <div class="b-brand__scrim"></div>
 
-            <img src="/Frontend/images/busia logo.png" alt="Busia Chicken Farm" class="b-brand__logo b-anim">
+            <div class="b-brand__logo-wrap b-anim">
+                <img src="/Frontend/images/logo.svg" onerror="this.onerror=null;this.src='/Frontend/images/busia_chicken_logo.png';" alt="Busia Chicken Limited" class="b-brand__logo">
+                <div class="b-brand__logo-text">
+                    <span class="b-brand__logo-name">BUSIA CHICKEN</span>
+                    <span class="b-brand__logo-slogan">The Chicken People</span>
+                </div>
+            </div>
 
             <div class="b-brand__body b-anim">
                 <p class="b-brand__eyebrow">Farm management system</p>
                 <h1>Every flock, every crate, every shilling.</h1>
                 <p class="b-brand__lede">
                     One place to record what the farm produces, what it costs,
-                    and what you are owed.
+                    and what you are owed. Operations at Nasira Farm HQ &amp; Tangakona Depot.
                 </p>
                 <ul class="b-modules">
                     <?php foreach ($modules as [$icon, $label]): ?>
@@ -528,7 +572,7 @@ $modules = [
             </div>
 
             <p class="b-brand__foot b-anim">
-                Busia Chicken Farm &middot; Nasira AC, Busia County, Kenya
+                Busia Chicken Limited &middot; The Chicken People &middot; Nasira AC &amp; Tangakona, Busia County, Kenya
             </p>
         </section>
 
@@ -536,9 +580,12 @@ $modules = [
         <section class="b-panel">
             <div class="b-card b-anim">
 
-                <div class="b-card__brand">
-                    <img src="/Frontend/images/busia logo.png" alt="Busia Chicken Farm">
-                    <strong>Busia Chicken Farm</strong>
+                <div class="b-card__brand" style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+                    <img src="/Frontend/images/logo.svg" onerror="this.onerror=null;this.src='/Frontend/images/busia_chicken_logo.png';" alt="Busia Chicken Limited" style="width:48px;height:48px;border-radius:50%;box-shadow:0 0 0 2px rgba(224,168,46,0.6);">
+                    <div style="display:flex;flex-direction:column;text-align:left;">
+                        <strong style="font-size:1.05rem;letter-spacing:-0.2px;color:#082F13;">Busia Chicken Limited</strong>
+                        <span style="font-size:0.7rem;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:0.8px;">The Chicken People</span>
+                    </div>
                 </div>
 
                 <h2>Sign in</h2>

@@ -5,9 +5,9 @@
 declare(strict_types=1);
 
 $path_prefix = '../';
-$page_title = 'Product Details | Busia Chicken Farm';
+$page_title = 'Product Details | Busia Chicken Limited - The Chicken People';
 
-include '../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 
 $pdo = getDB();
 $productId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -152,5 +152,5 @@ function adjustDetailQty(delta) {
 </script>
 
 <?php
-include '../includes/footer.php';
+include __DIR__ . '/../includes/footer.php';
 ?>

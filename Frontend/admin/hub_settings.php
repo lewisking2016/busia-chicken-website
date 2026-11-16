@@ -109,6 +109,11 @@ $tabs = [
         <h1 style="margin:0;font-family:'Outfit',sans-serif;font-size:1.6rem;color:var(--admin-text-heading);font-weight:800;">Settings</h1>
         <p style="margin:4px 0 0;color:#64748b;font-size:0.9rem;">Configure your system, manage dropdown lists, and view system activity.</p>
     </div>
+    <div style="display:flex;gap:10px;">
+        <a href="/Frontend/admin/website_cms.php" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:8px;">
+            <i data-lucide="layout-template" style="width:16px;height:16px;"></i> Website CMS &amp; Sliders
+        </a>
+    </div>
 </div>
 
 <?php if ($message): ?>

@@ -13,11 +13,12 @@ function generateOrganizationSchema(): string
     return json_encode([
         '@context' => 'https://schema.org',
         '@type' => 'Organization',
-        'name' => 'Busia Chicken Farm',
-        'alternateName' => 'Busia Chicken Ltd',
-        'url' => 'https://busiachicken.com',
-        'logo' => 'https://busiachicken.com/assets/images/logo.png',
-        'description' => 'Leading poultry supplier in East Africa. Premium chickens, eggs, and animal feeds.',
+        'name' => 'Busia Chicken Limited',
+        'alternateName' => 'Busia Chicken Farm',
+        'slogan' => 'The Chicken People',
+        'url' => 'https://new.decapoli.co.ke',
+        'logo' => 'https://new.decapoli.co.ke/Frontend/images/busia_chicken_logo.png',
+        'description' => 'Leading poultry supplier in East Africa. Quality layers, broilers, day-old chicks, farm-fresh eggs, and premium animal feeds since 2015.',
         'sameAs' => [
             'https://www.facebook.com/busiachicken',
             'https://twitter.com/busiachicken',
@@ -25,7 +26,7 @@ function generateOrganizationSchema(): string
         ],
         'address' => [
             '@type' => 'PostalAddress',
-            'streetAddress' => 'Nasira AC sub-location, Busibwabo Location',
+            'streetAddress' => 'Nasira AC Sub-location, Busibwabo Location',
             'addressLocality' => 'Busia',
             'addressRegion' => 'Busia County',
             'postalCode' => '50400',
@@ -33,7 +34,7 @@ function generateOrganizationSchema(): string
         ],
         'contactPoint' => [
             '@type' => 'ContactPoint',
-            'contactType' => 'Customer Service',
+            'contactType' => 'Customer Service & Farm Orders',
             'telephone' => '+254-727-585599',
             'email' => 'info@busiachicken.com',
             'areaServed' => ['KE', 'UG', 'TZ'],
@@ -43,41 +44,77 @@ function generateOrganizationSchema(): string
 }
 
 /**
- * Generate LocalBusiness schema markup
+ * Generate LocalBusiness schema markup for both Nasira & Tangakona locations
  */
 function generateLocalBusinessSchema(): string
 {
     return json_encode([
         '@context' => 'https://schema.org',
-        '@type' => 'LocalBusiness',
-        'name' => 'Busia Chicken Farm',
-        'image' => 'https://busiachicken.com/assets/images/farm.jpg',
-        'description' => 'Poultry farming, egg production, and premium animal feeds',
-        'address' => [
-            '@type' => 'PostalAddress',
-            'streetAddress' => 'Nasira AC sub-location',
-            'addressLocality' => 'Busia',
-            'addressCountry' => 'KE'
-        ],
-        'telephone' => '+254-727-585599',
-        'priceRange' => 'KES 500 - 50000',
-        'openingHoursSpecification' => [
+        '@graph' => [
             [
-                '@type' => 'OpeningHoursSpecification',
-                'dayOfWeek' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-                'opens' => '08:00',
-                'closes' => '18:00'
+                '@type' => ['LocalBusiness', 'Farm'],
+                '@id' => 'https://new.decapoli.co.ke/#nasira-hq',
+                'name' => 'Busia Chicken Limited - Farm HQ & Hatchery',
+                'slogan' => 'The Chicken People',
+                'image' => 'https://new.decapoli.co.ke/Frontend/images/adbg.png',
+                'description' => 'Main poultry farm headquarters, automated hatchery, and bio-secure layer & broiler production facility in Nasira AC.',
+                'telephone' => '+254-727-585599',
+                'email' => 'info@busiachicken.com',
+                'priceRange' => 'KES 70 - 50000',
+                'address' => [
+                    '@type' => 'PostalAddress',
+                    'streetAddress' => 'Nasira AC Sub-location, Busibwabo',
+                    'addressLocality' => 'Busia',
+                    'addressRegion' => 'Busia County',
+                    'postalCode' => '50400',
+                    'addressCountry' => 'KE'
+                ],
+                'geo' => [
+                    '@type' => 'GeoCoordinates',
+                    'latitude' => 0.4608,
+                    'longitude' => 34.1115
+                ],
+                'openingHoursSpecification' => [
+                    [
+                        '@type' => 'OpeningHoursSpecification',
+                        'dayOfWeek' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                        'opens' => '07:00',
+                        'closes' => '18:00'
+                    ]
+                ]
             ],
             [
-                '@type' => 'OpeningHoursSpecification',
-                'dayOfWeek' => 'Saturday',
-                'opens' => '08:00',
-                'closes' => '14:00'
+                '@type' => ['LocalBusiness', 'Store'],
+                '@id' => 'https://new.decapoli.co.ke/#tangakona-depot',
+                'name' => 'Busia Chicken Limited - Tangakona Feed Depot & Distribution Center',
+                'slogan' => 'The Chicken People',
+                'image' => 'https://new.decapoli.co.ke/Frontend/images/poultry-feed.jpg',
+                'description' => 'Commercial sales branch, feed distribution depot, and farm-fresh egg collection point along the Busia-Kisumu Highway at Tangakona.',
+                'telephone' => '+254-727-585599',
+                'email' => 'info@busiachicken.com',
+                'priceRange' => 'KES 70 - 50000',
+                'address' => [
+                    '@type' => 'PostalAddress',
+                    'streetAddress' => 'Tangakona Junction / Market, Busia-Kisumu Highway',
+                    'addressLocality' => 'Tangakona',
+                    'addressRegion' => 'Busia County',
+                    'postalCode' => '50400',
+                    'addressCountry' => 'KE'
+                ],
+                'geo' => [
+                    '@type' => 'GeoCoordinates',
+                    'latitude' => 0.4412,
+                    'longitude' => 34.1842
+                ],
+                'openingHoursSpecification' => [
+                    [
+                        '@type' => 'OpeningHoursSpecification',
+                        'dayOfWeek' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                        'opens' => '08:00',
+                        'closes' => '18:30'
+                    ]
+                ]
             ]
-        ],
-        'sameAs' => [
-            'https://www.facebook.com/busiachicken',
-            'https://www.instagram.com/busiachicken'
         ]
     ], JSON_UNESCAPED_SLASHES);
 }

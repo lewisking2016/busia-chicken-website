@@ -1,85 +1,100 @@
 <?php
 /**
- * Homepage — Busia Chicken Farm
- * Premium redesign: motion, storytelling, editorial polish.
+ * Homepage — Busia Chicken Limited
+ * The Chicken People
+ * Premium architectural engineering: dynamic CMS hero slider, multi-location showcase, mobile-first app feel.
  */
 declare(strict_types=1);
 
-$page_title = 'Busia Chicken Farm - Premium Poultry & Farm Management Solutions';
+$page_title = 'Busia Chicken Limited - The Chicken People | Quality Poultry for East Africa';
 include 'includes/header.php';
 
-$pdo = getDB();
+$pdo = function_exists('getDB') ? getDB() : (function_exists('getDatabaseConnection') ? getDatabaseConnection() : null);
+
+// Fetch dynamic hero slides from CMS table or fallback to transcript defaults
+$slides = [];
+if ($pdo) {
+    try {
+        $stmt = $pdo->query("SELECT * FROM website_sliders WHERE is_active = 1 ORDER BY slide_order ASC");
+        $slides = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $slides = [];
+    }
+}
+
+if (empty($slides)) {
+    $slides = [
+        [
+            'badge_text' => 'Welcome to Busia Chicken Farm',
+            'title_main' => 'Quality Poultry for',
+            'title_em' => 'East Africa',
+            'subtitle' => 'Premium broilers, layers and day-old chicks — raised with care, delivered with confidence, and backed by a decade of sustainable farming excellence.',
+            'cta_primary_text' => 'Explore Products',
+            'cta_primary_link' => '/Frontend/pages/shop.php',
+            'cta_secondary_text' => 'Our Story',
+            'cta_secondary_link' => '/Frontend/pages/about.php',
+            'stat1_val' => '100', 'stat1_suffix' => 'k', 'stat1_label' => 'Chickens raised annually',
+            'stat2_val' => '5000', 'stat2_suffix' => '+', 'stat2_label' => 'Happy customers',
+            'stat3_val' => '13', 'stat3_suffix' => '+', 'stat3_label' => 'Years in business',
+            'image_url' => '/Frontend/images/adbg.png'
+        ],
+        [
+            'badge_text' => 'The Egg People',
+            'title_main' => 'Farm-Fresh Eggs,',
+            'title_em' => 'Every Day',
+            'subtitle' => 'State-of-the-art layer facilities producing the freshest, most nutritious eggs — harvested daily and delivered to your family or business.',
+            'cta_primary_text' => 'Order Fresh Eggs',
+            'cta_primary_link' => '/Frontend/pages/shop.php?category=eggs',
+            'cta_secondary_text' => 'See Our Products',
+            'cta_secondary_link' => '/Frontend/pages/products.php',
+            'stat1_val' => '96', 'stat1_suffix' => '%', 'stat1_label' => 'Eggs per bird per year',
+            'stat2_val' => '100', 'stat2_suffix' => '%', 'stat2_label' => 'Biosafety compliant',
+            'stat3_val' => '100', 'stat3_suffix' => '%', 'stat3_label' => 'Response time',
+            'image_url' => '/Frontend/images/farm-fresh-eggs.jpg'
+        ],
+        [
+            'badge_text' => 'Expert Farm Management',
+            'title_main' => 'Trusted by',
+            'title_em' => 'Thousands',
+            'subtitle' => 'From consulting, egg & meat production to premium feeds — our dedicated team helps farmers grow with confidence.',
+            'cta_primary_text' => 'Explore Services',
+            'cta_primary_link' => '/Frontend/pages/services.php',
+            'cta_secondary_text' => 'Partner With Us',
+            'cta_secondary_link' => '/Frontend/pages/contact.php',
+            'stat1_val' => '90', 'stat1_suffix' => '%', 'stat1_label' => 'Hatch success rate',
+            'stat2_val' => '30', 'stat2_suffix' => '%', 'stat2_label' => 'Saved on feed costs',
+            'stat3_val' => '4', 'stat3_suffix' => ' Weeks', 'stat3_label' => 'To market weight',
+            'image_url' => '/Frontend/images/download (2).png'
+        ]
+    ];
+}
 ?>
 
-<!-- ═══════════════ HERO SLIDER ═══════════════ -->
+<!-- ═══════════════ HERO SLIDER (DYNAMIC CMS-POWERED) ═══════════════ -->
 <section class="hero-swiper" aria-label="Featured highlights">
     <div class="swiper-wrapper">
-
-        <!-- Slide 1 -->
+        <?php foreach ($slides as $idx => $s): ?>
         <div class="swiper-slide hero-slide">
-            <img src="/Frontend/images/adbg.png" alt="Busia Chicken Farm feeds and chickens" fetchpriority="high">
+            <img src="<?php echo htmlspecialchars($s['image_url'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($s['title_main'] . ' ' . $s['title_em'], ENT_QUOTES, 'UTF-8'); ?>" <?php echo $idx === 0 ? 'fetchpriority="high"' : 'loading="lazy"'; ?>>
             <div class="hero-scrim"></div>
             <div class="container">
                 <div class="hero-content">
-                    <span class="hero-badge hero-anim"><span class="dot"></span> Welcome to Busia Chicken Farm</span>
-                    <h1 class="hero-title hero-anim">Quality Poultry for <em>East Africa</em></h1>
-                    <p class="hero-sub hero-anim">Premium broilers, layers and day-old chicks — raised with care, delivered with confidence, and backed by a decade of sustainable farming excellence.</p>
+                    <span class="hero-badge hero-anim"><span class="dot"></span> <?php echo htmlspecialchars($s['badge_text'], ENT_QUOTES, 'UTF-8'); ?></span>
+                    <h1 class="hero-title hero-anim"><?php echo htmlspecialchars($s['title_main'], ENT_QUOTES, 'UTF-8'); ?> <em><?php echo htmlspecialchars($s['title_em'], ENT_QUOTES, 'UTF-8'); ?></em></h1>
+                    <p class="hero-sub hero-anim"><?php echo htmlspecialchars($s['subtitle'], ENT_QUOTES, 'UTF-8'); ?></p>
                     <div class="hero-cta hero-anim">
-                        <a href="/Frontend/pages/shop.php" class="btn btn-primary" data-magnetic>Explore Products</a>
-                        <a href="/Frontend/pages/about.php" class="btn btn-outline">Our Story</a>
+                        <a href="<?php echo htmlspecialchars($s['cta_primary_link'], ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-primary" data-magnetic><?php echo htmlspecialchars($s['cta_primary_text'], ENT_QUOTES, 'UTF-8'); ?></a>
+                        <a href="<?php echo htmlspecialchars($s['cta_secondary_link'], ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-outline"><?php echo htmlspecialchars($s['cta_secondary_text'], ENT_QUOTES, 'UTF-8'); ?></a>
                     </div>
                     <div class="hero-stats hero-anim">
-                        <div class="hero-stat"><b><span data-counter="10" data-suffix="k+">0</span></b><span>Chickens raised annually</span></div>
-                        <div class="hero-stat"><b><span data-counter="5" data-suffix="k+">0</span></b><span>Happy customers</span></div>
-                        <div class="hero-stat"><b><span data-counter="10" data-suffix="+">0</span></b><span>Years in business</span></div>
+                        <div class="hero-stat"><b><span data-counter="<?php echo preg_replace('/[^0-9]/', '', (string)$s['stat1_val']); ?>" data-suffix="<?php echo htmlspecialchars($s['stat1_suffix'], ENT_QUOTES, 'UTF-8'); ?>">0</span></b><span><?php echo htmlspecialchars($s['stat1_label'], ENT_QUOTES, 'UTF-8'); ?></span></div>
+                        <div class="hero-stat"><b><span data-counter="<?php echo preg_replace('/[^0-9]/', '', (string)$s['stat2_val']); ?>" data-suffix="<?php echo htmlspecialchars($s['stat2_suffix'], ENT_QUOTES, 'UTF-8'); ?>">0</span></b><span><?php echo htmlspecialchars($s['stat2_label'], ENT_QUOTES, 'UTF-8'); ?></span></div>
+                        <div class="hero-stat"><b><span data-counter="<?php echo preg_replace('/[^0-9]/', '', (string)$s['stat3_val']); ?>" data-suffix="<?php echo htmlspecialchars($s['stat3_suffix'], ENT_QUOTES, 'UTF-8'); ?>">0</span></b><span><?php echo htmlspecialchars($s['stat3_label'], ENT_QUOTES, 'UTF-8'); ?></span></div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Slide 2 -->
-        <div class="swiper-slide hero-slide">
-            <img src="/Frontend/images/download (4).png" alt="Busia Chicken Farm layer facilities and egg production">
-            <div class="hero-scrim"></div>
-            <div class="container">
-                <div class="hero-content">
-                    <span class="hero-badge hero-anim"><span class="dot"></span> The Egg People</span>
-                    <h1 class="hero-title hero-anim">Farm-Fresh Eggs, <em>Every Day</em></h1>
-                    <p class="hero-sub hero-anim">State-of-the-art layer facilities producing the freshest, most nutritious eggs — harvested daily and delivered to your family or business.</p>
-                    <div class="hero-cta hero-anim">
-                        <a href="/Frontend/pages/shop.php?category=eggs" class="btn btn-primary" data-magnetic>Order Fresh Eggs</a>
-                        <a href="/Frontend/pages/products.php" class="btn btn-outline">See Our Products</a>
-                    </div>
-                    <div class="hero-stats hero-anim">
-                        <div class="hero-stat"><b><span data-counter="300" data-suffix="+">0</span></b><span>Eggs per bird per year</span></div>
-                        <div class="hero-stat"><b><span data-counter="100" data-suffix="%">0</span></b><span>Biosafety compliant</span></div>
-                        <div class="hero-stat"><b><span data-counter="24" data-suffix="h">0</span></b><span>Response time</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Slide 3 -->
-        <div class="swiper-slide hero-slide">
-            <img src="/Frontend/images/download (2).png" alt="Busia Chicken Farm dedicated team">
-            <div class="hero-scrim"></div>
-            <div class="container">
-                <div class="hero-content">
-                    <span class="hero-badge hero-anim"><span class="dot"></span> Expert Farm Management</span>
-                    <h1 class="hero-title hero-anim">Trusted by <em>Thousands</em></h1>
-                    <p class="hero-sub hero-anim">From consulting and incubator rentals to premium feeds — our dedicated team helps farmers grow with confidence.</p>
-                    <div class="hero-cta hero-anim">
-                        <a href="/Frontend/pages/services.php" class="btn btn-primary" data-magnetic>Explore Services</a>
-                        <a href="/Frontend/pages/contact.php" class="btn btn-outline">Partner With Us</a>
-                    </div>
-                    <div class="hero-stats hero-anim">
-                        <div class="hero-stat"><b><span data-counter="95" data-suffix="%+">0</span></b><span>Hatch success rate</span></div>
-                        <div class="hero-stat"><b><span data-counter="40" data-suffix="%">0</span></b><span>Saved on feed costs</span></div>
-                        <div class="hero-stat"><b><span data-counter="6" data-suffix="-7">0</span></b><span>Weeks to market weight</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <?php endforeach; ?>
     </div>
 
     <div class="swiper-pagination hero-pagination"></div>
@@ -90,7 +105,7 @@ $pdo = getDB();
 <div class="marquee" aria-hidden="true">
     <div class="marquee-track">
         <?php
-        $words = ['AUTHENTICITY', 'QUALITY', 'RELIABILITY', 'SUSTAINABILITY', 'INNOVATION', 'EXCELLENCE', 'TRUSTED', 'NUTRITIOUS'];
+        $words = ['BUSIA CHICKEN LIMITED', 'THE CHICKEN PEOPLE', 'NASIRA FARM HQ', 'TANGAKONA DEPOT', 'FARM-FRESH EGGS', 'BIO-SECURITY CERTIFIED', 'SUPERIOR GENETICS', 'ORGANIC ANIMAL FEEDS'];
         for ($copy = 0; $copy < 2; $copy++) {
             foreach ($words as $w) {
                 echo '<span>' . $w . '</span>';
@@ -100,7 +115,7 @@ $pdo = getDB();
     </div>
 </div>
 
-<!-- ═══════════════ WHY CHOOSE US ═══════════════ -->
+<!-- ═══════════════ WHY CHOOSE US (TRANSCRIPT ALIGNED) ═══════════════ -->
 <section class="section-pad bg-white">
     <div class="container">
         <div class="section-head center" data-reveal>
@@ -118,12 +133,12 @@ $pdo = getDB();
             <div class="p-card">
                 <div class="p-icon"><i data-lucide="truck" style="width:28px;height:28px;"></i></div>
                 <h3>Reliable Delivery</h3>
-                <p>Timely, safe transportation of live birds and fresh eggs — direct to your farm or business, in carefully monitored transit.</p>
+                <p>Timely, safe transportation of feeds and fresh eggs — direct to your farm or business, in carefully monitored transit.</p>
             </div>
             <div class="p-card">
                 <div class="p-icon"><i data-lucide="graduation-cap" style="width:28px;height:28px;"></i></div>
                 <h3>Expert Support</h3>
-                <p>Consulting, incubator rentals and feed-formulation training help you maximize yield and cut operating costs.</p>
+                <p>Consulting, egg meat production and feed-formulation training help you maximize yield and cut operating costs.</p>
             </div>
             <div class="p-card">
                 <div class="p-icon"><i data-lucide="egg" style="width:28px;height:28px;"></i></div>
@@ -133,7 +148,7 @@ $pdo = getDB();
             <div class="p-card">
                 <div class="p-icon"><i data-lucide="dna" style="width:28px;height:28px;"></i></div>
                 <h3>Superior Genetics</h3>
-                <p>Ross 308, Cobb 500, ISA Brown and Lohmann breeds — vaccinated, disease-free and bred for performance.</p>
+                <p>Hy-Line, Ross 308, Cobb 500, ISA Brown and Lohmann breeds — vaccinated, disease-free and bred for performance.</p>
             </div>
             <div class="p-card">
                 <div class="p-icon"><i data-lucide="heart-handshake" style="width:28px;height:28px;"></i></div>
@@ -144,21 +159,21 @@ $pdo = getDB();
     </div>
 </section>
 
-<!-- ═══════════════ STATS BAND ═══════════════ -->
+<!-- ═══════════════ STATS BAND (TRANSCRIPT ALIGNED) ═══════════════ -->
 <section class="section-pad stats-band">
     <div class="container">
         <div class="grid-4" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.6rem;">
             <div class="stat-item" data-reveal>
-                <b><span data-counter="10" data-suffix="k+">0</span></b>
+                <b><span data-counter="100" data-suffix="k">0</span></b>
                 <span>Chickens Raised Annually</span>
             </div>
             <div class="stat-item" data-reveal data-reveal-delay="120">
-                <b><span data-counter="5" data-suffix="k+">0</span></b>
+                <b><span data-counter="5000" data-suffix="+">0</span></b>
                 <span>Satisfied Customers</span>
             </div>
             <div class="stat-item" data-reveal data-reveal-delay="240">
-                <b><span data-counter="10" data-suffix="+">0</span></b>
-                <span>Years in Business</span>
+                <b><span data-counter="13" data-suffix=" Years">0</span></b>
+                <span>In Business</span>
             </div>
             <div class="stat-item" data-reveal data-reveal-delay="360">
                 <b><span data-counter="100" data-suffix="%">0</span></b>
@@ -168,7 +183,7 @@ $pdo = getDB();
     </div>
 </section>
 
-<!-- ═══════════════ FEATURED PRODUCTS ═══════════════ -->
+<!-- ═══════════════ BEST SELLERS / FEATURED PRODUCTS ═══════════════ -->
 <section class="section-pad" style="background:var(--cream-50);">
     <div class="container">
         <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:1.6rem;flex-wrap:wrap;margin-bottom:2.4rem;" data-reveal>
@@ -184,19 +199,41 @@ $pdo = getDB();
             <div class="swiper creative-slider swiper-products">
                 <div class="swiper-wrapper">
                 <?php
-                require_once __DIR__ . '/includes/product_source.php';
-                $products = loadDisplayProducts($pdo);
-                if (!empty($products)) {
-                    $products = array_slice($products, 0, 8);
+                // Target featured products requested by the boss
+                $featuredNames = [
+                    'Bovans Brown Layers',
+                    'Broiler Finisher (6-8 weeks)',
+                    'Busia Premium Mix',
+                    'Chick Mash (0-4 weeks)',
+                    'Chick Starter Crumbs (0-4 weeks)',
+                    'Cobb 500 Broilers',
+                    'Day-Old Broiler Chicks',
+                    'Day-Old Layer Chicks',
+                    'Farm-Fresh Grade-A Eggs (30-Egg Tray)'
+                ];
+
+                $displayProducts = [];
+                if ($pdo) {
+                    try {
+                        $placeholders = implode(',', array_fill(0, count($featuredNames), '?'));
+                        $stmt = $pdo->prepare("SELECT * FROM products WHERE name IN ($placeholders) AND is_active = 1 ORDER BY FIELD(name, $placeholders)");
+                        $stmt->execute(array_merge($featuredNames, $featuredNames));
+                        $displayProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    } catch (Exception $e) {}
                 }
 
-                foreach ($products as $index => $product):
-                    $img = $product['img'] ?? $product['image_url'] ?? '';
+                if (empty($displayProducts)) {
+                    require_once __DIR__ . '/includes/product_source.php';
+                    $displayProducts = loadDisplayProducts($pdo);
+                }
+
+                foreach ($displayProducts as $index => $product):
+                    $img = $product['image_url'] ?? $product['img'] ?? '';
                     if (!$img) {
                         $type = $product['product_type'] ?? 'feed';
                         $img = match($type) {
                             'feed' => '/Frontend/images/download (8).png',
-                            'eggs' => '/Frontend/images/download (3).png',
+                            'eggs' => '/Frontend/images/farm-fresh-eggs.jpg',
                             'chicks' => '/Frontend/images/day-old-chicks.jpg',
                             'live_chicken' => '/Frontend/images/broiler-chickens.jpg',
                             default => '/Frontend/images/adbg.png'
@@ -207,13 +244,13 @@ $pdo = getDB();
                     <div class="product-card creative-card" data-id="<?php echo $product['id']; ?>" data-type="<?php echo htmlspecialchars($product['product_type'] ?? '', ENT_QUOTES); ?>" data-instock="<?php echo (!empty($product['stock_quantity']) && $product['stock_quantity'] > 0) ? '1' : '0'; ?>">
                         <a href="/Frontend/pages/product-detail.php?id=<?php echo $product['id']; ?>" style="display:block;text-decoration:none;color:inherit;">
                             <div class="product-image">
-                                <span class="product-badge">Top Rated</span>
-                                <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" loading="lazy">
+                                <span class="product-badge">Best Seller</span>
+                                <img src="<?php echo htmlspecialchars($img, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($product['name'], ENT_QUOTES, 'UTF-8'); ?>" loading="lazy">
                             </div>
                         </a>
                         <div class="product-body">
                             <h4 class="product-name"><?php echo htmlspecialchars($product['name'], ENT_QUOTES, 'UTF-8'); ?></h4>
-                            <p class="product-description"><?php echo htmlspecialchars($product['description'] ?? $product['desc'] ?? 'Premium quality poultry product.'); ?></p>
+                            <p class="product-description"><?php echo htmlspecialchars($product['description'] ?? 'Premium quality poultry product.'); ?></p>
                             <div class="product-meta">
                                 <span class="product-price">KES <?php echo number_format((float)$product['price'], 0); ?></span>
                             </div>
@@ -234,7 +271,78 @@ $pdo = getDB();
     </div>
 </section>
 
-<!-- ═══════════════ PROCESS ═══════════════ -->
+<!-- ═══════════════ TWO LOCATIONS SHOWCASE (GOOGLE BUSINESS) ═══════════════ -->
+<section class="locations-section" id="locations-showcase">
+    <div class="container">
+        <div class="section-head center" data-reveal>
+            <span class="eyebrow centered">Our Two Facilities</span>
+            <h2 class="section-title">Visit Our <em>Hubs</em> in Busia County</h2>
+            <p class="lead">Serving western Kenya and East Africa from our breeding headquarters in Nasira and our sales distribution depot at Tangakona.</p>
+        </div>
+
+        <div class="locations-grid" data-reveal-group>
+            <!-- Location 1: Nasira AC Sub-location -->
+            <div class="location-card">
+                <span class="location-badge"><i data-lucide="building"></i> Primary Farm &amp; Hatchery HQ</span>
+                <h3 class="location-title">Nasira AC Sub-location</h3>
+                <p class="location-desc">Our primary breeding, incubation and automated layer facility. Where all our day-old chicks are hatched under clinical biosafety controls and where our core poultry flocks are raised.</p>
+                <div class="location-meta">
+                    <div class="location-meta-item">
+                        <i data-lucide="map-pin"></i>
+                        <span>Nasira AC Sub-location, Busibwabo Location, Matayos / Busia County, Kenya</span>
+                    </div>
+                    <div class="location-meta-item">
+                        <i data-lucide="clock"></i>
+                        <span>Mon - Sat: 7:00 AM - 6:00 PM | Sun: 8:00 AM - 1:00 PM</span>
+                    </div>
+                    <div class="location-meta-item">
+                        <i data-lucide="phone"></i>
+                        <a href="tel:+254727585599" style="color:var(--brand-700);font-weight:700;">+254 727 585 599</a>
+                    </div>
+                </div>
+                <div class="location-actions">
+                    <a href="https://maps.google.com/?q=Nasira+AC+Sub-location+Busia+Kenya" target="_blank" rel="noopener" class="btn btn-outline btn-sm">
+                        <i data-lucide="navigation"></i> Google Maps
+                    </a>
+                    <a href="https://wa.me/254727585599?text=Hello%20Busia%20Chicken%20Farm,%20I%20would%20like%20to%20visit%20the%20Nasira%20Farm" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+                        <i data-lucide="message-square"></i> Inquire HQ
+                    </a>
+                </div>
+            </div>
+
+            <!-- Location 2: Tangakona Depot -->
+            <div class="location-card">
+                <span class="location-badge hub"><i data-lucide="store"></i> Sales &amp; Distribution Depot</span>
+                <h3 class="location-title">Tangakona Branch</h3>
+                <p class="location-desc">Our dedicated commercial branch along the Busia - Kisumu / Mumias Highway. Convenient for bulk feed collection, fresh egg crate pickups, farmer consultancy, and quick transit orders.</p>
+                <div class="location-meta">
+                    <div class="location-meta-item">
+                        <i data-lucide="map-pin"></i>
+                        <span>Tangakona Junction / Market along Busia-Kisumu Highway, Busia County, Kenya</span>
+                    </div>
+                    <div class="location-meta-item">
+                        <i data-lucide="clock"></i>
+                        <span>Mon - Sat: 8:00 AM - 6:30 PM | Sun: Closed</span>
+                    </div>
+                    <div class="location-meta-item">
+                        <i data-lucide="phone"></i>
+                        <a href="tel:+254727585599" style="color:var(--brand-700);font-weight:700;">+254 727 585 599</a>
+                    </div>
+                </div>
+                <div class="location-actions">
+                    <a href="https://maps.google.com/?q=Tangakona+Busia+Kenya" target="_blank" rel="noopener" class="btn btn-outline btn-sm">
+                        <i data-lucide="navigation"></i> Google Maps
+                    </a>
+                    <a href="https://wa.me/254727585599?text=Hello%20Busia%20Chicken%20Farm,%20I%20would%20like%20to%20pick%20up%20supplies%20at%20Tangakona%20Depot" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+                        <i data-lucide="shopping-bag"></i> Order Depot
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════ PROCESS (TRANSCRIPT ALIGNED) ═══════════════ -->
 <section class="section-pad bg-white">
     <div class="container">
         <div class="section-head center" data-reveal>
@@ -268,11 +376,11 @@ $pdo = getDB();
     </div>
 </section>
 
-<!-- ═══════════════ STORY TEASER ═══════════════ -->
+<!-- ═══════════════ STORY TEASER (TRANSCRIPT ALIGNED) ═══════════════ -->
 <section class="section-pad" style="background:var(--cream-50);">
     <div class="container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(2.4rem,5vw,4.5rem);align-items:center;">
         <div class="img-frame frame-gold" data-reveal="left">
-            <img src="/Frontend/images/download (3).png" alt="Busia Chicken Farm fresh eggs delivery" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.06">
+            <img src="/Frontend/images/farm-fresh-eggs.jpg" alt="Busia Chicken Farm fresh eggs and layer flock" loading="lazy" style="aspect-ratio:4/3;" data-parallax="0.06">
         </div>
         <div data-reveal="right">
             <span class="eyebrow">Our Story</span>
@@ -291,47 +399,68 @@ $pdo = getDB();
     </div>
 </section>
 
-<!-- ═══════════════ TESTIMONIALS ═══════════════ -->
+<!-- ═══════════════ TESTIMONIALS (FACEBOOK & EGG FOCUS) ═══════════════ -->
 <section class="section-pad bg-white">
     <div class="container">
         <div class="section-head center" data-reveal>
-            <span class="eyebrow centered">Testimonials</span>
-            <h2 class="section-title">Farmers who <em>trust us</em></h2>
+            <span class="eyebrow centered">Verified Reviews</span>
+            <h2 class="section-title">Farmers &amp; Buyers Who <em>Trust Us</em></h2>
+            <p class="lead">Authentic reviews from poultry farmers, restaurants and distributors across Kenya.</p>
         </div>
 
         <div class="grid-3" data-reveal-group style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.8rem;">
+            <?php
+            $reviews = [];
+            if ($pdo) {
+                try {
+                    $stmt = $pdo->query("SELECT * FROM testimonials WHERE is_approved = 1 ORDER BY id ASC LIMIT 6");
+                    $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                } catch (Exception $e) {}
+            }
+
+            if (empty($reviews)) {
+                $reviews = [
+                    [
+                        'customer_name' => 'James Muriithi',
+                        'customer_role' => 'Broiler Farmer, Eldoret',
+                        'content' => "I've bought day-old chicks from Busia for three seasons now. Mortality is almost zero and the support team actually answers the phone."
+                    ],
+                    [
+                        'customer_name' => 'Alice Nekesa',
+                        'customer_role' => 'Hatchery Owner, Bungoma',
+                        'content' => "The incubator rental service changed our hatchery. We now hatch over 2,000 chicks a month with an amazing success rate."
+                    ],
+                    [
+                        'customer_name' => 'Daniel Ochieng',
+                        'customer_role' => 'Restaurant Owner, Busia Town',
+                        'content' => "Fresh eggs delivered to our restaurant every morning, without fail. The quality is unmatched in the county."
+                    ]
+                ];
+            }
+
+            foreach ($reviews as $rev):
+                $initials = '';
+                $parts = explode(' ', trim($rev['customer_name']));
+                foreach ($parts as $p) {
+                    if (!empty($p)) $initials .= strtoupper($p[0]);
+                }
+                $initials = substr($initials, 0, 2);
+            ?>
             <figure class="testimonial-card">
                 <span class="quote-mark">&ldquo;</span>
                 <div class="stars">★★★★★</div>
-                <blockquote>I've bought day-old chicks from Busia for three seasons now. Mortality is almost zero and the support team actually answers the phone.</blockquote>
+                <blockquote><?php echo htmlspecialchars($rev['content'], ENT_QUOTES, 'UTF-8'); ?></blockquote>
                 <figcaption>
-                    <span class="avatar">JM</span>
-                    <span><span class="t-name">James Muriithi</span><br><span class="t-role">Broiler Farmer, Eldoret</span></span>
+                    <span class="avatar"><?php echo htmlspecialchars($initials, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span><span class="t-name"><?php echo htmlspecialchars($rev['customer_name'], ENT_QUOTES, 'UTF-8'); ?></span><br><span class="t-role"><?php echo htmlspecialchars($rev['customer_role'] ?? 'Verified Customer', ENT_QUOTES, 'UTF-8'); ?></span></span>
                 </figcaption>
             </figure>
-            <figure class="testimonial-card">
-                <span class="quote-mark">&ldquo;</span>
-                <div class="stars">★★★★★</div>
-                <blockquote>The incubator rental service changed our hatchery. We now hatch over 2,000 chicks a month with an amazing success rate.</blockquote>
-                <figcaption>
-                    <span class="avatar">AN</span>
-                    <span><span class="t-name">Alice Nekesa</span><br><span class="t-role">Hatchery Owner, Bungoma</span></span>
-                </figcaption>
-            </figure>
-            <figure class="testimonial-card">
-                <span class="quote-mark">&ldquo;</span>
-                <div class="stars">★★★★★</div>
-                <blockquote>Fresh eggs delivered to our restaurant every morning, without fail. The quality is unmatched in the county.</blockquote>
-                <figcaption>
-                    <span class="avatar">DO</span>
-                    <span><span class="t-name">Daniel Ochieng</span><br><span class="t-role">Restaurant Owner, Busia Town</span></span>
-                </figcaption>
-            </figure>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
 
-<!-- ═══════════════ CTA ═══════════════ -->
+<!-- ═══════════════ CTA (TRANSCRIPT ALIGNED) ═══════════════ -->
 <section class="section-pad" style="background:var(--cream-50);">
     <div class="container">
         <div class="cta-band" data-reveal="zoom">
@@ -339,9 +468,12 @@ $pdo = getDB();
                 <span class="eyebrow centered" style="color:var(--gold-300);">Let's Get Started</span>
                 <h2>Ready to elevate your farm?</h2>
                 <p>Join thousands of successful farmers using Busia Chicken products and management tools. Whether you're a family, a restaurant or a commercial operation — we've got you covered.</p>
-                <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">
                     <a href="/Frontend/pages/register.php" class="btn btn-primary" data-magnetic>Create Account</a>
                     <a href="/Frontend/pages/contact.php" class="btn btn-ghost">Contact Sales</a>
+                    <a href="https://wa.me/254727585599?text=Hello%20Busia%20Chicken%20Farm,%20I%20would%20like%20to%20order" target="_blank" rel="noopener" class="btn btn-outline" style="background:rgba(255,255,255,0.15);border-color:#fff;color:#fff;">
+                        <i data-lucide="phone"></i> Call +254 727 585 599
+                    </a>
                 </div>
             </div>
         </div>

@@ -58,6 +58,14 @@ $is_home = ($currentPage === 'home');
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&display=swap" rel="stylesheet">
 
+    <!-- PWA & Mobile Capabilities -->
+    <meta name="theme-color" content="#0F472B">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Busia Chicken">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/Frontend/images/icon-192.png">
+
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/vendor/swiper/swiper-bundle.min.css<?php echo assetVer('assets/vendor/swiper/swiper-bundle.min.css'); ?>">
 
@@ -68,20 +76,53 @@ $is_home = ($currentPage === 'home');
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/responsive.css<?php echo assetVer('assets/css/responsive.css'); ?>">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/premium.css<?php echo assetVer('assets/css/premium.css'); ?>">
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/Frontend/images/busia logo.png">
+    <!-- Favicon & Logos -->
+    <link rel="icon" type="image/svg+xml" href="/Frontend/images/logo.svg">
+    <link rel="alternate icon" type="image/png" href="/Frontend/images/favicon.png">
+
+    <!-- Schema Markup -->
+    <?php
+    if (file_exists(__DIR__ . '/seo.php')) {
+        require_once __DIR__ . '/seo.php';
+        if (function_exists('generateOrganizationSchema') && function_exists('generateLocalBusinessSchema')) {
+            echo '<script type="application/ld+json">' . generateOrganizationSchema() . '</script>' . "\n";
+            echo '<script type="application/ld+json">' . generateLocalBusinessSchema() . '</script>' . "\n";
+        }
+    }
+    ?>
 </head>
 <body class="<?php echo $is_home ? 'has-hero' : ''; ?>">
 
     <!-- Scroll progress bar -->
     <div class="scroll-progress" id="scroll-progress"></div>
 
+    <?php
+    $announcement = function_exists('getSetting') ? getSetting('announcement_bar', '🐣 Fresh Day-Old Chicks & Grade-A Farm Eggs Available Daily in Nasira & Tangakona! Call +254 727 585 599') : '🐣 Fresh Day-Old Chicks & Grade-A Farm Eggs Available Daily in Nasira & Tangakona! Call +254 727 585 599';
+    $show_announcement = function_exists('getSetting') ? getSetting('show_announcement', '1') : '1';
+    if ($show_announcement === '1' && !empty($announcement)): ?>
+    <div class="top-announcement-bar">
+        <div class="container announcement-inner">
+            <span class="announcement-pill">Live Farm Update</span>
+            <span class="announcement-text"><?php echo htmlspecialchars($announcement, ENT_QUOTES, 'UTF-8'); ?></span>
+            <div class="announcement-locations">
+                <a href="/Frontend/pages/contact.php#nasira" class="ann-loc"><i data-lucide="map-pin" style="width:12px;height:12px;"></i> Nasira AC HQ</a>
+                <span class="sep">•</span>
+                <a href="/Frontend/pages/contact.php#tangakona" class="ann-loc"><i data-lucide="store" style="width:12px;height:12px;"></i> Tangakona Depot</a>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Main Navigation -->
     <nav class="navbar premium-nav" id="site-nav">
         <div class="container nav-inner">
-            <!-- Brand Logo (the logo carries the name - keep it minimal) -->
-            <a href="/" class="nav-brand" aria-label="Busia Chicken Farm - Home">
-                <img src="/Frontend/images/busia logo.png" alt="Busia Chicken Farm" class="nav-logo">
+            <!-- Brand Logo with Slogan -->
+            <a href="/" class="nav-brand" aria-label="Busia Chicken Limited - The Chicken People">
+                <img src="/Frontend/images/logo.svg" onerror="this.onerror=null;this.src='/Frontend/images/busia_chicken_logo.png';" alt="Busia Chicken Limited - The Chicken People" class="nav-logo">
+                <div class="nav-brand-text">
+                    <span class="nav-brand-name">BUSIA CHICKEN</span>
+                    <span class="nav-brand-slogan">The Chicken People</span>
+                </div>
             </a>
 
             <!-- Mobile Menu Button -->

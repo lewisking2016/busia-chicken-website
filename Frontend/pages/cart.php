@@ -12,9 +12,9 @@ if (is_writable($temp_dir)) {
 session_start();
 
 $path_prefix = '../';
-$page_title = 'Shopping Cart - Busia Chicken Farm';
+$page_title = 'Shopping Cart | Busia Chicken Limited - The Chicken People';
 
-include '../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 
 // Get database connection
 $pdo = getDB();
@@ -261,5 +261,5 @@ async function clearCart() {
 </script>
 
 <?php
-include '../includes/footer.php';
+include __DIR__ . '/../includes/footer.php';
 ?>

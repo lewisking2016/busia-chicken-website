@@ -12,9 +12,9 @@ if (is_writable($temp_dir)) {
 session_start();
 
 $path_prefix = '../';
-$page_title = 'Create Account - Busia Chicken Farm';
+$page_title = 'Create Account | Busia Chicken Limited - The Chicken People';
 
-include '../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SESSION['csrf_token'] ?? '');
 
 // Redirect only if a customer is already logged in
@@ -185,5 +185,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_submit'])) {
 </section>
 
 <?php
-include '../includes/footer.php';
+include __DIR__ . '/../includes/footer.php';
 ?>

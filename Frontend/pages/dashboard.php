@@ -18,9 +18,9 @@ if (empty($_SESSION['user_id'])) {
 }
 
 $path_prefix = '../';
-$page_title = 'My Account - Busia Chicken Farm';
+$page_title = 'My Account | Busia Chicken Limited - The Chicken People';
 
-include '../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 
 $pdo = getDB();
 $user_id = (int)$_SESSION['user_id'];
@@ -404,4 +404,4 @@ if ($pdo) {
     </div>
 </div>
 
-<?php include '../includes/footer.php'; ?>
+<?php include __DIR__ . '/../includes/footer.php'; ?>

@@ -12,9 +12,9 @@ if (is_writable($temp_dir)) {
 session_start();
 
 $path_prefix = '../';
-$page_title = 'Order Confirmation - Busia Chicken Farm';
+$page_title = 'Order Confirmation | Busia Chicken Limited - The Chicken People';
 
-include '../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 
 // Redirect if no recent order
 if (empty($_SESSION['last_order'])) {
@@ -121,7 +121,7 @@ $order = $_SESSION['last_order'];
                     <div>
                         <h4 style="color: #1D4ED8; margin-bottom: 8px;">Bank Transfer Instructions</h4>
                         <p style="color: #1E3A8A; font-size: 0.95rem; margin: 0;">
-                            Please transfer the total amount to KCB Bank, Account Name: Busia Chicken Farm, Account No: <strong>1234567890</strong>. Use <strong><?php echo htmlspecialchars($order['order_number']); ?></strong> as the payment reference.
+                            Please transfer the total amount to KCB Bank, Account Name: Busia Chicken Limited, Account No: <strong>1234567890</strong>. Use <strong><?php echo htmlspecialchars($order['order_number']); ?></strong> as the payment reference.
                         </p>
                     </div>
                 </div>
@@ -136,5 +136,5 @@ $order = $_SESSION['last_order'];
 </section>
 
 <?php
-include '../includes/footer.php';
+include __DIR__ . '/../includes/footer.php';
 ?>
