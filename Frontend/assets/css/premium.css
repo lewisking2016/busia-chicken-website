@@ -747,17 +747,17 @@ body.has-hero .premium-nav:not(.nav-scrolled) .mobile-menu-btn span {
 /* ═══════════════════════════════════════════════════════════════
    REVEAL SYSTEM
    ═══════════════════════════════════════════════════════════════ */
-html.motion-ready [data-reveal] {
-    opacity: 0;
-    transform: translateY(36px);
-    transition: opacity 0.9s var(--ease-out-expo), transform 0.9s var(--ease-out-expo);
-    will-change: opacity, transform;
+/* Content stays visible if animation scripts are slow, blocked, or unsupported. */
+[data-reveal],
+.fade-up {
+    opacity: 1;
+    transform: none;
+    animation: none;
 }
 
-html.motion-ready [data-reveal="left"]  { transform: translateX(-46px); }
-html.motion-ready [data-reveal="right"] { transform: translateX(46px); }
-html.motion-ready [data-reveal="zoom"]  { transform: scale(0.9); }
-html.motion-ready [data-reveal="fade"]  { transform: none; }
+[data-reveal] {
+    transition: transform 0.9s var(--ease-out-expo);
+}
 
 [data-reveal].revealed {
     opacity: 1;
@@ -765,7 +765,7 @@ html.motion-ready [data-reveal="fade"]  { transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    html.motion-ready [data-reveal] { opacity: 1; transform: none; transition: none; }
+    [data-reveal] { opacity: 1; transform: none; transition: none; }
     .hero-slide > img { animation: none; transform: scale(1.02); }
 }
 

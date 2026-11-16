@@ -34,6 +34,12 @@ const BusiaApp = {
     // ═══════════════════════════════════════════════════════════════
 
     setupIntersectionObserver() {
+        const revealItems = document.querySelectorAll('.fade-up:not(.animated)');
+        if (!('IntersectionObserver' in window)) {
+            revealItems.forEach((el) => el.classList.add('animated'));
+            return;
+        }
+
         const observerOptions = {
             root: null,
             rootMargin: '0px 0px -100px 0px',
@@ -54,8 +60,7 @@ const BusiaApp = {
         }, observerOptions);
 
         // Observe all elements with fade-up class that haven't animated yet
-        document.querySelectorAll('.fade-up:not(.animated)').forEach((el) => {
-            el.style.opacity = '0';
+        revealItems.forEach((el) => {
             observer.observe(el);
         });
     },
