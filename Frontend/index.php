@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 $page_title = 'Busia Chicken Limited - The Chicken People | Quality Poultry for East Africa';
 include 'includes/header.php';
+require_once __DIR__ . '/includes/product_source.php';
 
 $pdo = function_exists('getDB') ? getDB() : (function_exists('getDatabaseConnection') ? getDatabaseConnection() : null);
 
@@ -224,7 +225,6 @@ if (empty($slides)) {
                 }
 
                 if (empty($displayProducts)) {
-                    require_once __DIR__ . '/includes/product_source.php';
                     $displayProducts = loadDisplayProducts($pdo);
                 }
 

@@ -8,10 +8,16 @@ if (!isset($path_prefix)) {
     $path_prefix = '';
 }
 
-$site_name = function_exists('getSetting') ? getSetting('farm_name', 'Busia Chicken Farm') : 'Busia Chicken Farm';
-$site_email = function_exists('getSetting') ? getSetting('farm_email', 'info@busiachicken.com') : 'info@busiachicken.com';
-$site_phone = function_exists('getSetting') ? getSetting('farm_phone', '+254 727 585 599') : '+254 727 585 599';
-$site_address = function_exists('getSetting') ? getSetting('farm_address', 'Nasira AC Sub-location, Busia, Kenya') : 'Nasira AC Sub-location, Busia, Kenya';
+$site_name = 'Busia Chicken Farm';
+$site_email = 'info@busiachicken.com';
+$site_phone = '+254 727 585 599';
+$site_address = 'Nasira AC Sub-location, Busia, Kenya';
+if (($GLOBALS['pdo'] ?? null) instanceof PDO && function_exists('getSetting')) {
+    $site_name = getSetting('farm_name', $site_name);
+    $site_email = getSetting('farm_email', $site_email);
+    $site_phone = getSetting('farm_phone', $site_phone);
+    $site_address = getSetting('farm_address', $site_address);
+}
 ?>
 
     <!-- Footer -->
@@ -149,9 +155,9 @@ $site_address = function_exists('getSetting') ? getSetting('farm_address', 'Nasi
     </a>
 
     <!-- Vendor Scripts -->
-    <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/vendor/gsap/gsap.min.js<?php echo assetVer('assets/vendor/gsap/gsap.min.js'); ?>"></script>
-    <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/vendor/swiper/swiper-bundle.min.js<?php echo assetVer('assets/vendor/swiper/swiper-bundle.min.js'); ?>"></script>
-    <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/vendor/lucide/lucide.min.js<?php echo assetVer('assets/vendor/lucide/lucide.min.js'); ?>"></script>
+    <script defer src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/vendor/gsap/gsap.min.js<?php echo assetVer('assets/vendor/gsap/gsap.min.js'); ?>"></script>
+    <script defer src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/vendor/swiper/swiper-bundle.min.js<?php echo assetVer('assets/vendor/swiper/swiper-bundle.min.js'); ?>"></script>
+    <script defer src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/vendor/lucide/lucide.min.js<?php echo assetVer('assets/vendor/lucide/lucide.min.js'); ?>"></script>
 
     <!-- App Scripts -->
     <script src="<?php echo BASE_URL ?? '/Frontend/'; ?>assets/js/main.js<?php echo assetVer('assets/js/main.js'); ?>" defer></script>

@@ -73,7 +73,6 @@
     toTop.setAttribute('aria-label', 'Back to top');
     toTop.innerHTML = '<i data-lucide="arrow-up" style="width:20px;height:20px;"></i>';
     document.body.appendChild(toTop);
-    if (typeof lucide !== 'undefined') lucide.createIcons();
 
     toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     window.addEventListener('scroll', () => {
@@ -82,7 +81,7 @@
 
     /* ── Scroll reveals ──────────────────────────────────────── */
     const revealEls = document.querySelectorAll('[data-reveal]');
-    if (revealEls.length) {
+    if (revealEls.length && 'IntersectionObserver' in window) {
         const revealObserver = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (!entry.isIntersecting) return;
@@ -94,6 +93,8 @@
         }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
 
         revealEls.forEach((el) => revealObserver.observe(el));
+    } else {
+        revealEls.forEach((el) => el.classList.add('revealed'));
     }
 
     /* Staggered groups: reveal children with per-index delay */
@@ -103,6 +104,10 @@
             child.setAttribute('data-reveal', '');
             child.setAttribute('data-reveal-delay', String(i * 110));
         });
+        if (!('IntersectionObserver' in window)) {
+            Array.from(children).forEach((child) => child.classList.add('revealed'));
+            return;
+        }
         const gObserver = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (!entry.isIntersecting) return;
@@ -112,6 +117,12 @@
         }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
         gObserver.observe(group);
     });
+
+    // All template icons are present now, including the back-to-top button.
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Keep scroll-reveal styling opt-in until its observers are ready.
+    document.documentElement.classList.add('motion-ready');
 
     /* ── Counters ────────────────────────────────────────────── */
     const counters = document.querySelectorAll('[data-counter]');
