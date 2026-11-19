@@ -42,7 +42,7 @@ if ($count == 0) {
         'Welcome to Busia Chicken Farm',
         'Quality Poultry for',
         'East Africa',
-        'Premium broilers, layers and day-old chicks — raised with care, delivered with confidence, and backed by a decade of sustainable farming excellence.',
+        'Farm-fresh eggs, quality layer feeds and organic manure — produced with care at our Busia farms and delivered with confidence.',
         'Explore Products',
         '/Frontend/pages/shop.php',
         'Our Story',
@@ -119,13 +119,13 @@ $defaults = [
     'farm_email' => 'info@busiachicken.com',
     'farm_phone' => '+254 727 585 599',
     'farm_whatsapp' => '+254727585599',
-    'location_nasira' => 'Nasira AC Sub-location, Busibwabo, Busia County, Kenya (Farm HQ & Hatchery)',
-    'location_tangakona' => 'Tangakona Junction / Market, Busia-Kisumu Highway, Busia County, Kenya (Feed Depot & Sales Hub)',
+    'location_nasira' => 'Nasira AC Sub-location, Busibwabo, Busia County, Kenya (Nasira Farm)',
+    'location_tangakona' => 'Tangakona Junction / Market, Busia-Kisumu Highway, Busia County, Kenya (Farm, Feeds & Sales Point)',
     'hours_nasira' => 'Mon - Sat: 7:00 AM - 6:00 PM | Sun: 8:00 AM - 1:00 PM',
     'hours_tangakona' => 'Mon - Sat: 8:00 AM - 6:30 PM | Sun: Closed',
-    'google_maps_nasira' => 'https://maps.google.com/?q=Nasira+AC+Sub-location+Busia+Kenya',
-    'google_maps_tangakona' => 'https://maps.google.com/?q=Tangakona+Busia+Kenya',
-    'announcement_bar' => '🐣 Fresh Day-Old Chicks & Grade-A Farm Eggs Available Daily in Nasira & Tangakona! Call +254 727 585 599',
+    'google_maps_nasira' => 'https://www.google.com/maps/place/0%C2%B026\'06.0%22N+34%C2%B012\'07.6%22E/@0.4349969,34.1995236,17z/data=!3m1!4b1!4m4!3m3!8m2!3d0.4349969!4d34.2020985?hl=en&entry=ttu&g_ep=EgoyMDI2MTExNi4wIKXMDSoASAFQAw%3D%3D',
+    'google_maps_tangakona' => 'https://www.google.com/maps?q=0.468734,34.2188207&z=17&hl=en',
+    'announcement_bar' => '🐣 Farm-Fresh Grade-A Eggs, Layer Feeds & Organic Manure Available Daily in Nasira & Tangakona! Call +254 727 585 599',
     'show_announcement' => '1'
 ];
 

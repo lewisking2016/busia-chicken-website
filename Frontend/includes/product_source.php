@@ -2,29 +2,58 @@
 declare(strict_types=1);
 
 /**
- * Centralized product source used by both shop and homepage
- * Tries DB first, otherwise returns the local sample dataset.
+ * Central product source for the shop and the homepage.
+ *
+ * Products live only in the `products` table and are managed in
+ * Admin → Products. There is deliberately no hardcoded sample
+ * catalogue: an empty table shows the shop's "no products" message
+ * instead of inventing products the farm does not sell.
  */
 function loadDisplayProducts(?PDO $pdo = null): array
 {
     if (!$pdo) {
-        return array_map('optimizeProductImagePath', getFallbackProducts());
+        return [];
     }
 
     try {
-        $stmt = $pdo->query("SELECT * FROM products WHERE is_active = 1 ORDER BY name ASC");
+        $stmt = $pdo->query('SELECT * FROM products WHERE is_active = 1 ORDER BY name ASC');
         $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return array_map('optimizeProductImagePath', !empty($products) ? $products : getFallbackProducts());
-    } catch (Exception $e) {
-        @error_log("Failed to load products from database: " . $e->getMessage());
-        return array_map('optimizeProductImagePath', getFallbackProducts());
+        return array_map('optimizeProductImagePath', $products ?: []);
+    } catch (Throwable $e) {
+        @error_log('Failed to load products from database: ' . $e->getMessage());
+        return [];
+    }
+}
+
+/**
+ * Featured products for the homepage, straight from the table.
+ */
+function loadFeaturedProducts(?PDO $pdo = null, int $limit = 8): array
+{
+    if (!$pdo) {
+        return [];
+    }
+
+    try {
+        $stmt = $pdo->prepare('SELECT * FROM products WHERE is_active = 1 AND is_featured = 1 ORDER BY price DESC LIMIT ' . max(1, $limit));
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!$rows) {
+            $stmt = $pdo->prepare('SELECT * FROM products WHERE is_active = 1 ORDER BY name ASC LIMIT ' . max(1, $limit));
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+        return array_map('optimizeProductImagePath', $rows ?: []);
+    } catch (Throwable $e) {
+        @error_log('Failed to load featured products: ' . $e->getMessage());
+        return [];
     }
 }
 
 function optimizeProductImagePath(array $product): array
 {
     $url = $product['image_url'] ?? '';
-    $path = parse_url($url, PHP_URL_PATH);
+    $path = parse_url((string)$url, PHP_URL_PATH);
     if (!is_string($path) || !str_starts_with($path, '/Frontend/images/')) return $product;
 
     $stem = pathinfo(rawurldecode(basename($path)), PATHINFO_FILENAME);
@@ -36,111 +65,10 @@ function optimizeProductImagePath(array $product): array
 }
 
 /**
- * Fallback products when database is not available
+ * Kept for backwards compatibility: the site no longer ships sample
+ * products, so this is always empty.
  */
 function getFallbackProducts(): array
 {
-    return array_map('optimizeProductImagePath', [
-        [
-            'id' => 1,
-            'name' => 'Bovans Brown Layers',
-            'slug' => 'bovans-brown-layers',
-            'description' => 'Robust brown egg layers. Excellent feed conversion and egg quality.',
-            'product_type' => 'live_chicken',
-            'price' => 410,
-            'stock_quantity' => 250,
-            'image_url' => '/Frontend/images/layer-hens-eggs.webp',
-            'is_featured' => 1,
-        ],
-        [
-            'id' => 2,
-            'name' => 'Broiler Finisher (6-8 weeks)',
-            'slug' => 'broiler-finisher-6-8-weeks',
-            'description' => 'Final stage feed for broilers. High energy formula.',
-            'product_type' => 'feed',
-            'price' => 2900,
-            'stock_quantity' => 180,
-            'image_url' => '/Frontend/images/download-8.webp',
-            'is_featured' => 1,
-        ],
-        [
-            'id' => 3,
-            'name' => 'Busia Premium Mix',
-            'slug' => 'busia-premium-mix',
-            'description' => 'Our signature blend. Multi-purpose feed suitable for all poultry types.',
-            'product_type' => 'feed',
-            'price' => 3100,
-            'stock_quantity' => 200,
-            'image_url' => '/Frontend/images/kienyeji-mash.webp',
-            'is_featured' => 1,
-        ],
-        [
-            'id' => 4,
-            'name' => 'Chick Mash (0-4 weeks)',
-            'slug' => 'chick-mash-0-4-weeks',
-            'description' => 'Fine mash feed for young chicks. Easy to digest with high energy content. 25kg bags.',
-            'product_type' => 'feed',
-            'price' => 1800,
-            'stock_quantity' => 150,
-            'image_url' => '/Frontend/images/growers-mash.webp',
-            'is_featured' => 1,
-        ],
-        [
-            'id' => 5,
-            'name' => 'Chick Starter Crumbs (0-4 weeks)',
-            'slug' => 'chick-starter-crumbs-0-4-weeks',
-            'description' => 'High-protein formula for day-old chicks. 24% crude protein with vitamins and probiotics. 50kg bags.',
-            'product_type' => 'feed',
-            'price' => 3200,
-            'stock_quantity' => 220,
-            'image_url' => '/Frontend/images/chick-starter-crumbs.webp',
-            'is_featured' => 1,
-        ],
-        [
-            'id' => 6,
-            'name' => 'Cobb 500 Broilers',
-            'slug' => 'cobb-500-broilers',
-            'description' => 'High-performance broilers with excellent feed conversion.',
-            'product_type' => 'live_chicken',
-            'price' => 480,
-            'stock_quantity' => 400,
-            'image_url' => '/Frontend/images/broiler-chickens.webp',
-            'is_featured' => 1,
-        ],
-        [
-            'id' => 7,
-            'name' => 'Day-Old Broiler Chicks',
-            'slug' => 'day-old-broiler-chicks',
-            'description' => 'Vaccinated broiler chicks. 95%+ hatch rate.',
-            'product_type' => 'chicks',
-            'price' => 80,
-            'stock_quantity' => 2000,
-            'image_url' => '/Frontend/images/day-old-chicks.webp',
-            'is_featured' => 1,
-        ],
-        [
-            'id' => 8,
-            'name' => 'Day-Old Layer Chicks',
-            'slug' => 'day-old-layer-chicks',
-            'description' => 'Premium layer chicks vaccinated and ready to grow.',
-            'product_type' => 'chicks',
-            'price' => 70,
-            'stock_quantity' => 2000,
-            'image_url' => '/Frontend/images/day-old-chicks.webp',
-            'is_featured' => 1,
-        ],
-        [
-            'id' => 9,
-            'name' => 'Farm-Fresh Grade-A Eggs (30-Egg Tray)',
-            'slug' => 'farm-fresh-grade-a-eggs',
-            'description' => 'Grade-A eggs harvested daily from modern layer houses — packed in 30-egg trays for homes, shops and hotels.',
-            'product_type' => 'eggs',
-            'price' => 420,
-            'stock_quantity' => 500,
-            'image_url' => '/Frontend/images/farm-fresh-eggs.webp',
-            'is_featured' => 1,
-        ]
-    ]);
+    return [];
 }
-
-?>

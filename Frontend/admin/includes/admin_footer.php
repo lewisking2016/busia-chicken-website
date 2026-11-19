@@ -9,6 +9,112 @@ declare(strict_types=1);
 
 <?php include __DIR__ . '/system_guide.php'; ?>
 
+<?php if (!empty($_SESSION['user_id']) && (!function_exists('busiaCanView') || busiaCanView('messages'))): ?>
+<!-- Team message notifications: staff see new messages as they land -->
+<div id="admin-msg-stack" aria-live="polite" style="position: fixed; right: 18px; bottom: 84px; z-index: 12000; display: flex; flex-direction: column; gap: 10px; max-width: min(380px, calc(100vw - 32px));"></div>
+<style>
+    .admin-msg-toast { background: #fff; border: 1px solid #dbe3ec; border-left: 4px solid var(--admin-primary, #1b5e20); border-radius: 12px; box-shadow: 0 18px 44px rgba(15,23,42,0.18); padding: 14px 15px; animation: msgIn .25s ease; }
+    .admin-msg-toast.is-high { border-left-color: #dc2626; }
+    .admin-msg-toast .msg-head { display: flex; align-items: center; gap: 8px; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: #64748b; margin-bottom: 6px; }
+    .admin-msg-toast .msg-head i { width: 14px; height: 14px; }
+    .admin-msg-toast h4 { margin: 0 0 4px; font-size: .92rem; color: #0f172a; }
+    .admin-msg-toast p { margin: 0; font-size: .82rem; color: #475569; line-height: 1.45; max-height: 4.4em; overflow: hidden; }
+    .admin-msg-toast .msg-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .admin-msg-toast .msg-actions a, .admin-msg-toast .msg-actions button { font-size: .74rem; font-weight: 700; padding: 6px 10px; border-radius: 7px; cursor: pointer; text-decoration: none; border: 1px solid transparent; }
+    .admin-msg-toast .msg-open { background: var(--admin-primary, #1b5e20); color: #fff; }
+    .admin-msg-toast .msg-dismiss { background: #f1f5f9; color: #334155; border-color: #e2e8f0; }
+    @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+</style>
+<script>
+(function () {
+    var stack = document.getElementById('admin-msg-stack');
+    if (!stack) return;
+
+    var endpoint = '/Backend/api/messages.php';
+    var seen = {};
+    try { seen = JSON.parse(sessionStorage.getItem('busiaSeenMessages') || '{}') || {}; } catch (e) { seen = {}; }
+    var badge = document.getElementById('admin-msg-badge');
+
+    function saveSeen() {
+        try { sessionStorage.setItem('busiaSeenMessages', JSON.stringify(seen)); } catch (e) {}
+    }
+
+    function setBadge(count) {
+        if (!badge) return;
+        badge.textContent = count > 99 ? '99+' : String(count);
+        badge.style.display = count > 0 ? 'flex' : 'none';
+    }
+
+    function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+        });
+    }
+
+    function markRead(ids) {
+        if (!ids.length) return;
+        var body = new FormData();
+        ids.forEach(function (id) { body.append('ids[]', id); });
+        fetch(endpoint + '?action=read', { method: 'POST', body: body, credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (data) { if (data && typeof data.count === 'number') setBadge(data.count); })
+            .catch(function () {});
+    }
+
+    function showMessage(msg) {
+        var card = document.createElement('div');
+        card.className = 'admin-msg-toast' + (msg.priority === 'high' ? ' is-high' : '');
+        card.innerHTML =
+            '<div class="msg-head"><i data-lucide="message-circle"></i>' + escapeHtml(msg.sender) +
+            (msg.is_broadcast ? ' · to all staff' : ' · direct message') + '</div>' +
+            '<h4>' + escapeHtml(msg.subject) + '</h4>' +
+            '<p>' + escapeHtml(msg.body) + '</p>' +
+            '<div class="msg-actions">' +
+            '<a class="msg-open" href="/Frontend/admin/messages.php?open=' + encodeURIComponent(msg.id) + '">Open</a>' +
+            '<button type="button" class="msg-dismiss">Dismiss</button></div>';
+
+        var dismiss = function () {
+            card.remove();
+            markRead([msg.id]);
+        };
+        card.querySelector('.msg-dismiss').addEventListener('click', dismiss);
+        card.querySelector('.msg-open').addEventListener('click', function () { markRead([msg.id]); });
+
+        stack.appendChild(card);
+        if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+
+        // High priority stays until acted on; normal ones fade after 25s.
+        if (msg.priority !== 'high') {
+            setTimeout(function () { if (card.isConnected) dismiss(); }, 25000);
+        }
+    }
+
+    function poll(firstRun) {
+        fetch(endpoint + '?action=pending', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (data) {
+                if (!data || !data.ok) return;
+                setBadge(data.count || 0);
+                (data.messages || []).forEach(function (msg) {
+                    if (seen[msg.id]) return;
+                    seen[msg.id] = Date.now();
+                    visible.push(msg.id);
+                    showMessage(msg);
+                });
+                var pendingIds = (data.messages || []).map(function (m) { return m.id; });
+                if (firstRun && pendingIds.length === 0) { /* nothing to show */ }
+                saveSeen();
+            })
+            .catch(function () {});
+    }
+
+    var visible = [];
+    setTimeout(function () { poll(true); }, 1500);
+    setInterval(function () { poll(false); }, 45000);
+})();
+</script>
+<?php endif; ?>
+
     <!-- Admin Mobile Native App Navigation Bar -->
     <?php
     $adminCurPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
@@ -18,18 +124,27 @@ declare(strict_types=1);
             <i data-lucide="layout-dashboard"></i>
             <span>Cockpit</span>
         </a>
+        <?php
+        $mobileBarPerm = static fn(string $module): bool => !function_exists('busiaCanView') || busiaCanView($module);
+        ?>
+        <?php if ($mobileBarPerm('flocks')): ?>
         <a href="/Frontend/admin/batches.php" class="admin-bar-item <?php echo in_array($adminCurPage, ['batches.php','flocks.php','production.php','health.php'], true) ? 'active' : ''; ?>">
             <i data-lucide="egg"></i>
             <span>Flocks</span>
         </a>
+        <?php endif; ?>
+        <?php if ($mobileBarPerm('bulk_sales')): ?>
         <a href="/Frontend/admin/bulk_sales.php" class="admin-bar-item <?php echo in_array($adminCurPage, ['bulk_sales.php','daily_sales.php','cashbook.php'], true) ? 'active' : ''; ?>">
             <i data-lucide="shopping-cart"></i>
             <span>Sales</span>
         </a>
+        <?php endif; ?>
+        <?php if ($mobileBarPerm('website_cms')): ?>
         <a href="/Frontend/admin/website_cms.php" class="admin-bar-item <?php echo $adminCurPage === 'website_cms.php' ? 'active' : ''; ?>">
             <i data-lucide="layout-template"></i>
             <span>CMS</span>
         </a>
+        <?php endif; ?>
         <button type="button" class="admin-bar-item" onclick="var nav = document.getElementById('admin-nav'); if (nav) nav.classList.toggle('open'); document.body.classList.toggle('nav-open');" aria-label="Open full menu">
             <i data-lucide="menu"></i>
             <span>Menu</span>

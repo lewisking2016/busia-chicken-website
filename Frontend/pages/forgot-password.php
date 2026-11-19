@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <?php if ($error): ?>
-                <div style="padding: 14px; background: #fee2e2; color: #b91c1c; border-radius: var(--radius-md); font-size: 0.9rem; margin-bottom: 20px; font-weight: 500; border-left: 4px solid #dc2626;">
+                <div style="padding: 14px; background: #FBF1D8; color: #6B4E00; border-radius: var(--radius-md); font-size: 0.9rem; margin-bottom: 20px; font-weight: 500; border-left: 4px solid #C9971C;">
                     <?php echo $error; ?>
                 </div>
             <?php endif; ?>

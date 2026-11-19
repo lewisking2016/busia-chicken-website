@@ -9,7 +9,7 @@ if (is_writable($temp_dir)) session_save_path($temp_dir);
 session_start();
 
 // Admin access check
-if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager', 'stock_manager', 'sales_staff'], true)) {
+if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager','stock_manager','sales_staff'], true)) {
     echo "<script>window.location.href = '/busiaadmin';</script>";
     exit;
 }

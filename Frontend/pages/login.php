@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
             </div>
 
             <?php if (!empty($errors)): ?>
-                <div style="padding: 1rem; background-color: #FEF2F2; border-left: 4px solid var(--error); color: #991B1B; margin-bottom: var(--space-xl); border-radius: 4px;">
+                <div style="padding: 1rem; background-color: #FBF1D8; border-left: 4px solid #C9971C; color: #6B4E00; margin-bottom: var(--space-xl); border-radius: 4px;">
                     <ul style="margin: 0; padding-left: 1rem;">
                         <?php foreach ($errors as $error): ?>
                             <li><?php echo htmlspecialchars($error); ?></li>

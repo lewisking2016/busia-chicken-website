@@ -38,6 +38,19 @@ function navLinkWithSub(string $href, string $icon, string $label, bool $active,
     if (empty($visible) && !$active) {
         return ''; // nothing viewable — hide the whole group
     }
+
+    // The group heading links to the hub page, which may itself be a module
+    // this person cannot open. Point it at the first module they *can* see.
+    $groupPerm = function_exists('busiaModuleKeyForScript') ? busiaModuleKeyForScript(basename(parse_url($href, PHP_URL_PATH))) : '';
+    if ($groupPerm !== '' && function_exists('busiaCanView') && !busiaCanView($groupPerm)) {
+        foreach ($visible as $item) {
+            if (is_array($item) && !empty($item['href'])) {
+                $href = $item['href'];
+                break;
+            }
+
+        }
+    }
     $submodules = $visible;
 
     // Small icon for every sub-item so eyes can scan faster than reading text.
@@ -277,10 +290,10 @@ HTML;
             'Team & Messages',
             $isPeople,
             [
-                'staff'    => 'Staff',
-                'users'    => 'Customers',
-                'tasks'    => 'Tasks',
-                'messages' => 'Messages'
+                'staff'    => ['label' => 'Staff & Permissions', 'href' => '/Frontend/admin/staff.php'],
+                'users'    => ['label' => 'Customers', 'href' => '/Frontend/admin/users.php'],
+                'tasks'    => ['label' => 'Assigned Tasks', 'href' => '/Frontend/admin/tasks.php'],
+                'messages' => ['label' => 'Team Messages', 'href' => '/Frontend/admin/messages.php']
             ],
             $tab ?: 'staff'
         ) ?>
@@ -292,8 +305,17 @@ HTML;
             $isCMS,
             [
                 'sliders'      => ['label' => 'Hero Sliders', 'href' => '/Frontend/admin/website_cms.php?tab=sliders'],
-                'content'      => ['label' => 'Two Locations', 'href' => '/Frontend/admin/website_cms.php?tab=content'],
-                'testimonials' => ['label' => 'Egg Reviews', 'href' => '/Frontend/admin/website_cms.php?tab=testimonials']
+                'brand'        => ['label' => 'Brand & Banner', 'href' => '/Frontend/admin/website_cms.php?tab=brand'],
+                'global'       => ['label' => 'Header & Footer', 'href' => '/Frontend/admin/website_cms.php?tab=global'],
+                'home'         => ['label' => 'Homepage', 'href' => '/Frontend/admin/website_cms.php?tab=home'],
+                'about'        => ['label' => 'About Page', 'href' => '/Frontend/admin/website_cms.php?tab=about'],
+                'services'     => ['label' => 'Services Page', 'href' => '/Frontend/admin/website_cms.php?tab=services'],
+                'products'     => ['label' => 'Products Page', 'href' => '/Frontend/admin/website_cms.php?tab=products'],
+                'shop'         => ['label' => 'Shop Page', 'href' => '/Frontend/admin/website_cms.php?tab=shop'],
+                'contact'      => ['label' => 'Contact Page', 'href' => '/Frontend/admin/website_cms.php?tab=contact'],
+                'faq'          => ['label' => 'FAQ Page', 'href' => '/Frontend/admin/website_cms.php?tab=faq'],
+                'faq-items'    => ['label' => 'FAQ Items', 'href' => '/Frontend/admin/website_cms.php?tab=faq-items'],
+                'testimonials' => ['label' => 'Reviews', 'href' => '/Frontend/admin/website_cms.php?tab=testimonials']
             ],
             $tab ?: 'sliders'
         ) ?>

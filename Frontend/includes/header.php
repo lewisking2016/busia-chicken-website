@@ -114,13 +114,21 @@ $is_home = ($currentPage === 'home');
     }
     ?>
     <?php
-    $announcement = '🐣 Fresh Day-Old Chicks & Grade-A Farm Eggs Available Daily in Nasira & Tangakona! Call +254 727 585 599';
-    $show_announcement = '1';
-    if (function_exists('getDB') && ($pdo = ($GLOBALS['pdo'] ?? null)) instanceof PDO) {
-        $announcement = function_exists('getSetting') ? getSetting('announcement_bar', $announcement) : $announcement;
-        $show_announcement = function_exists('getSetting') ? getSetting('show_announcement', '1') : '1';
-    }
-    $has_announcement = ($show_announcement === '1' && !empty($announcement));
+    // Announcement + brand come from the database (Admin → Website CMS).
+    // getSetting()/cms() open the connection lazily, so this works on every page.
+    $announcement = function_exists('getSetting')
+        ? getSetting('announcement_bar', '')
+        : '';
+    $show_announcement = function_exists('getSetting') ? getSetting('show_announcement', '1') : '1';
+    $has_announcement = ($show_announcement === '1' && $announcement !== '');
+
+    $brandName = function_exists('cms') ? cms('global', 'brand_name', 'BUSIA CHICKEN') : 'BUSIA CHICKEN';
+    $brandSlogan = function_exists('cms') ? cms('global', 'brand_slogan', SITE_TAGLINE) : SITE_TAGLINE;
+    $brandLogo = function_exists('cms_img') ? cms_img('global', 'logo_image', '/Frontend/images/logo-sm.webp') : '/Frontend/images/logo-sm.webp';
+    $nav = static function (string $key, string $fallback) : string {
+        return function_exists('cms') ? cms('global', $key, $fallback) : $fallback;
+    };
+    $announcementPill = function_exists('cms') ? cms('global', 'announcement_pill', 'Live Farm Update') : 'Live Farm Update';
     ?>
 </head>
 <body class="<?php echo $is_home ? 'has-hero' : ''; ?><?php echo $has_announcement ? ' has-announcement' : ''; ?>">
@@ -133,12 +141,12 @@ $is_home = ($currentPage === 'home');
         <?php if ($has_announcement): ?>
         <div class="top-announcement-bar">
             <div class="container announcement-inner">
-                <span class="announcement-pill">Live Farm Update</span>
+                <span class="announcement-pill"><?php echo htmlspecialchars($announcementPill, ENT_QUOTES, 'UTF-8'); ?></span>
                 <span class="announcement-text"><?php echo htmlspecialchars($announcement, ENT_QUOTES, 'UTF-8'); ?></span>
                 <div class="announcement-locations">
                     <a href="/Frontend/pages/contact.php#nasira" class="ann-loc"><i data-lucide="map-pin" style="width:12px;height:12px;"></i> Nasira AC HQ</a>
                     <span class="sep">•</span>
-                    <a href="/Frontend/pages/contact.php#tangakona" class="ann-loc"><i data-lucide="store" style="width:12px;height:12px;"></i> Tangakona Depot</a>
+                    <a href="/Frontend/pages/contact.php#tangakona" class="ann-loc"><i data-lucide="store" style="width:12px;height:12px;"></i> Tangakona Farm</a>
                 </div>
             </div>
         </div>
@@ -148,14 +156,14 @@ $is_home = ($currentPage === 'home');
         <nav class="navbar premium-nav" id="site-nav">
         <div class="container nav-inner">
             <!-- Brand Logo with Slogan -->
-            <a href="/" class="nav-brand" aria-label="Busia Chicken Limited - The Chicken People">
+            <a href="/" class="nav-brand" aria-label="<?php echo htmlspecialchars($brandName . ' - ' . $brandSlogan, ENT_QUOTES, 'UTF-8'); ?>">
                 <picture>
-                    <source srcset="/Frontend/images/logo-sm.webp" type="image/webp">
-                    <img src="/Frontend/images/logo-sm.webp" onerror="this.onerror=null;this.src='/Frontend/images/favicon.png';" alt="Busia Chicken Limited - The Chicken People" class="nav-logo" width="52" height="52" fetchpriority="high" decoding="async">
+                    <source srcset="<?php echo htmlspecialchars($brandLogo, ENT_QUOTES, 'UTF-8'); ?>" type="image/webp">
+                    <img src="<?php echo htmlspecialchars($brandLogo, ENT_QUOTES, 'UTF-8'); ?>" onerror="this.onerror=null;this.src='/Frontend/images/favicon.png';" alt="<?php echo htmlspecialchars($brandName . ' - ' . $brandSlogan, ENT_QUOTES, 'UTF-8'); ?>" class="nav-logo" width="52" height="52" fetchpriority="high" decoding="async">
                 </picture>
                 <div class="nav-brand-text">
-                    <span class="nav-brand-name">BUSIA CHICKEN<span style="color:var(--brand-red);font-weight:900;">.</span></span>
-                    <span class="nav-brand-slogan">The Chicken People</span>
+                    <span class="nav-brand-name"><?php echo htmlspecialchars($brandName, ENT_QUOTES, 'UTF-8'); ?><span style="color:var(--gold-ink);font-weight:900;">.</span></span>
+                    <span class="nav-brand-slogan"><?php echo htmlspecialchars($brandSlogan, ENT_QUOTES, 'UTF-8'); ?></span>
                 </div>
             </a>
 
@@ -169,11 +177,11 @@ $is_home = ($currentPage === 'home');
             <!-- Navigation Content -->
             <div class="navbar-content" id="main-nav">
                 <ul class="navbar-nav main-links">
-                    <li><a class="nav-link<?php echo navActive('about', $currentPage); ?>" href="/Frontend/pages/about.php"><span>About</span></a></li>
-                    <li><a class="nav-link<?php echo navActive('services', $currentPage); ?>" href="/Frontend/pages/services.php"><span>Services</span></a></li>
-                    <li><a class="nav-link<?php echo navActive('products', $currentPage); ?>" href="/Frontend/pages/products.php"><span>Products</span></a></li>
-                    <li><a class="nav-link<?php echo navActive('shop', $currentPage); ?>" href="/Frontend/pages/shop.php"><span>Shop</span> <span class="nav-badge-red">HOT</span></a></li>
-                    <li><a class="nav-link<?php echo navActive('contact', $currentPage); ?>" href="/Frontend/pages/contact.php"><span>Contact</span></a></li>
+                    <li><a class="nav-link<?php echo navActive('about', $currentPage); ?>" href="/Frontend/pages/about.php"><span><?php echo htmlspecialchars($nav('nav_about', 'About'), ENT_QUOTES, 'UTF-8'); ?></span></a></li>
+                    <li><a class="nav-link<?php echo navActive('services', $currentPage); ?>" href="/Frontend/pages/services.php"><span><?php echo htmlspecialchars($nav('nav_services', 'Services'), ENT_QUOTES, 'UTF-8'); ?></span></a></li>
+                    <li><a class="nav-link<?php echo navActive('products', $currentPage); ?>" href="/Frontend/pages/products.php"><span><?php echo htmlspecialchars($nav('nav_products', 'Products'), ENT_QUOTES, 'UTF-8'); ?></span></a></li>
+                    <li><a class="nav-link<?php echo navActive('shop', $currentPage); ?>" href="/Frontend/pages/shop.php"><span><?php echo htmlspecialchars($nav('nav_shop', 'Shop'), ENT_QUOTES, 'UTF-8'); ?></span> <span class="nav-badge-red"><?php echo htmlspecialchars(function_exists('cms') ? cms('global', 'shop_badge', 'HOT') : 'HOT', ENT_QUOTES, 'UTF-8'); ?></span></a></li>
+                    <li><a class="nav-link<?php echo navActive('contact', $currentPage); ?>" href="/Frontend/pages/contact.php"><span><?php echo htmlspecialchars($nav('nav_contact', 'Contact'), ENT_QUOTES, 'UTF-8'); ?></span></a></li>
                 </ul>
 
                 <ul class="navbar-nav auth-actions">

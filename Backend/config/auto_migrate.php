@@ -285,6 +285,7 @@ function busiaModuleKeyForScript(string $script): string
         'analytics.php' => 'analytics', 'bulk_import_export.php' => 'bulk_import_export',
         'hub_people.php' => 'staff', 'staff.php' => 'staff', 'users.php' => 'users',
         'tasks.php' => 'tasks', 'messages.php' => 'messages',
+        'website_cms.php' => 'website_cms',
         'hub_settings.php' => 'settings', 'calendar.php' => 'calendar', 'dropdowns.php' => 'dropdowns',
         'settings.php' => 'settings', 'logs.php' => 'logs', 'permissions.php' => 'permissions',
         'orders.php' => 'hub_finance', 'sales.php' => 'hub_finance', 'payments.php' => 'hub_finance',
@@ -403,15 +404,23 @@ function seedMasterData(PDO $pdo): void
 /**
  * Bump this when reconcileLegacySchema / seedMasterData gain new steps, so
  * existing databases re-run the one-time reconciliation on their next load.
+ *
+ * NOTE: the overall schema version now lives in Backend/config/migrations.php
+ * (BUSIA_SCHEMA_VERSION); this constant is kept so older tooling keeps working.
  */
-const BUSIA_SCHEMA_SEED_VERSION = 3;
+const BUSIA_SCHEMA_SEED_VERSION = 5;
 
 /**
- * Ensure all module tables exist. No-op when everything is present.
+ * Ensure the complete schema exists — every migration source, not just two.
  *
- * Steady-state cost is two queries (SHOW TABLES + one settings read): the
- * legacy-column reconciliation and master-data seeding are gated behind a
- * version flag so they run once, not on every page load.
+ * All of the work happens in Backend/config/migrations.php:
+ *   • every .sql source is applied in dependency order, statement by statement
+ *   • statements are normalised to be re-runnable (ADD COLUMN IF NOT EXISTS →
+ *     presence check, CREATE DATABASE/USE skipped)
+ *   • progress is recorded so steady-state requests cost ~2 cheap queries
+ *   • failures are written to logs/database.log instead of being swallowed
+ *
+ * Legacy column reconciliation and master-data seeding run as the post step.
  */
 function ensureBusiaSchema(PDO $pdo): void
 {
@@ -420,61 +429,30 @@ function ensureBusiaSchema(PDO $pdo): void
     $checked = true;
 
     try {
-        $configDir = __DIR__;
-        $poultryFile = $configDir . '/migration_poultry_complete.sql';
-        $businessFile = $configDir . '/migration_v2_business.sql';
-
-        // Completeness guard — cheap on steady state (one SHOW TABLES).
-        // Loop until stable: a statement can fail mid-run when its foreign
-        // key target is created later in the same pass (e.g. batches depends
-        // on houses/flocks). Later passes create those, then the dependents.
-        for ($pass = 0; $pass < 6; $pass++) {
-            $existing = $pdo->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN) ?: [];
-            $missingPoultry = array_diff(migrationTableNames($poultryFile), $existing);
-            $missingBusiness = array_diff(migrationTableNames($businessFile), $existing);
-
-            if (!$missingPoultry && !$missingBusiness) {
-                break; // everything present
-            }
-
-            $tableCountBefore = count($existing);
-
-            // Order matters: the business tables FK-reference poultry tables
-            // (batches, raw_materials, suppliers, walk_in_customers).
-            if ($missingPoultry) {
-                runMigrationFile($pdo, $poultryFile);
-            }
-            if ($missingBusiness) {
-                runMigrationFile($pdo, $businessFile);
-            }
-
-            $after = $pdo->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN);
-            if (count($after) <= $tableCountBefore) {
-                break; // no progress — give up quietly, retried next request
-            }
+        if (!function_exists('busiaMigrate')) {
+            require_once __DIR__ . '/migrations.php';
         }
 
-        // One-time reconcile + seed, gated by a version flag so steady-state
-        // requests skip the dozens of SHOW COLUMNS / INSERT IGNOREs.
-        $seeded = null;
-        try {
-            $seeded = $pdo->query("SELECT setting_value FROM settings WHERE setting_key = 'db_schema_seed_version'")->fetchColumn();
-        } catch (Exception $e) {
-            // settings table may not exist yet — run the one-time pass below
-        }
+        $report = busiaMigrate($pdo, [
+            'post' => static function (PDO $pdo): void {
+                reconcileLegacySchema($pdo);
+                seedMasterData($pdo);
+                busiaSeedCmsContent($pdo);
+                // Seed every editable website field declared in cms_defaults.php
+                require_once __DIR__ . '/cms.php';
+                cms_boot($pdo);
+            },
+        ]);
 
-        if ((string)$seeded !== (string)BUSIA_SCHEMA_SEED_VERSION) {
-            reconcileLegacySchema($pdo);
-            seedMasterData($pdo);
-            try {
-                $pdo->exec("INSERT INTO settings (setting_key, setting_value, setting_group, description)
-                            VALUES ('db_schema_seed_version', " . (int)BUSIA_SCHEMA_SEED_VERSION . ", 'system', 'Auto-migration reconcile/seed version')
-                            ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
-            } catch (Exception $e) {
-                // settings table missing — retried next request
-            }
+        if (empty($report['ok'])) {
+            busiaDbLog('Schema incomplete — missing tables: ' . implode(', ', $report['missing']));
         }
-    } catch (Exception $e) {
-        // Silent — never break the page
+    } catch (Throwable $e) {
+        // Never break a page over schema maintenance, but never hide it either.
+        if (function_exists('busiaDbLog')) {
+            busiaDbLog('Auto-migration failed: ' . $e->getMessage());
+        } else {
+            @error_log('Auto-migration failed: ' . $e->getMessage());
+        }
     }
 }

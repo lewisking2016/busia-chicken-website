@@ -14,7 +14,7 @@ if (!defined('BASE_URL')) {
 
 if (!isset($page_title)) $page_title = 'Admin Console';
 // Admin access check (Basic authentication for ANY admin area)
-if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'stock_manager', 'sales_staff'], true)) {
+if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager','stock_manager','sales_staff'], true)) {
     // Redirect to login if not authorized
     header('Location: /busiaadmin');
     exit;
@@ -23,31 +23,52 @@ if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_ad
 // Authorization logic for specific roles
 $isAdmin = in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager'], true);
 
-/* ── Role-based module permissions ────────────────────────────────
-   The role_permissions matrix is seeded automatically (see
-   auto_migrate.php). super_admin is always allowed; every other role
-   is checked against the matrix for the module they are opening, and
-   the sidebar hides entries the role cannot view. */
+/* ── Role + per-account module permissions ────────────────────────
+   Two layers decide access: the role matrix (Admin → Settings) and
+   per-staff overrides saved on the staff edit screen. The effective
+   set for this signed-in account is resolved once per request and
+   reused by the guard, the sidebar and every page's buttons. */
 $busia_current_module = function_exists('busiaModuleKeyForScript') ? busiaModuleKeyForScript(basename($_SERVER['SCRIPT_NAME'])) : '';
-$busia_perms = function_exists('busiaRolePermissions') ? busiaRolePermissions(null) : [];
-$busia_role_perms = $busia_perms[$_SESSION['role'] ?? ''] ?? [];
-$GLOBALS['_busia_role_perms'] = $busia_role_perms;
-if (!function_exists('busiaCanView')) {
-    function busiaCanView(string $module): bool {
-        if (($_SESSION['role'] ?? '') === 'super_admin') return true;
-        $perms = $GLOBALS['_busia_role_perms'] ?? [];
-        return (bool)($perms[$module]['view'] ?? 0);
+if (file_exists(__DIR__ . '/../../../Backend/config/permissions.php')) {
+    require_once __DIR__ . '/../../../Backend/config/permissions.php';
+}
+if (function_exists('busiaCurrentPermissions')) {
+    busiaCurrentPermissions();
+}
+if (!function_exists('busiaCanEdit')) {
+    function busiaCanEdit(string $module): bool
+    {
+        return function_exists('busiaCan') ? busiaCan($module, 'edit') : false;
     }
-    function busiaCanEdit(string $module): bool {
-        if (($_SESSION['role'] ?? '') === 'super_admin') return true;
-        $perms = $GLOBALS['_busia_role_perms'] ?? [];
-        return (bool)($perms[$module]['edit'] ?? 0);
+    function busiaCanDelete(string $module): bool
+    {
+        return function_exists('busiaCan') ? busiaCan($module, 'delete') : false;
+    }
+    function busiaCanManage(string $module): bool
+    {
+        return function_exists('busiaCan') ? busiaCan($module, 'manage') : false;
     }
 }
-// Block modules the role has no view permission for.
+// Block modules the account has no view permission for.
+if (!function_exists('busiaCanView')) {
+    function busiaCanView(string $module): bool
+    {
+        return (($_SESSION['role'] ?? '') === 'super_admin');
+    }
+}
 if ($busia_current_module !== '' && $busia_current_module !== 'dashboard' && !busiaCanView($busia_current_module)) {
     header('Location: /Frontend/admin/dashboard.php?denied=1');
     exit;
+}
+
+// Unread team messages → notification bell in the top bar.
+$busia_unread_messages = 0;
+if (file_exists(__DIR__ . '/../../../Backend/config/messages.php')) {
+    require_once __DIR__ . '/../../../Backend/config/messages.php';
+    $busia_msg_pdo = busiaMessagesPdo();
+    if ($busia_msg_pdo && function_exists('busiaUnreadMessageCount')) {
+        $busia_unread_messages = busiaUnreadMessageCount($busia_msg_pdo, (int)($_SESSION['user_id'] ?? 0));
+    }
 }
 
 /* ── Quick Actions dropdown (per-page shortcuts) ──────────────────
@@ -1209,6 +1230,12 @@ $csrf_token = function_exists('generateCSRFToken') ? generateCSRFToken() : ($_SE
                         <?php endforeach; ?>
                     </div>
                 </div>
+                <?php endif; ?>
+                <?php if (busiaCanView('messages')): ?>
+                <a href="/Frontend/admin/messages.php" id="admin-msg-bell" title="Team messages" style="position: relative; background: rgba(27,94,32,0.08); border: none; cursor: pointer; color: var(--admin-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; text-decoration: none;">
+                    <i data-lucide="message-circle" style="width: 21px; height: 21px; stroke-width: 2.2;"></i>
+                    <span id="admin-msg-badge" style="display: <?= $busia_unread_messages > 0 ? 'flex' : 'none' ?>; position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #dc2626; color: #fff; font-size: 0.66rem; font-weight: 800; align-items: center; justify-content: center; border: 2px solid #fff;"><?= (int)$busia_unread_messages ?></span>
+                </a>
                 <?php endif; ?>
                 <button id="open-system-guide" title="System Walkthrough Guide" style="background: none; border: none; cursor: pointer; color: var(--admin-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; background: rgba(27, 94, 32, 0.08); transition: all 0.2s; outline: none;" onmouseover="this.style.background='rgba(27, 94, 32, 0.15)'" onmouseout="this.style.background='rgba(27, 94, 32, 0.08)'">
                     <i data-lucide="help-circle" style="width: 22px; height: 22px; stroke-width: 2.2;"></i>

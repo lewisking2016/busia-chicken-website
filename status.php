@@ -25,14 +25,25 @@ if ($pdo) {
         $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
         if (empty($tables)) {
             echo "<p class='warn'>⚠ Database connected but NO TABLES found!</p>";
-            echo "<p><strong>ACTION REQUIRED:</strong> Run <a href='/setup_production_database.php'>setup_production_database.php</a></p>";
+            echo "<p><strong>ACTION REQUIRED:</strong> Run <a href='/tools/migrate.php'>tools/migrate.php</a></p>";
         } else {
             echo "<p class='ok'>✓ Found " . count($tables) . " tables</p>";
-            echo "<ul>";
-            foreach ($tables as $table) {
-                echo "<li><code>$table</code></li>";
+
+            // Schema health — the migration runner's own verification.
+            require_once __DIR__ . '/Backend/config/migrations.php';
+            $schema = busiaSchemaReport($pdo);
+            if ($schema['ok']) {
+                echo "<p class='ok'>✓ Schema OK — all required tables present (version " . (int)$schema['version'] . ")</p>";
+            } else {
+                echo "<p class='fail'>✗ Schema incomplete — missing: <code>" . htmlspecialchars(implode(', ', $schema['missing'])) . "</code></p>";
+                echo "<p><strong>ACTION REQUIRED:</strong> Run <a href='/tools/migrate.php'>tools/migrate.php</a></p>";
             }
-            echo "</ul>";
+
+            echo "<details><summary>All tables</summary><ul>";
+            foreach ($tables as $table) {
+                echo "<li><code>" . htmlspecialchars($table) . "</code></li>";
+            }
+            echo "</ul></details>";
             
             // Check products
             $productCount = $pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
@@ -48,7 +59,7 @@ if ($pdo) {
         }
     } catch (Exception $e) {
         echo "<p class='warn'>⚠ Tables check failed: " . htmlspecialchars($e->getMessage()) . "</p>";
-        echo "<p><strong>ACTION REQUIRED:</strong> Run <a href='/setup_production_database.php'>setup_production_database.php</a></p>";
+        echo "<p><strong>ACTION REQUIRED:</strong> Run <a href='/tools/migrate.php'>tools/migrate.php</a></p>";
     }
 } else {
     echo "<p class='fail'>✗ Cannot connect to database</p>";

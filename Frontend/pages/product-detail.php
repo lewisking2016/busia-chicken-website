@@ -79,7 +79,7 @@ $inStock = ($product['stock_quantity'] ?? 0) > 0;
         
         <!-- Left: Image Box -->
         <div style="background: #f8fafc; border-radius: var(--radius-lg); padding: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.05); min-height: 380px;">
-            <img src="<?php echo htmlspecialchars(optimizedShopImage($product['image_url'] ?? '/Frontend/images/broiler-chickens.webp'), ENT_QUOTES, 'UTF-8'); ?>" 
+            <img src="<?php echo htmlspecialchars(optimizedShopImage(($product['image_url'] ?? '') !== '' ? $product['image_url'] : cms_product_image((string)($product['product_type'] ?? 'other'))), ENT_QUOTES, 'UTF-8'); ?>" 
                  alt="<?php echo htmlspecialchars($product['name']); ?>" 
                  width="800" height="600" fetchpriority="high" decoding="async" style="max-width: 100%; max-height: 320px; object-fit: contain; border-radius: var(--radius-md);">
         </div>
@@ -104,8 +104,8 @@ $inStock = ($product['stock_quantity'] ?? 0) > 0;
 
             <!-- Stock Status -->
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 32px;">
-                <span style="width: 10px; height: 10px; border-radius: 50%; background: <?php echo $inStock ? '#16a34a' : '#dc2626'; ?>; display: inline-block;"></span>
-                <span style="font-weight: 600; font-size: 0.9rem; color: <?php echo $inStock ? '#15803d' : '#b91c1c'; ?>;">
+                <span style="width: 10px; height: 10px; border-radius: 50%; background: <?php echo $inStock ? '#16a34a' : '#C9971C'; ?>; display: inline-block;"></span>
+                <span style="font-weight: 600; font-size: 0.9rem; color: <?php echo $inStock ? '#15803d' : '#8A5B00'; ?>;">
                     <?php echo $inStock ? 'In Stock (' . $product['stock_quantity'] . ' units available)' : 'Out of Stock'; ?>
                 </span>
             </div>

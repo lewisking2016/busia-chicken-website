@@ -198,7 +198,7 @@ if ($pdo) {
 
     .user-badge-pending { background: #fef3c7; color: #b45309; }
     .user-badge-completed { background: #dcfce7; color: #15803d; }
-    .user-badge-cancelled { background: #fee2e2; color: #b91c1c; }
+    .user-badge-cancelled { background: #FBF1D8; color: #6B4E00; }
     .user-badge-processing { background: #dbeafe; color: #1d4ed8; }
     .user-badge-shipped { background: #e0e7ff; color: #4338ca; }
     .user-badge-paid { background: #dcfce7; color: #15803d; }
@@ -394,7 +394,7 @@ if ($pdo) {
                         <i data-lucide="headphones" style="width: 16px; height: 16px;"></i>
                         Support
                     </a>
-                    <a href="/Frontend/pages/logout.php" class="user-action-btn" style="color: #dc2626;">
+                    <a href="/Frontend/pages/logout.php" class="user-action-btn" style="color: #6B4E00;">
                         <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
                         Logout
                     </a>

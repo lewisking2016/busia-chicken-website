@@ -17,11 +17,11 @@ $products = loadDisplayProducts($pdo);
 ?>
 
 <!-- Page Hero -->
-<section class="page-hero" style="background-image:url('/Frontend/images/adbg.webp');">
+<section class="page-hero" style="background-image:url('<?php echo htmlspecialchars(cms_img('shop', 'hero_image', '/Frontend/images/adbg.webp'), ENT_QUOTES, 'UTF-8'); ?>');">
     <div class="container">
         <nav class="breadcrumb" data-reveal="fade"><a href="/">Home</a><span class="sep">/</span><span>Shop</span></nav>
-        <h1 data-reveal="fade" data-reveal-delay="100">The <em>Shop</em></h1>
-        <p data-reveal="fade" data-reveal-delay="200">Browse and purchase premium chicken products, fresh eggs and feeds � delivered to your door.</p>
+        <h1 data-reveal="fade" data-reveal-delay="100"><?php echo cms_html('shop', 'hero_title'); ?></h1>
+        <p data-reveal="fade" data-reveal-delay="200"><?php echo cms_text('shop', 'hero_subtitle'); ?></p>
     </div>
 </section>
 
@@ -29,9 +29,9 @@ $products = loadDisplayProducts($pdo);
 <section class="section-pad" style="background:var(--cream-50);" id="products">
     <div class="container">
         <div class="section-head" data-reveal>
-            <span class="eyebrow" style="color:var(--brand-red);font-weight:800;letter-spacing:0.08em;"><i data-lucide="sparkles" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;"></i> DIRECT FROM BUSIA FARM HQ &amp; DEPOT</span>
-            <h2 class="section-title">Shop <em>Poultry &amp; Feeds</em></h2>
-            <p class="lead">Fresh eggs, day-old chicks, live birds and premium feeds — ready to order and delivered to your door.</p>
+            <span class="eyebrow" style="color:var(--gold-ink);font-weight:800;letter-spacing:0.08em;"><i data-lucide="sparkles" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;"></i> <?php echo cms_text('shop', 'intro_eyebrow'); ?></span>
+            <h2 class="section-title"><?php echo cms_html('shop', 'intro_title'); ?></h2>
+            <p class="lead"><?php echo cms_text('shop', 'intro_lead'); ?></p>
         </div>
 
         <div class="shop-layout" style="display:grid;grid-template-columns:250px 1fr;gap:clamp(1.6rem,3vw,3rem);align-items:start;">
@@ -97,13 +97,7 @@ $products = loadDisplayProducts($pdo);
                         foreach ($products as $index => $product):
                             $img = $product['image_url'] ?? $product['img'] ?? '';
                             if (!$img) {
-                                $img = match($product['product_type'] ?? 'feed') {
-                                    'feed' => '/Frontend/images/download-8.webp',
-                                    'eggs' => '/Frontend/images/farm-fresh-eggs.webp',
-                                    'chicks' => '/Frontend/images/day-old-chicks.webp',
-                                    'live_chicken' => '/Frontend/images/broiler-chickens.webp',
-                                    default => '/Frontend/images/adbg.webp'
-                                };
+                                $img = cms_product_image((string)($product['product_type'] ?? 'feed'));
                             }
                             $stock = $product['stock_quantity'] ?? 0;
                             $inStock = $stock > 0;
@@ -144,7 +138,7 @@ $products = loadDisplayProducts($pdo);
                     ?>
                     <div style="grid-column:1/-1;text-align:center;padding:var(--space-4xl) 0;">
                         <i data-lucide="package-x" style="width:48px;height:48px;color:var(--gray-400);margin-bottom:var(--space-md);"></i>
-                        <p style="color:var(--gray-600);font-size:1.125rem;">No products available at the moment.</p>
+                        <p style="color:var(--gray-600);font-size:1.125rem;"><?php echo cms_text('shop', 'empty_message'); ?></p>
                     </div>
                     <?php } ?>
                 </div>

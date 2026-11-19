@@ -26,11 +26,13 @@
     --cream-100: #F6F0E3;
 
     /* Crisp Poultry Crimson Red Tokens (Solid, Non-Ambient, Complements Forest Green & Gold) */
-    --brand-red: #D32F2F;
-    --brand-red-dark: #B71C1C;
-    --brand-red-light: #FEF2F2;
-    --brand-red-border: #FCA5A5;
-    --brand-red-text: #991B1B;
+    /* Accent comes from the Busia Chicken logo: green + yellow, no red. */
+    --brand-red: #E0A82E;          /* logo gold — fills & marks */
+    --brand-red-dark: #C9971C;     /* deeper gold for pressed states */
+    --brand-red-light: #FBF1D8;    /* soft gold tint */
+    --brand-red-border: #E3C57E;
+    --brand-red-text: #6B4E00;     /* gold ink — readable on cream */
+    --gold-ink: #6B4E00;
 
     --ink: #0F1B12;
 
@@ -361,39 +363,28 @@ body.has-hero .premium-nav:not(.nav-scrolled) .mobile-menu-btn span {
 
 .btn-primary {
     background: linear-gradient(135deg, var(--brand-600), var(--brand-800));
-    box-shadow: 0 8px 24px -8px rgba(27, 94, 32, 0.55);
+    box-shadow: none;
 }
 
+/* No light-sweep sheen: a button that just sits there reads as real. */
 .btn-primary::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -80%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.35), transparent);
-    transform: skewX(-20deg);
-    transition: left 0.7s var(--ease-out-expo);
-}
-
-.btn-primary:hover::after {
-    left: 130%;
+    display: none;
 }
 
 .btn-primary:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-glow);
+    transform: none;
+    box-shadow: none;
 }
 
 .btn-accent {
     background: linear-gradient(135deg, var(--gold-400), var(--gold-500));
     color: var(--brand-900);
-    box-shadow: 0 8px 24px -8px rgba(240, 180, 41, 0.6);
+    box-shadow: none;
 }
 
 .btn-accent:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 14px 34px -8px rgba(240, 180, 41, 0.65);
+    transform: none;
+    box-shadow: none;
 }
 
 .btn-outline {
@@ -426,18 +417,16 @@ body.has-hero .premium-nav:not(.nav-scrolled) .mobile-menu-btn span {
 
 .eyebrow::before {
     content: "";
-    width: 34px;
+    width: 22px;
     height: 2px;
-    background: linear-gradient(90deg, var(--gold-400), var(--brand-600));
-    border-radius: 2px;
+    background: var(--gold-400);
 }
 
 .eyebrow.centered::after {
     content: "";
-    width: 34px;
+    width: 22px;
     height: 2px;
-    background: linear-gradient(90deg, var(--brand-600), var(--gold-400));
-    border-radius: 2px;
+    background: var(--gold-400);
 }
 
 .section-title {
@@ -552,8 +541,8 @@ body.has-hero .premium-nav:not(.nav-scrolled) .mobile-menu-btn span {
 }
 
 @keyframes heroPulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); }
-    50%      { box-shadow: 0 0 0 7px rgba(211, 47, 47, 0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(224, 168, 46, 0.55); }
+    50%      { box-shadow: 0 0 0 6px rgba(224, 168, 46, 0); }
 }
 
 .hero-title {
@@ -893,28 +882,10 @@ body.has-hero .premium-nav:not(.nav-scrolled) .mobile-menu-btn span {
     overflow: hidden;
 }
 
-.stats-band::before {
-    content: "";
-    position: absolute;
-    width: 560px;
-    height: 560px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(240, 180, 41, 0.16), transparent 65%);
-    top: -220px;
-    right: -140px;
-    animation: floatBlob 12s ease-in-out infinite;
-}
-
+/* Flat deep-green band; the numbers carry it, no floating light. */
+.stats-band::before,
 .stats-band::after {
-    content: "";
-    position: absolute;
-    width: 420px;
-    height: 420px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.07), transparent 65%);
-    bottom: -180px;
-    left: -120px;
-    animation: floatBlob 16s ease-in-out infinite reverse;
+    display: none;
 }
 
 @keyframes floatBlob {
@@ -967,10 +938,11 @@ body.has-hero .premium-nav:not(.nav-scrolled) .mobile-menu-btn span {
     overflow: hidden;
 }
 
+/* Hover states stay quiet: the surface darkens a hair, nothing glows. */
 .product-card:hover {
-    transform: translateY(-10px);
-    box-shadow: var(--shadow-lift);
-    border-color: rgba(27, 94, 32, 0.16);
+    transform: none;
+    box-shadow: 0 2px 4px rgba(11, 61, 23, 0.07);
+    border-color: #C6D1BE;
 }
 
 .product-image {
@@ -982,18 +954,18 @@ body.has-hero .premium-nav:not(.nav-scrolled) .mobile-menu-btn span {
 }
 
 .product-card:hover .product-image img {
-    transform: scale(1.1);
+    transform: none;
 }
 
 .product-badge {
     border-radius: 4px;
     background: var(--brand-red);
-    color: #FFFFFF;
+    color: #2B2000;
     font-weight: 700;
     font-size: 0.72rem;
     letter-spacing: 0.06em;
     padding: 4px 10px;
-    box-shadow: 0 2px 6px rgba(183, 28, 28, 0.35);
+    box-shadow: none;
 }
 
 .product-badge.badge-outline {
@@ -1357,7 +1329,7 @@ body.has-hero .premium-nav:not(.nav-scrolled) .mobile-menu-btn span {
     z-index: 900;
     cursor: pointer;
     border: none;
-    box-shadow: var(--shadow-glow);
+    box-shadow: 0 4px 12px rgba(11, 61, 23, 0.18);
     opacity: 0;
     transform: translateY(16px);
     pointer-events: none;
@@ -1549,8 +1521,8 @@ body.has-hero .premium-nav:not(.nav-scrolled) .mobile-menu-btn span {
 }
 
 .f-newsletter button:hover {
-    transform: scale(1.04);
-    box-shadow: 0 8px 20px -6px rgba(240, 180, 41, 0.6);
+    transform: none;
+    box-shadow: none;
 }
 
 .p-footer-bottom {
@@ -1930,7 +1902,7 @@ button {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 1px 3px rgba(183, 28, 28, 0.4);
+    box-shadow: none;
 }
 .announcement-pill::before {
     content: '';
@@ -2093,8 +2065,8 @@ button {
         position: absolute;
         top: -6px;
         right: -8px;
-        background: #dc2626;
-        color: #fff;
+        background: #E0A82E;
+        color: #2B2000;
         font-size: 0.62rem;
         font-weight: 700;
         padding: 1px 5px;
@@ -2121,14 +2093,14 @@ button {
     padding: 12px 18px;
     border-radius: 50px !important;
     text-decoration: none;
-    box-shadow: 0 8px 30px rgba(37, 211, 102, 0.4);
+    box-shadow: 0 4px 12px rgba(11, 61, 23, 0.16);
     font-weight: 700;
     font-size: 0.88rem;
     transition: transform 0.25s var(--ease-out-expo), box-shadow 0.25s ease;
 }
 .floating-whatsapp-btn:hover {
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 12px 36px rgba(37, 211, 102, 0.55);
+    transform: none;
+    box-shadow: 0 4px 12px rgba(11, 61, 23, 0.18);
     color: #fff;
 }
 .floating-whatsapp-btn:active {
@@ -2251,25 +2223,25 @@ button {
     align-items: center !important;
     justify-content: center !important;
     gap: 8px !important;
-    background: #D32F2F !important;
-    color: #FFFFFF !important;
-    border: 1px solid #B71C1C !important;
+    background: #E0A82E !important;
+    color: #2B2000 !important;
+    border: 1px solid #C9971C !important;
     font-weight: 700 !important;
     padding: 0.75rem 1.4rem !important;
     border-radius: 6px !important;
     text-decoration: none !important;
     cursor: pointer !important;
-    box-shadow: 0 2px 6px rgba(183, 28, 28, 0.28) !important;
-    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease !important;
+    box-shadow: none !important;
+    transition: background 0.2s ease !important;
 }
 .btn-red:hover {
-    background: #B71C1C !important;
-    color: #FFFFFF !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(183, 28, 28, 0.4) !important;
+    background: #C9971C !important;
+    color: #2B2000 !important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 .btn-red:active {
-    transform: scale(0.98) !important;
+    transform: none !important;
 }
 
 .btn-outline-red {
@@ -2278,8 +2250,8 @@ button {
     justify-content: center !important;
     gap: 8px !important;
     background: transparent !important;
-    color: #D32F2F !important;
-    border: 1.5px solid #D32F2F !important;
+    color: #6B4E00 !important;
+    border: 1.5px solid #C9971C !important;
     font-weight: 700 !important;
     padding: 0.7rem 1.3rem !important;
     border-radius: 6px !important;
@@ -2288,17 +2260,17 @@ button {
     transition: all 0.2s ease !important;
 }
 .btn-outline-red:hover {
-    background: #D32F2F !important;
-    color: #FFFFFF !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(183, 28, 28, 0.3) !important;
+    background: #FBF1D8 !important;
+    color: #2B2000 !important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 /* Nav Badge (e.g. HOT next to Shop) */
 .nav-badge-red {
     display: inline-block;
-    background: #D32F2F;
-    color: #FFFFFF;
+    background: #E0A82E;
+    color: #2B2000;
     font-size: 0.62rem;
     font-weight: 800;
     line-height: 1;
@@ -2314,9 +2286,9 @@ button {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    background: #FEF2F2;
-    color: #991B1B;
-    border: 1px solid #FCA5A5;
+    background: #FBF1D8;
+    color: #6B4E00;
+    border: 1px solid #E3C57E;
     padding: 2px 8px;
     border-radius: 4px;
     font-size: 0.74rem;
@@ -2325,8 +2297,8 @@ button {
 
 /* Solid Red Badge */
 .badge-red {
-    background: #D32F2F !important;
-    color: #FFFFFF !important;
+    background: #E0A82E !important;
+    color: #2B2000 !important;
     font-weight: 700 !important;
     padding: 3px 8px !important;
     border-radius: 4px !important;
@@ -2336,12 +2308,270 @@ button {
 
 /* Text red utilities */
 .text-red {
-    color: #D32F2F !important;
+    color: #6B4E00 !important;
 }
 .text-red-dark {
-    color: #B71C1C !important;
+    color: #4E3900 !important;
 }
 .border-red-top {
-    border-top: 3px solid #D32F2F !important;
+    border-top: 3px solid #E0A82E !important;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   QUIET SURFACES — card, grid and section pass
+   ───────────────────────────────────────────────────────────────
+   The site now speaks one card language: flat paper, a hairline
+   border, a single radius, and a hover that only darkens the line.
+   No coloured glow, no lift, no icon spin, no image zoom, no
+   gradient wash behind content. Accent is the logo gold; contrast
+   comes from type and spacing instead of light effects.
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+    --card-radius: 10px;
+    --card-line: #DEE4D8;
+    --card-line-strong: #C4CFBA;
+    --card-shadow: 0 1px 2px rgba(11, 61, 23, 0.05);
+    --card-shadow-hover: 0 2px 3px rgba(11, 61, 23, 0.07);
+    --grid-gap: 18px;
+    --rhythm: clamp(3rem, 5.5vw, 4.75rem);
+}
+
+/* 1 — One surface for every card on every page */
+.product-card,
+.p-card,
+.creative-card,
+.testimonial-card,
+.location-card,
+.user-card,
+.user-kpi-card,
+.num-card,
+.faq-item,
+.value {
+    border-radius: var(--card-radius) !important;
+    border: 1px solid var(--card-line) !important;
+    background: #fff !important;
+    box-shadow: var(--card-shadow) !important;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease !important;
+    transform: none !important;
+}
+
+/* 2 — Hover answers with a darker hairline, nothing more */
+.product-card:hover,
+.p-card:hover,
+.creative-card:hover,
+.testimonial-card:hover,
+.location-card:hover,
+.user-card:hover,
+.num-card:hover,
+.faq-item:hover,
+.value:hover {
+    transform: none !important;
+    box-shadow: var(--card-shadow-hover) !important;
+    border-color: var(--card-line-strong) !important;
+}
+
+/* 3 — Remove the decorative top rules, glows and zooms */
+.p-card::before,
+.p-card::after,
+.product-card::before,
+.product-card::after,
+.testimonial-card::before,
+.location-card::before,
+.creative-card::before {
+    display: none !important;
+}
+
+.p-card:hover .p-icon,
+.product-card:hover .product-image img,
+.img-frame:hover img,
+.location-card:hover img {
+    transform: none !important;
+}
+
+/* 4 — Icons sit on a flat tinted square, not a gradient chip */
+.p-icon {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 9px !important;
+    background: #F5F8F1 !important;
+    border: 1px solid #E1E8DA !important;
+    color: var(--brand-700) !important;
+    margin-bottom: 1.1rem !important;
+    transition: none !important;
+}
+
+/* 5 — Media frames: flat, hairline, no floating shadow */
+.img-frame {
+    border-radius: var(--card-radius) !important;
+    box-shadow: none !important;
+    border: 1px solid var(--card-line);
+}
+.img-frame::after { box-shadow: inset 0 0 0 1px rgba(11, 61, 23, 0.06) !important; }
+.frame-gold::before { display: none !important; }
+
+/* 6 — Card interiors line up: title, copy, then the action pinned low */
+.product-card,
+.p-card,
+.location-card,
+.user-card,
+.faq-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+}
+
+.product-body .add-to-cart-btn,
+.product-card .add-to-cart-btn {
+    margin-top: auto;
+}
+
+.product-description {
+    min-height: 2.7em;
+}
+
+.location-actions {
+    margin-top: auto;
+}
+
+/* 7 — Grids: even rows, even gutters, no ragged last cards */
+.product-grid,
+.shop-layout .product-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(235px, 1fr)) !important;
+    gap: var(--grid-gap) !important;
+    align-items: stretch !important;
+}
+
+.locations-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)) !important;
+    gap: var(--grid-gap) !important;
+    align-items: stretch !important;
+}
+
+.grid-2,
+.grid-3,
+.grid-4 {
+    display: grid !important;
+    gap: var(--grid-gap) !important;
+    align-items: stretch !important;
+}
+
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important; }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)) !important; }
+.grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important; }
+
+/* 8 — Section rhythm: same breathing room everywhere */
+.section-pad {
+    padding-top: var(--rhythm) !important;
+    padding-bottom: var(--rhythm) !important;
+}
+
+.section-head {
+    max-width: 46rem;
+}
+
+.section-head .lead {
+    max-width: 42rem;
+    margin-inline: auto;
+}
+
+/* Stats band: a solid deep-green field with hairline rules between
+   figures — printed-plate discipline instead of floating light. */
+.stats-band {
+    background: var(--brand-900) !important;
+}
+
+@media (min-width: 768px) {
+    .stats-band .grid-4 > .stat-item + .stat-item {
+        border-left: 1px solid rgba(255, 255, 255, 0.16);
+    }
+}
+
+/* 9 — No glow behind the call-to-action band */
+.cta-band::before,
+.cta-band::after {
+    display: none !important;
+}
+
+.cta-band {
+    border-radius: var(--card-radius) !important;
+}
+
+/* 10 — Buttons keep their colour, lose the halo */
+.btn-primary:hover,
+.btn-gold:hover,
+.cta-band .btn-primary:hover,
+.cta-band .btn-ghost:hover,
+.whatsapp-float:hover {
+    transform: none !important;
+    box-shadow: 0 2px 4px rgba(11, 61, 23, 0.12) !important;
+}
+
+.btn-primary,
+.cta-band .btn-primary {
+    box-shadow: none !important;
+}
+
+/* 11 — Pills and badges: flat fill, no drop shadow */
+.product-badge,
+.badge-red,
+.tag-red,
+.nav-badge-red,
+.user-badge,
+.location-badge {
+    box-shadow: none !important;
+    border-radius: 4px !important;
+}
+
+/* FAQ reads as a printed list: hairline rules, no box per question */
+.faq-item {
+    background: transparent !important;
+    border: 0 !important;
+    border-top: 1px solid var(--card-line) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding-inline: 0 !important;
+}
+
+.faq-item:hover {
+    background: transparent !important;
+    border-color: var(--card-line) !important;
+    box-shadow: none !important;
+}
+
+/* 12 — Testimonials read as quotes, not floating glass */
+.testimonial-card .quote-mark {
+    opacity: 1;
+    color: var(--gold-400);
+}
+
+/* 13 — Keep keyboard focus visible after removing hover motion */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--brand-700);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .product-card,
+    .p-card,
+    .testimonial-card,
+    .location-card,
+    .creative-card,
+    .btn-red,
+    .btn-outline-red {
+        transition: none !important;
+        transform: none !important;
+    }
+}

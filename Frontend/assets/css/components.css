@@ -223,8 +223,8 @@
 }
 
 .stat-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-xl);
+    transform: none;
+    box-shadow: 0 2px 3px rgba(11, 61, 23, 0.07);
 }
 
 .stat-icon {
@@ -288,9 +288,9 @@
 }
 
 .alert-error {
-    background: rgba(211, 47, 47, 0.1);
-    border-color: var(--error);
-    color: var(--error);
+    background: #FBF1D8;
+    border-color: #C9971C;
+    color: #6B4E00;
 }
 
 /* ═══════════════════════════════════════════════════════════════ */
@@ -522,13 +522,13 @@
 
 .pricing-card.featured {
     border-color: var(--accent);
-    box-shadow: 0 0 40px rgba(255, 143, 0, 0.2);
-    transform: scale(1.05);
+    box-shadow: none;
+    transform: none;
 }
 
 .pricing-card:hover {
-    box-shadow: var(--shadow-xl);
-    transform: translateY(-8px);
+    box-shadow: 0 2px 3px rgba(11, 61, 23, 0.07);
+    transform: none;
 }
 
 .pricing-badge {

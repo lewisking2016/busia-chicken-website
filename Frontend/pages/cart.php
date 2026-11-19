@@ -108,11 +108,12 @@ if (!empty($_SESSION['cart'])) {
                                     $img = $item['image'];
                                     if (!$img) {
                                         $img = match($item['product_type']) {
-                                            'feed' => '/Frontend/images/download-8.webp',
-                                            'eggs' => '/Frontend/images/download-3.webp',
-                                            'chicks' => '/Frontend/images/day-old-chicks.webp',
-                                            'live_chicken' => '/Frontend/images/broiler-chickens.webp',
-                                            default => '/Frontend/images/adbg.webp'
+                                            'feed' => cms_product_image('feed'),
+                                            'eggs' => cms_product_image('eggs'),
+                                            'chicks' => cms_product_image('chicks'),
+                                            'organic' => cms_product_image('organic'),
+                                            'live_chicken' => cms_product_image('live_chicken'),
+                                            default => cms_product_image('other')
                                         };
                                     }
                                 ?>

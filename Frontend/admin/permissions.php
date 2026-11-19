@@ -12,7 +12,7 @@ session_start();
 $page_title = 'Roles & Permissions - Admin';
 include __DIR__ . '/includes/admin_header.php';
 
-if (!in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'sales_staff'], true)) {
+if (!in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager','stock_manager','sales_staff'], true)) {
     header('Location: /Frontend/admin/dashboard.php');
     exit;
 }

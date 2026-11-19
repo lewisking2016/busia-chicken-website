@@ -41,12 +41,12 @@ define('APP_DEBUG', APP_ENV === 'development');
 define('SITE_NAME', 'Busia Chicken Limited');
 define('SITE_TAGLINE', 'The Chicken People');
 define('SITE_SLOGAN', 'The Chicken People');
-define('SITE_DESCRIPTION', 'Leading poultry supplier in East Africa. Quality layers, broilers, day-old chicks, farm-fresh eggs, organic fertilizer and animal feeds since 2015.');
+define('SITE_DESCRIPTION', 'Leading poultry supplier in East Africa. Quality farm-fresh eggs, layer feeds and organic fertiliser since 2015.');
 define('SITE_EMAIL', 'info@busiachicken.com');
 define('SITE_PHONE', '+254 727 585 599');
 define('SITE_WHATSAPP', '+254727585599');
-define('SITE_ADDRESS_NASIRA', 'Nasira AC Sub-location, Busibwabo, Busia County, Kenya (Farm HQ & Hatchery)');
-define('SITE_ADDRESS_TANGAKONA', 'Tangakona Junction / Market, Busia-Kisumu Highway, Busia County, Kenya (Feed Depot & Sales Hub)');
+define('SITE_ADDRESS_NASIRA', 'Nasira AC Sub-location, Busibwabo, Busia County, Kenya (Nasira Farm)');
+define('SITE_ADDRESS_TANGAKONA', 'Tangakona Junction / Market, Busia-Kisumu Highway, Busia County, Kenya (Farm, Feeds & Sales Point)');
 define('SITE_ADDRESS', 'Nasira AC Sub-location & Tangakona, Busia County, Kenya');
 
 // Pagination
@@ -96,10 +96,10 @@ define('PRODUCT_CATEGORIES', [
 
 // Product Types
 define('PRODUCT_TYPES', [
-    'live_chicken' => 'Live Chicken',
-    'chicks' => 'Day-Old Chicks',
-    'eggs' => 'Eggs',
-    'feed' => 'Animal Feed'
+    'feed' => 'Layer Feed',
+    'eggs' => 'Fresh Eggs',
+    'organic' => 'Organic Fertiliser',
+    'live_chicken' => 'Live Chicken'
 ]);
 
 // Include Backend Configuration Files
@@ -116,6 +116,16 @@ try {
     
     if (file_exists($backendPath . 'security.php')) {
         require_once $backendPath . 'security.php';
+    }
+
+    // Shared site settings repository (getSetting/updateSetting below).
+    if (file_exists($backendPath . 'site_settings.php')) {
+        require_once $backendPath . 'site_settings.php';
+    }
+
+    // Editable website content (cms()/cms_img()/cms_text()) used by every page.
+    if (file_exists($backendPath . 'cms.php')) {
+        require_once $backendPath . 'cms.php';
     }
     
     // Defer the connection until the current page actually needs database data.
@@ -179,6 +189,9 @@ function getSetting(string $key, string $default = ''): string {
     try {
         $pdo = getDB();
         if (!$pdo) return $default;
+        if (function_exists('siteSettingGet')) {
+            return siteSettingGet($pdo, $key, $default);
+        }
         $stmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = ?");
         $stmt->execute([$key]);
         $result = $stmt->fetchColumn();
@@ -194,6 +207,9 @@ function getSetting(string $key, string $default = ''): string {
 function updateSetting(string $key, string $value): bool {
     $pdo = getDB();
     if (!$pdo) return false;
+    if (function_exists('siteSettingSet')) {
+        return siteSettingSet($pdo, $key, $value);
+    }
     $stmt = $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
     return $stmt->execute([$key, $value, $value]);
 }

@@ -18,7 +18,7 @@ include __DIR__ . '/includes/admin_header.php';
 require_once __DIR__ . '/../../Backend/api/dropdowns.php';
 
 // Check admin access
-if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager','sales_staff'], true)) {
+if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager','stock_manager','sales_staff'], true)) {
     echo "<script>window.location.href = '/busiaadmin';</script>";
     exit;
 }
@@ -234,6 +234,13 @@ if ($pdo) {
             $params[] = $type_filter;
         }
 
+        // Archived products (old catalogue kept only for order history) are
+        // hidden unless explicitly requested.
+        $show_archived = !empty($_GET['archived']);
+        if (!$show_archived) {
+            $query .= " AND p.is_active = 1";
+        }
+
         $query .= " ORDER BY p.created_at DESC";
         $stmt = $pdo->prepare($query);
         $stmt->execute($params);
@@ -284,8 +291,13 @@ if ($pdo) {
                 <?php echo renderDropdownOptions('product_types', $type_filter, 'All Types'); ?>
             </select>
             <button type="submit" class="btn btn-outline" style="border-radius: 4px; padding: 6px 16px; font-size: 0.85rem;">Filter</button>
-            <?php if ($search || $type_filter): ?>
+            <?php if ($search || $type_filter || !empty($_GET['archived'])): ?>
                 <a href="products.php" style="padding: 6px 12px; font-size: 0.85rem; color: #64748b; text-decoration: none;">Clear</a>
+            <?php endif; ?>
+            <?php if (!empty($_GET['archived'])): ?>
+                <a href="products.php" style="padding: 6px 12px; font-size: 0.82rem; color: #15803d; text-decoration: none; font-weight: 700;">Showing archived · back to live catalogue</a>
+            <?php else: ?>
+                <a href="products.php?archived=1" style="padding: 6px 12px; font-size: 0.82rem; color: #64748b; text-decoration: none;">Show archived</a>
             <?php endif; ?>
         </div>
     </form>
