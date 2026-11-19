@@ -54,11 +54,14 @@
     Chart.defaults.animations.easing = 'easeOutQuart';
 
     // ── Data checks + friendly empty state (a blank grid looks broken) ──
+    // Zero is real data: a day with no sales must still draw a line at 0,
+    // not an "empty" overlay. Only missing values count as nothing to plot.
     function dataIsEmpty(values) {
         if (!values || !values.length) return true;
         return values.every(v => {
             const arr = Array.isArray(v) ? v : [v];
-            return !arr.length || arr.every(x => x === 0 || x === null || x === undefined || x === '' || x === '0');
+            if (!arr.length) return true;
+            return arr.every(x => x === null || x === undefined || x === '' || (typeof x === 'number' && isNaN(x)));
         });
     }
     function esc(s) {

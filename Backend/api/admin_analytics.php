@@ -6,6 +6,8 @@
 declare(strict_types=1);
 
 header('Content-Type: application/json');
+// Live cockpit numbers must never be served from a stale cache.
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
 $temp_dir = sys_get_temp_dir();
 if (is_writable($temp_dir)) {
@@ -15,6 +17,7 @@ session_start();
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/queries.php';
+require_once __DIR__ . '/../config/dashboard_stats.php';
 
 function safeFetchAll(PDO $pdo, string $sql, array $params = []): array {
     try {
@@ -41,7 +44,9 @@ function safeFetchColumn(PDO $pdo, string $sql, array $params = [], $default = 0
 $response = ['success' => false, 'data' => []];
 
 // Require admin session
-if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager'], true)) {
+// Same audience as the dashboard page itself: the API must not refuse a role
+// the cockpit is willing to show (that silently blanked every KPI to zero).
+if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin','farm_manager','stock_manager','sales_staff'], true)) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Forbidden']);
     exit;
@@ -50,11 +55,10 @@ if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_ad
 try {
     $pdo = getDatabaseConnection();
 
-    // Sales last 7 days
-    $sales = safeFetchAll($pdo, "SELECT DATE(created_at) AS day, COALESCE(SUM(total_amount),0) AS total FROM orders WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(created_at) ORDER BY DATE(created_at)");
-
-    // Orders count last 7 days
-    $orders = safeFetchAll($pdo, "SELECT DATE(created_at) AS day, COUNT(*) AS cnt FROM orders WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(created_at) ORDER BY DATE(created_at)");
+    // Shared live figures + 30-day, gap-filled series (zero days stay zero).
+    $stats = busiaDashboardStats($pdo, 30);
+    $sales = $stats['sales'];
+    $orders = $stats['orders'];
 
     // Top products by quantity sold
     $topProducts = safeFetchAll($pdo, "SELECT p.name, SUM(oi.quantity) AS qty FROM order_items oi JOIN products p ON oi.product_id = p.id GROUP BY oi.product_id ORDER BY qty DESC LIMIT 5");
@@ -65,8 +69,11 @@ try {
     // Count of low stock alerts (stock <= 15)
     $alertCount = (int)safeFetchColumn($pdo, "SELECT COUNT(*) AS cnt FROM products WHERE stock_quantity <= 15");
 
-    // Recent orders as system events/activity log
+    // Recent orders (used for sales activity)
     $recentOrders = safeFetchAll($pdo, "SELECT o.id, u.first_name, u.last_name, o.total_amount, o.created_at, o.status FROM orders o LEFT JOIN users u ON o.user_id = u.id ORDER BY o.created_at DESC LIMIT 5");
+
+    // System audit log — real admin activity, newest first
+    $recentActivity = safeFetchAll($pdo, "SELECT id, username, action, module, details, created_at FROM activity_logs ORDER BY created_at DESC, id DESC LIMIT 6");
 
     // ============================================================
     // EXTENDED ANALYTICS — for the dedicated Analytics page
@@ -235,24 +242,24 @@ try {
     $prodCatStmt->execute();
     $productMix = $prodCatStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Live Poultry & Feeds Core Metrics
-    $activeBirds = (int)safeFetchColumn($pdo, "SELECT COALESCE(SUM(current_birds),0) FROM batches WHERE status='active'");
-    $activeBatches = (int)safeFetchColumn($pdo, "SELECT COUNT(*) FROM batches WHERE status='active'");
-    $feedStockBags = (int)safeFetchColumn($pdo, "SELECT COALESCE(SUM(stock_quantity),0) FROM products WHERE product_type='feed'");
-    $rawMaterialsKg = (float)safeFetchColumn($pdo, "SELECT COALESCE(SUM(current_stock),0) FROM raw_materials");
-    $totalSales30d = (float)safeFetchColumn($pdo, "SELECT COALESCE(SUM(amount),0) FROM cashbook_entries WHERE direction='in' AND entry_date >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)");
-    if ($totalSales30d <= 0) {
-        $totalSales30d = (float)safeFetchColumn($pdo, "SELECT COALESCE(SUM(total_amount),0) FROM orders WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)");
-    }
+    // Live Poultry & Feeds core metrics (same helper the page renders with).
+    $activeBirds = $stats['active_birds'];
+    $activeBatches = $stats['active_batches'];
+    $feedStockBags = $stats['feed_stock_bags'];
+    $rawMaterialsKg = $stats['raw_materials_kg'];
+    $totalSales30d = $stats['total_sales_30d'];
+    $totalRevenue = $stats['total_revenue'];
 
     $response['success'] = true;
     $response['data'] = [
+        'generated_at' => $stats['generated_at'],
         'sales' => $sales,
         'orders' => $orders,
         'top_products' => $topProducts,
         'inventory' => $inventory,
         'alerts' => $alertCount,
         'recent_orders' => $recentOrders,
+        'recent_activity' => $recentActivity,
         'production' => $production,
         'profit' => $profit,
         'mortality_by_batch' => $mortalityByBatch,
@@ -271,6 +278,7 @@ try {
         'feed_stock_bags' => $feedStockBags,
         'raw_materials_kg' => $rawMaterialsKg,
         'total_sales_30d' => $totalSales30d,
+        'total_revenue' => $totalRevenue,
     ];
 
 } catch (Exception $e) {

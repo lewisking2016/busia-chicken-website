@@ -19,6 +19,30 @@ $page_title = 'Admin Dashboard';
 include __DIR__ . '/includes/admin_header.php';
 
 $deniedModule = isset($_GET['denied']) ? 'that module' : '';
+
+/* Live KPI values are rendered server-side from the same helper the
+   analytics API uses, so the cards are correct before any JavaScript
+   runs and never fall back to hard-coded placeholders. */
+require_once __DIR__ . '/../../Backend/config/dashboard_stats.php';
+$dashStats = [
+    'sales' => [],
+    'orders' => [],
+    'total_revenue' => 0.0,
+    'total_sales_30d' => 0.0,
+    'active_birds' => 0,
+    'active_batches' => 0,
+    'feed_stock_bags' => 0,
+    'raw_materials_kg' => 0.0,
+    'generated_at' => date('c'),
+];
+try {
+    $dashPdo = function_exists('getDatabaseConnection') ? getDatabaseConnection() : null;
+    if ($dashPdo) {
+        $dashStats = busiaDashboardStats($dashPdo, 30);
+    }
+} catch (Throwable $e) {
+    // Keep the zeroed shape above; the page still renders.
+}
 ?>
 
 <?php if (isset($_GET['denied'])): ?>
@@ -27,6 +51,11 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
     <span>Your role doesn't have permission to open that module. Ask the Super Admin to grant access under <strong>Settings → Roles &amp; Permissions</strong>.</span>
 </div>
 <?php endif; ?>
+
+<div id="dash-sync-error" style="display:none;padding:12px 16px;background:#FBF1D8;border:1px solid #E3C57E;border-radius:4px;color:#6B4E00;margin-bottom:18px;display:none;align-items:center;gap:10px;">
+    <i data-lucide="alert-triangle" style="width:18px;height:18px;flex-shrink:0;"></i>
+    <span id="dash-sync-error-text">Live figures could not be refreshed. Showing the values loaded with this page.</span>
+</div>
 
 <div class="admin-dashboard-wrapper" style="margin: 0; padding: 0;">
     <style>
@@ -304,10 +333,10 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
     <div class="dashboard-kpi-row">
         <div class="stat-card">
             <div class="stat-card-info">
-                <small>Total Revenue (30d)</small>
-                <strong id="kpi-sales">KES 0</strong>
-                <span style="font-size: 0.8rem; color: #16a34a; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
-                    <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i> Poultry &amp; feed sales
+                <small>Total Revenue</small>
+                <strong id="kpi-sales">KES <?php echo number_format((float)$dashStats['total_revenue']); ?></strong>
+                <span id="kpi-sales-30d" style="font-size: 0.8rem; color: #16a34a; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                    <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i> KES <?php echo number_format((float)$dashStats['total_sales_30d']); ?> in the last 30 days
                 </span>
             </div>
             <div class="stat-card-icon">
@@ -318,9 +347,9 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
         <div class="stat-card">
             <div class="stat-card-info">
                 <small>Active Live Chickens</small>
-                <strong id="kpi-birds">0 birds</strong>
+                <strong id="kpi-birds"><?php echo number_format((int)$dashStats['active_birds']); ?> birds</strong>
                 <span style="font-size: 0.8rem; color: #16a34a; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
-                    <i data-lucide="check" style="width: 14px; height: 14px;"></i> <span id="kpi-active-flocks-text">0</span> active flocks
+                    <i data-lucide="check" style="width: 14px; height: 14px;"></i> <span id="kpi-active-flocks-text"><?php echo (int)$dashStats['active_batches']; ?></span> active flocks
                 </span>
             </div>
             <div class="stat-card-icon" style="background:#dcfce7;color:#15803d;">
@@ -331,7 +360,7 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
         <div class="stat-card">
             <div class="stat-card-info">
                 <small>Warehouse Finished Feeds</small>
-                <strong id="kpi-feed-stock">0 bags</strong>
+                <strong id="kpi-feed-stock"><?php echo number_format((int)$dashStats['feed_stock_bags']); ?> bags</strong>
                 <span style="font-size: 0.8rem; color: #0284c7; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
                     <i data-lucide="package" style="width: 14px; height: 14px;"></i> Available in warehouse
                 </span>
@@ -344,7 +373,7 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
         <div class="stat-card">
             <div class="stat-card-info">
                 <small>Raw Materials Store</small>
-                <strong id="kpi-raw-stock">0 kg</strong>
+                <strong id="kpi-raw-stock"><?php echo number_format((float)$dashStats['raw_materials_kg']); ?> kg</strong>
                 <span style="font-size: 0.8rem; color: #d97706; font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
                     <i data-lucide="layers" style="width: 14px; height: 14px;"></i> Grains &amp; premix stock
                 </span>
@@ -361,7 +390,7 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
         <div class="admin-card" data-dash-mod="revenue-trend">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: var(--admin-text-heading);">Revenue Trend</h3>
-                <span class="badge-pill badge-pill-success">Live Sync</span>
+                <span class="badge-pill badge-pill-success">Live Sync · <?php echo date('H:i'); ?></span>
             </div>
             <div class="chart-box">
                 <canvas id="chart-sales"></canvas>
@@ -373,17 +402,17 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
             
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: rgba(27, 94, 32, 0.04); border-radius: 4px; border: 1px solid rgba(27, 94, 32, 0.08);">
-                    <div style="width: 10px; height: 10px; background: #16a34a; border-radius: 50%;"></div>
+                    <div style="width: 10px; height: 10px; background: <?php echo isset($dashPdo) && $dashPdo instanceof PDO ? '#16a34a' : '#b45309'; ?>; border-radius: 50%;"></div>
                     <div style="flex-grow: 1;">
                         <h5 style="margin: 0; font-size: 0.9rem; color: var(--admin-text-heading);">Platform Status</h5>
-                        <p style="margin: 0; font-size: 0.75rem; color: #64748b;">All systems operational</p>
+                        <p style="margin: 0; font-size: 0.75rem; color: #64748b;"><?php echo isset($dashPdo) && $dashPdo instanceof PDO ? 'Database connected' : 'Database unavailable'; ?> · figures read <?php echo date('H:i'); ?></p>
                     </div>
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: rgba(27, 94, 32, 0.04); border-radius: 4px; border: 1px solid rgba(27, 94, 32, 0.08);">
                     <i data-lucide="bird" style="width: 16px; height: 16px; color: #16a34a;"></i>
                     <div style="flex-grow: 1;">
-                        <h5 style="margin: 0; font-size: 0.9rem; color: var(--admin-text-heading);"><span id="kpi-active-flocks">0</span> Active Flocks</h5>
+                        <h5 style="margin: 0; font-size: 0.9rem; color: var(--admin-text-heading);"><span id="kpi-active-flocks"><?php echo (int)$dashStats['active_batches']; ?></span> Active Flocks</h5>
                         <p style="margin: 0; font-size: 0.75rem; color: #64748b;">Currently producing</p>
                     </div>
                 </div>
@@ -442,14 +471,33 @@ $deniedModule = isset($_GET['denied']) ? 'that module' : '';
 <script src="/Frontend/assets/js/busia-charts.js"></script>
 <script>
 let dashCharts = {};
+function dashSyncError(message) {
+    const box = document.getElementById('dash-sync-error');
+    const text = document.getElementById('dash-sync-error-text');
+    if (text && message) text.textContent = message;
+    if (box) box.style.display = 'flex';
+}
+function dashSyncOk() {
+    const box = document.getElementById('dash-sync-error');
+    if (box) box.style.display = 'none';
+}
 async function loadDashboard() {
-    const response = await fetch('/Backend/api/admin_analytics.php');
-    const data = await response.json();
-
-    if (!data.success) {
-        console.error('Analytics fetch failed', data);
+    let data = null;
+    try {
+        const response = await fetch('/Backend/api/admin_analytics.php', {
+            cache: 'no-store',
+            headers: { 'Accept': 'application/json' }
+        });
+        data = await response.json();
+        if (!response.ok || !data || !data.success) {
+            throw new Error((data && data.message) || ('HTTP ' + response.status));
+        }
+    } catch (err) {
+        console.error('Analytics fetch failed', err);
+        dashSyncError('Live figures could not be refreshed (' + (err && err.message ? err.message : 'network error') + '). Showing the values this page loaded with.');
         return;
     }
+    dashSyncOk();
 
     // Destroy previous
     Object.values(dashCharts).forEach(c => c && c.destroy());
@@ -477,25 +525,35 @@ async function loadDashboard() {
         );
     }
 
-    // Recent activity (audit log)
+    // Recent activity — real audit log entries, with sales orders as a fallback
+    const audit = data.data.recent_activity || [];
     const acts = data.data.recent_orders || [];
     const tbody = document.getElementById('recent-activity');
     if (tbody) {
-        if (!acts.length) {
-            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#64748b;padding:20px;">No recent activity.</td></tr>';
-        } else {
+        if (audit.length) {
+            tbody.innerHTML = audit.map(a => {
+                const who = a.username || 'System';
+                const what = a.details || [a.action, a.module].filter(Boolean).join(' · ') || 'activity';
+                return `<tr><td><strong>${escapeHtml(who)}</strong> — ${escapeHtml(what)}</td><td style="text-align:right;color:#64748b;font-size:0.85rem;">${escapeHtml((a.created_at || '').replace(' ', ' · ').slice(0, 22))}</td></tr>`;
+            }).join('');
+        } else if (acts.length) {
             tbody.innerHTML = acts.map(a => {
                 const name = ((a.first_name || '') + ' ' + (a.last_name || '')).trim() || 'Guest';
                 const color = a.status === 'completed' ? '#16a34a' : a.status === 'cancelled' ? '#dc2626' : '#d97706';
                 return `<tr><td><strong>${escapeHtml(name)}</strong> — order #${a.id} for KES ${parseFloat(a.total_amount||0).toLocaleString()} <span style="color:${color};font-size:0.78rem;text-transform:uppercase;font-weight:600;">${a.status}</span></td><td style="text-align:right;color:#64748b;font-size:0.85rem;">${(a.created_at||'').split(' ')[0]}</td></tr>`;
             }).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#64748b;padding:20px;">No recent activity.</td></tr>';
         }
     }
 
     // Update Core Chicken & Feed KPI values
     const d = data.data || {};
     if (document.getElementById('kpi-sales')) {
-        document.getElementById('kpi-sales').textContent = 'KES ' + Math.round(d.total_sales_30d || 0).toLocaleString();
+        document.getElementById('kpi-sales').textContent = 'KES ' + Math.round(d.total_revenue || 0).toLocaleString();
+    }
+    if (document.getElementById('kpi-sales-30d')) {
+        document.getElementById('kpi-sales-30d').innerHTML = '<i data-lucide="trending-up" style="width:14px;height:14px;"></i> KES ' + Math.round(d.total_sales_30d || 0).toLocaleString() + ' in the last 30 days';
     }
     if (document.getElementById('kpi-birds')) {
         document.getElementById('kpi-birds').textContent = (d.active_birds || 0).toLocaleString() + ' birds';
