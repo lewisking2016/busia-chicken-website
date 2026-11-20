@@ -162,7 +162,9 @@ if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === realpath(__FILE__)) {
     }
 
     // Require admin privileges for POST/PUT/DELETE actions
-    if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'stock_manager'], true)) {
+    // Keep this list identical to the admin pages that call the API; when the
+    // two drifted apart, signed-in staff got a silent 403 on every save.
+    if (empty($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['super_admin', 'farm_manager', 'stock_manager', 'sales_staff'], true)) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'Unauthorized. Admin permissions required.']);
         exit;
@@ -216,7 +218,9 @@ if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === realpath(__FILE__)) {
             $optionLabel = trim($_POST['option_label'] ?? '');
             $optionValue = trim($_POST['option_value'] ?? '');
             $sortOrder = (int)($_POST['sort_order'] ?? 0);
-            $isActive = isset($_POST['is_active']) ? (int)$_POST['is_active'] : 1;
+            // An unchecked checkbox sends nothing, so this must default to 0.
+            // It used to default to 1, which made "Active" impossible to turn off.
+            $isActive = !empty($_POST['is_active']) ? 1 : 0;
 
             if ($id <= 0 || empty($optionLabel)) {
                 echo json_encode(['success' => false, 'message' => 'Invalid ID or option label.']);
@@ -238,6 +242,28 @@ if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === realpath(__FILE__)) {
             $stmt->execute([$optionLabel, $optionValue, $sortOrder, $isActive, $id]);
 
             echo json_encode(['success' => true, 'message' => 'Dropdown option updated successfully!']);
+            exit;
+        }
+
+        if ($action === 'update_group') {
+            $groupKey = trim($_POST['group_key'] ?? '');
+            $groupLabel = trim($_POST['group_label'] ?? '');
+
+            if (empty($groupKey) || empty($groupLabel)) {
+                echo json_encode(['success' => false, 'message' => 'Group key and display label are required.']);
+                exit;
+            }
+
+            $exists = fetchOne($pdo, "SELECT COUNT(*) AS c FROM system_dropdowns WHERE group_key = ?", [$groupKey]);
+            if (empty($exists['c']) || (int)$exists['c'] === 0) {
+                echo json_encode(['success' => false, 'message' => 'That dropdown category does not exist.']);
+                exit;
+            }
+
+            $stmt = $pdo->prepare("UPDATE system_dropdowns SET group_label = ? WHERE group_key = ?");
+            $stmt->execute([$groupLabel, $groupKey]);
+
+            echo json_encode(['success' => true, 'message' => 'Dropdown category renamed successfully!']);
             exit;
         }
 

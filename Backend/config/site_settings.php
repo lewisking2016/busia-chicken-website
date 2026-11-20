@@ -94,6 +94,44 @@ function siteSettingSet(PDO $pdo, string $key, string $value, string $group = 'g
 }
 
 /**
+ * M-Pesa credentials as one merged map.
+ *
+ * Payment code used to read only the legacy `settings` table while the
+ * admin screens wrote `site_settings`, so credentials were saved but never
+ * picked up. Values in `site_settings` win (when non-empty) and legacy
+ * rows stay as a fallback for databases that were never migrated.
+ *
+ * @return array<string,string>
+ */
+function busiaMpesaSettings(PDO $pdo): array
+{
+    $merged = [];
+
+    try {
+        $stmt = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'mpesa\\_%'");
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $merged[(string)$row['setting_key']] = (string)($row['setting_value'] ?? '');
+        }
+    } catch (Throwable $e) {
+        // Legacy table may not exist on fresh installs.
+    }
+
+    try {
+        $stmt = $pdo->query("SELECT setting_key, setting_value FROM site_settings WHERE setting_key LIKE 'mpesa\\_%'");
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $value = (string)($row['setting_value'] ?? '');
+            if ($value !== '') {
+                $merged[(string)$row['setting_key']] = $value;
+            }
+        }
+    } catch (Throwable $e) {
+        // site_settings is created on the first write; ignore until then.
+    }
+
+    return $merged;
+}
+
+/**
  * Save a map of settings atomically. Returns the number of keys written.
  *
  * @param array<string,string> $values

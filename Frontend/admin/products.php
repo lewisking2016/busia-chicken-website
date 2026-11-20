@@ -14,7 +14,9 @@ session_start();
 $path_prefix = '../../';
 $page_title = 'Manage Products - Admin';
 
-include __DIR__ . '/includes/admin_header.php';
+// Config before the header so the POST handlers can verify CSRF, upload files
+// and redirect (the header prints HTML, which would block a redirect).
+require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../../Backend/api/dropdowns.php';
 
 // Check admin access
@@ -42,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
             throw new RuntimeException('Image upload failed.');
         }
 
-        if ($file['size'] > 5 * 1024 * 1024) {
-            throw new RuntimeException('Image must be 5MB or smaller.');
+        if ($file['size'] > 8 * 1024 * 1024) {
+            throw new RuntimeException('Image must be 8MB or smaller.');
         }
 
         $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -60,18 +62,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
             throw new RuntimeException('Unable to create upload directory.');
         }
 
+        // Same pipeline as the CMS: re-encode to WebP when GD supports it so a
+        // phone photo does not land on the storefront as a multi-megabyte JPEG.
+        $stem = uniqid('prod_', true);
+        if (function_exists('imagewebp') && function_exists('imagecreatefromstring')) {
+            $raw = @file_get_contents($file['tmp_name']);
+            $image = $raw !== false && $raw !== '' ? @imagecreatefromstring($raw) : false;
+            if ($image) {
+                $webpPath = $target_dir . $stem . '.webp';
+                $written = @imagewebp($image, $webpPath, 82);
+                imagedestroy($image);
+                if ($written) {
+                    return '/Frontend/images/products/' . $stem . '.webp';
+                }
+            }
+        }
+
         $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         if ($file_ext === '') {
             throw new RuntimeException('Uploaded image must have a file extension.');
         }
 
-        $new_filename = uniqid('prod_', true) . '.' . $file_ext;
+        $new_filename = $stem . '.' . $file_ext;
         $target_file = $target_dir . $new_filename;
-        
+
         if (move_uploaded_file($file['tmp_name'], $target_file)) {
             return '/Frontend/images/products/' . $new_filename;
         }
-        throw new RuntimeException('Unable to save uploaded image.');
+        throw new RuntimeException('Unable to save uploaded image. Check that Frontend/images/products is writable.');
     };
 
     if ($action === 'add_product') {
@@ -166,6 +184,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
         }
     }
     }
+
+    // Post/Redirect/Get: refresh then shows the saved row instead of re-posting
+    // the form (and the image) a second time.
+    if ($success_message !== '' || $error_message !== '') {
+        $_SESSION['products_flash'] = [
+            'type' => $error_message === '' ? 'ok' : 'err',
+            'text' => $error_message === '' ? $success_message : $error_message,
+        ];
+        header('Location: products.php' . (!empty($_GET['archived']) ? '?archived=1' : ''));
+        exit;
+    }
 }
 
 // --- Fetch products with search/filter ---
@@ -195,14 +224,12 @@ if ($pdo) {
     }
 
     try {
-        // Fetch categories for dropdowns
-        $categories = safeQueryAll($pdo,
-            "SELECT c.id, sd.option_label AS name, sd.option_value AS slug 
-            FROM system_dropdowns sd
-            JOIN categories c ON c.slug COLLATE utf8mb4_unicode_ci = sd.option_value COLLATE utf8mb4_unicode_ci
-            WHERE sd.group_key = 'product_categories' AND sd.is_active = 1
-            ORDER BY sd.sort_order ASC, sd.option_label ASC"
-        );
+        // Categories come from the categories table — the real source of truth.
+        // Listing them through the product_categories dropdown hid every
+        // category that was not mirrored there (Broilers, Layers, Day-Old
+        // Chicks), so editing one of those products had no matching <option>
+        // and saving silently moved it to the first category in the list.
+        $categories = safeQueryAll($pdo, "SELECT id, name, slug FROM categories ORDER BY name ASC");
     } catch (Exception $e) {
         error_log('Admin products categories load error: ' . $e->getMessage());
         $categories = [];
@@ -253,6 +280,21 @@ if ($pdo) {
 }
 ?>
 
+<?php
+// --- Render (header last, so POST handlers can still redirect) ---
+if (!empty($_SESSION['products_flash'])) {
+    $products_flash = $_SESSION['products_flash'];
+    unset($_SESSION['products_flash']);
+    if (($products_flash['type'] ?? '') === 'ok') {
+        $success_message = (string)($products_flash['text'] ?? '');
+    } else {
+        $error_message = (string)($products_flash['text'] ?? '');
+    }
+}
+
+include __DIR__ . '/includes/admin_header.php';
+?>
+
 <!-- Alerts -->
 <?php if ($success_message): ?>
 <div style="padding: 12px 20px; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 4px; color: #15803d; font-size: 0.9rem; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
@@ -271,7 +313,9 @@ if ($pdo) {
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 16px;">
     <div>
         <h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.5rem; color: var(--admin-text-heading);">Product Catalog</h2>
-        <p style="margin: 4px 0 0 0; font-size: 0.875rem; color: #475569;">Add, edit, and monitor your farm inventory levels.</p>
+        <p style="margin: 4px 0 0 0; font-size: 0.875rem; color: #475569;">Add, edit, and monitor your farm inventory levels.
+            <a href="/Frontend/admin/dropdowns.php?group=product_categories" style="color: var(--admin-primary); font-weight: 600; text-decoration: none;">Manage categories &amp; types →</a>
+        </p>
     </div>
     <button onclick="document.getElementById('add-modal').style.display='flex'" class="btn btn-primary" style="border-radius: 4px; display: flex; align-items: center; gap: 8px;">
         <i data-lucide="plus" style="width: 18px; height: 18px;"></i>

@@ -202,6 +202,21 @@ function getSetting(string $key, string $default = ''): string {
 }
 
 /**
+ * Currency label used in front of every public price.
+ * Read once from Admin → Settings → Currency so the store cannot drift
+ * from the configured currency.
+ */
+function currency_label(): string
+{
+    static $label = null;
+    if ($label === null) {
+        $value = strtoupper(trim(getSetting('currency', 'KES')));
+        $label = $value !== '' ? $value : 'KES';
+    }
+    return $label;
+}
+
+/**
  * Update site setting
  */
 function updateSetting(string $key, string $value): bool {

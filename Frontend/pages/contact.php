@@ -46,6 +46,21 @@ $whatsappNumber = preg_replace('/\D+/', '', (string)getSetting('farm_whatsapp', 
 $socialFacebook = cms('global', 'social_facebook', 'https://facebook.com');
 $socialX = cms('global', 'social_x', 'https://x.com');
 $socialInstagram = cms('global', 'social_instagram', 'https://instagram.com');
+
+// Subject list comes from Admin → Settings → System Dropdowns → Contact Form
+// Subjects, so adding or renaming a subject there changes this form.
+if (!function_exists('renderDropdownOptions')) {
+    require_once __DIR__ . '/../../Backend/api/dropdowns.php';
+}
+$subjectOptions = renderDropdownOptions('contact_subjects', $_POST['subject'] ?? null, 'Select a subject...');
+if (substr_count($subjectOptions, '<option') <= 1) {
+    $subjectOptions = '<option value="">Select a subject...</option>'
+        . '<option value="Eggs &amp; Feeds Order">Eggs &amp; Feeds Order</option>'
+        . '<option value="Fresh Farm Eggs Supply">Fresh Farm Eggs Supply (Trays / Wholesale)</option>'
+        . '<option value="Animal Feeds / Bulk Delivery">Animal Feeds / Bulk Delivery</option>'
+        . '<option value="Broilers / Live Birds">Live Birds Order</option>'
+        . '<option value="General Inquiry / Visit">General Inquiry / Farm Visit</option>';
+}
 ?>
 
 <!-- Page Hero -->
@@ -163,14 +178,7 @@ $socialInstagram = cms('global', 'social_instagram', 'https://instagram.com');
                     <div class="form-group" style="margin-bottom:1.2rem;">
                         <label for="subject" class="form-label">Subject *</label>
                         <select id="subject" name="subject" required class="form-control" style="border-radius:4px;padding:0.8rem 1.2rem;background:#fff;width:100%;">
-                            <option value="">Select a subject...</option>
-                            <option value="Eggs & Feeds Order">Eggs & Feeds Order</option>
-                            <option value="Fresh Farm Eggs Supply">Fresh Farm Eggs Supply (Trays / Wholesale)</option>
-                            <option value="Animal Feeds / Bulk Delivery">Animal Feeds / Bulk Delivery</option>
-                            <option value="Broilers / Live Birds">Live Birds Order</option>
-                            <option value="Organic Manure & Folia">Organic Manure &amp; Folia Fertilizers</option>
-                            <option value="Chicken Farming Consultancy">Chicken Farming Consultancy</option>
-                            <option value="General Inquiry / Visit">General Inquiry / Farm Visit</option>
+                            <?php echo $subjectOptions; ?>
                         </select>
                     </div>
 

@@ -127,7 +127,7 @@ if (!empty($_SESSION['cart'])) {
                                             </div>
                                         </div>
                                     </td>
-                                    <td style="padding: var(--space-lg); color: var(--gray-600);">KES <?php echo number_format($item['price'], 0); ?></td>
+                                    <td style="padding: var(--space-lg); color: var(--gray-600);"><?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format($item['price'], 0); ?></td>
                                     <td style="padding: var(--space-lg);">
                                         <div style="display: flex; align-items: center; border: 1px solid var(--gray-200); border-radius: 4px; width: fit-content;">
                                             <button onclick="updateQty(<?php echo $item['id']; ?>, -1)" style="padding: 0.5rem; background: none; border: none; cursor: pointer; color: var(--gray-600);"><i data-lucide="minus" style="width: 14px; height: 14px;"></i></button>
@@ -135,7 +135,7 @@ if (!empty($_SESSION['cart'])) {
                                             <button onclick="updateQty(<?php echo $item['id']; ?>, 1)" style="padding: 0.5rem; background: none; border: none; cursor: pointer; color: var(--gray-600);"><i data-lucide="plus" style="width: 14px; height: 14px;"></i></button>
                                         </div>
                                     </td>
-                                    <td style="padding: var(--space-lg); text-align: right; font-weight: 700; color: var(--dark);">KES <?php echo number_format($item['total'], 0); ?></td>
+                                    <td style="padding: var(--space-lg); text-align: right; font-weight: 700; color: var(--dark);"><?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format($item['total'], 0); ?></td>
                                     <td style="padding: var(--space-lg); text-align: right;">
                                         <button onclick="removeItem(<?php echo $item['id']; ?>)" style="background: none; border: none; cursor: pointer; color: var(--gray-400); transition: color 0.2s;" onmouseover="this.style.color='var(--error)'" onmouseout="this.style.color='var(--gray-400)'">
                                             <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
@@ -163,7 +163,7 @@ if (!empty($_SESSION['cart'])) {
                         
                         <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-md);">
                             <span style="color: var(--gray-600);">Subtotal</span>
-                            <span style="font-weight: 600;">KES <?php echo number_format($subtotal, 0); ?></span>
+                            <span style="font-weight: 600;"><?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format($subtotal, 0); ?></span>
                         </div>
                         
                         <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-md);">
@@ -172,7 +172,7 @@ if (!empty($_SESSION['cart'])) {
                                 <?php if ($delivery_charge == 0): ?>
                                     <span style="color: var(--success);">FREE</span>
                                 <?php else: ?>
-                                    KES <?php echo number_format($delivery_charge, 0); ?>
+                                    <?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format($delivery_charge, 0); ?>
                                 <?php endif; ?>
                             </span>
                         </div>
@@ -181,7 +181,7 @@ if (!empty($_SESSION['cart'])) {
                         
                         <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-xl);">
                             <span style="font-weight: 700; font-size: 1.125rem;">Total</span>
-                            <span style="font-weight: 800; font-size: 1.25rem; color: var(--primary);">KES <?php echo number_format($total_amount, 0); ?></span>
+                            <span style="font-weight: 800; font-size: 1.25rem; color: var(--primary);"><?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format($total_amount, 0); ?></span>
                         </div>
                         
                         <a href="/Frontend/pages/checkout.php" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1rem;">

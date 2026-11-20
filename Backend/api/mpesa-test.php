@@ -29,7 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 try {
     $pdo = getDatabaseConnection();
-    $settings = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'mpesa_%'")->fetchAll(PDO::FETCH_KEY_PAIR);
+    require_once __DIR__ . '/../config/site_settings.php';
+    $settings = busiaMpesaSettings($pdo);
 
     $consumerKey    = $settings['mpesa_consumer_key']    ?? '';
     $consumerSecret = $settings['mpesa_consumer_secret'] ?? '';

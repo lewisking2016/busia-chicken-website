@@ -172,16 +172,16 @@ $total_amount = $subtotal + $delivery_charge;
                             </div>
                             <div style="flex-grow: 1;">
                                 <div style="font-weight: 600; color: var(--dark); font-size: 0.95rem;"><?php echo htmlspecialchars($p['name']); ?></div>
-                                <div style="color: var(--gray-500); font-size: 0.85rem;">KES <?php echo number_format($p['price'], 0); ?></div>
+                                <div style="color: var(--gray-500); font-size: 0.85rem;"><?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format($p['price'], 0); ?></div>
                             </div>
-                            <div style="font-weight: 600; color: var(--dark);">KES <?php echo number_format($p['price'] * $qty, 0); ?></div>
+                            <div style="font-weight: 600; color: var(--dark);"><?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format($p['price'] * $qty, 0); ?></div>
                         </div>
                         <?php endif; endforeach; ?>
                     </div>
                     
                     <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-md);">
                         <span style="color: var(--gray-600);">Subtotal</span>
-                        <span style="font-weight: 600;">KES <?php echo number_format($subtotal, 0); ?></span>
+                        <span style="font-weight: 600;"><?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format($subtotal, 0); ?></span>
                     </div>
                     
                     <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-md);">
@@ -190,7 +190,7 @@ $total_amount = $subtotal + $delivery_charge;
                             <?php if ($delivery_charge == 0): ?>
                                 <span style="color: var(--success);">FREE</span>
                             <?php else: ?>
-                                KES <?php echo number_format($delivery_charge, 0); ?>
+                                <?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format($delivery_charge, 0); ?>
                             <?php endif; ?>
                         </span>
                     </div>
@@ -199,7 +199,7 @@ $total_amount = $subtotal + $delivery_charge;
                     
                     <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-xl);">
                         <span style="font-weight: 700; font-size: 1.125rem;">Total</span>
-                        <span style="font-weight: 800; font-size: 1.25rem; color: var(--primary);">KES <?php echo number_format($total_amount, 0); ?></span>
+                        <span style="font-weight: 800; font-size: 1.25rem; color: var(--primary);"><?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format($total_amount, 0); ?></span>
                     </div>
                     
                     <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1rem;">

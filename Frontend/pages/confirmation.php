@@ -65,7 +65,7 @@ $order = $_SESSION['last_order'];
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
                     <div>
                         <div style="color: var(--gray-500); font-size: 0.85rem; margin-bottom: 4px;">Total Amount</div>
-                        <div style="font-weight: 700; color: var(--primary);">KES <?php echo number_format((float)$order['total_amount'], 0); ?></div>
+                        <div style="font-weight: 700; color: var(--primary);"><?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format((float)$order['total_amount'], 0); ?></div>
                     </div>
                     <div>
                         <div style="color: var(--gray-500); font-size: 0.85rem; margin-bottom: 4px;">Payment Method</div>
@@ -86,7 +86,7 @@ $order = $_SESSION['last_order'];
                 $mpesaType = 'CustomerPayBillOnline';
                 if ($pdoConf) {
                     try {
-                        $sRows = $pdoConf->query("SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('mpesa_shortcode', 'mpesa_transaction_type')")->fetchAll(PDO::FETCH_KEY_PAIR);
+                        $sRows = function_exists('busiaMpesaSettings') ? busiaMpesaSettings($pdoConf) : [];
                         if (!empty($sRows['mpesa_shortcode'])) $mpesaShortcode = $sRows['mpesa_shortcode'];
                         if (!empty($sRows['mpesa_transaction_type'])) $mpesaType = $sRows['mpesa_transaction_type'];
                     } catch (Exception $e) {}
@@ -102,14 +102,14 @@ $order = $_SESSION['last_order'];
                             Go to M-Pesa &rarr; <strong>Lipa na M-Pesa</strong> &rarr; <strong>Buy Goods and Services</strong>:
                         </p>
                         <p style="color: #064E3B; font-size: 0.95rem; margin: 0;">
-                            Till Number: <strong><?php echo htmlspecialchars($mpesaShortcode); ?></strong> &bull; Amount: <strong>KES <?php echo number_format((float)$order['total_amount'], 0); ?></strong>
+                            Till Number: <strong><?php echo htmlspecialchars($mpesaShortcode); ?></strong> &bull; Amount: <strong><?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format((float)$order['total_amount'], 0); ?></strong>
                         </p>
                         <?php else: ?>
                         <p style="color: #064E3B; font-size: 0.95rem; margin: 0 0 6px;">
                             Go to M-Pesa &rarr; <strong>Lipa na M-Pesa</strong> &rarr; <strong>Paybill</strong>:
                         </p>
                         <p style="color: #064E3B; font-size: 0.95rem; margin: 0;">
-                            Business No: <strong><?php echo htmlspecialchars($mpesaShortcode); ?></strong> &bull; Account No: <strong><?php echo htmlspecialchars($order['order_number']); ?></strong> &bull; Amount: <strong>KES <?php echo number_format((float)$order['total_amount'], 0); ?></strong>
+                            Business No: <strong><?php echo htmlspecialchars($mpesaShortcode); ?></strong> &bull; Account No: <strong><?php echo htmlspecialchars($order['order_number']); ?></strong> &bull; Amount: <strong><?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format((float)$order['total_amount'], 0); ?></strong>
                         </p>
                         <?php endif; ?>
                         <p style="margin: 8px 0 0; font-size: 0.82rem; color: #047857;">If an STK prompt appeared on your phone, enter your PIN to complete payment automatically.</p>

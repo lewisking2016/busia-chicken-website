@@ -15,6 +15,7 @@ session_start();
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/security.php';
+require_once __DIR__ . '/../config/site_settings.php';
 
 $response = ['success' => false, 'message' => '', 'data' => []];
 
@@ -138,7 +139,7 @@ try {
     $mpesa_stk_sent = false;
     if ($payment_method === 'mpesa') {
         try {
-            $sRows = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'mpesa_%'")->fetchAll(PDO::FETCH_KEY_PAIR);
+            $sRows = busiaMpesaSettings($pdo);
             $cKey    = $sRows['mpesa_consumer_key']    ?? '';
             $cSec    = $sRows['mpesa_consumer_secret'] ?? '';
             $sCode   = $sRows['mpesa_shortcode']       ?? '';

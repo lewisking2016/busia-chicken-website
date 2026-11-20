@@ -12,7 +12,10 @@ if (!isset($path_prefix)) {
 $site_name = function_exists('getSetting') ? getSetting('farm_name', 'Busia Chicken Limited') : 'Busia Chicken Limited';
 $site_email = function_exists('getSetting') ? getSetting('farm_email', 'info@busiachicken.com') : 'info@busiachicken.com';
 $site_phone = function_exists('getSetting') ? getSetting('farm_phone', '+254 727 585 599') : '+254 727 585 599';
-$site_address = function_exists('getSetting') ? getSetting('location_nasira', 'Nasira AC Sub-location, Busia, Kenya') : 'Nasira AC Sub-location, Busia, Kenya';
+// Admin → Settings owns the farm address; the CMS location is the fallback.
+$site_address = function_exists('getSetting')
+    ? (getSetting('farm_address', '') ?: getSetting('location_nasira', 'Nasira AC Sub-location, Busia, Kenya'))
+    : 'Nasira AC Sub-location, Busia, Kenya';
 $site_address_2 = function_exists('getSetting') ? getSetting('location_tangakona', 'Busia-Kisumu Highway, Tangakona Farm') : 'Busia-Kisumu Highway, Tangakona Farm';
 
 $cmsGlobal = static function (string $key, string $fallback) : string {

@@ -120,6 +120,11 @@ $is_home = ($currentPage === 'home');
         ? getSetting('announcement_bar', '')
         : '';
     $show_announcement = function_exists('getSetting') ? getSetting('show_announcement', '1') : '1';
+    // Admin → Settings → Timezone drives all public date/time output.
+    $siteTimezone = function_exists('getSetting') ? getSetting('timezone', 'Africa/Nairobi') : 'Africa/Nairobi';
+    if ($siteTimezone !== '' && in_array($siteTimezone, timezone_identifiers_list(), true)) {
+        @date_default_timezone_set($siteTimezone);
+    }
     $has_announcement = ($show_announcement === '1' && $announcement !== '');
 
     $brandName = function_exists('cms') ? cms('global', 'brand_name', 'BUSIA CHICKEN') : 'BUSIA CHICKEN';

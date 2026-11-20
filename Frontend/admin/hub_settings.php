@@ -30,12 +30,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
         $value = trim($_POST['setting_value'] ?? '');
         if ($key !== '') {
             try {
-                $stmt = $pdo->prepare('SELECT id FROM settings WHERE setting_key=?');
-                $stmt->execute([$key]);
-                if ($stmt->fetchColumn()) {
-                    $pdo->prepare('UPDATE settings SET setting_value=? WHERE setting_key=?')->execute([$value,$key]);
+                // The site reads site_settings; the old `settings` table is legacy.
+                // Keys that only exist in site_settings (or nowhere yet) go there,
+                // legacy-only connector keys stay editable in their own table.
+                $inSite = false;
+                try {
+                    $stmt = $pdo->prepare('SELECT 1 FROM site_settings WHERE setting_key=? LIMIT 1');
+                    $stmt->execute([$key]);
+                    $inSite = (bool)$stmt->fetchColumn();
+                } catch (Throwable $e) {
+                    $inSite = false;
+                }
+                $inLegacy = false;
+                if (!$inSite) {
+                    $stmt = $pdo->prepare('SELECT 1 FROM settings WHERE setting_key=? LIMIT 1');
+                    $stmt->execute([$key]);
+                    $inLegacy = (bool)$stmt->fetchColumn();
+                }
+                if ($inLegacy) {
+                    $pdo->prepare('UPDATE settings SET setting_value=? WHERE setting_key=?')->execute([$value, $key]);
                 } else {
-                    $pdo->prepare('INSERT INTO settings (setting_key,setting_value) VALUES (?,?)')->execute([$key,$value]);
+                    siteSettingSet($pdo, $key, $value, 'general');
                 }
                 $message = 'Setting saved.';
                 if (function_exists('logActivity')) {
@@ -56,13 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $pdo) {
         try {
             foreach ($mpesaFields as $field) {
                 $val = trim($_POST[$field] ?? '');
-                $stmt = $pdo->prepare('SELECT id FROM settings WHERE setting_key=?');
-                $stmt->execute([$field]);
-                if ($stmt->fetchColumn()) {
-                    $pdo->prepare('UPDATE settings SET setting_value=? WHERE setting_key=?')->execute([$val, $field]);
-                } else {
-                    $pdo->prepare('INSERT INTO settings (setting_key,setting_value) VALUES (?,?)')->execute([$field, $val]);
-                }
+                // Payment code resolves these through busiaMpesaSettings(), which
+                // reads site_settings first — write there so a save takes effect.
+                siteSettingSet($pdo, $field, $val, 'payment');
             }
             $message = 'M-Pesa settings saved successfully.';
             if (function_exists('logActivity')) {
@@ -80,7 +91,15 @@ $mpesaSettings = [];
 if ($pdo) {
     try {
         if ($tab === 'settings') {
-            $settingsList = $pdo->query('SELECT * FROM settings ORDER BY setting_key ASC')->fetchAll(PDO::FETCH_ASSOC);
+            // Live values first; legacy-only keys (AI, Google, weather connectors)
+            // are still listed so nothing becomes uneditable.
+            $settingsList = $pdo->query("SELECT setting_key, setting_value, setting_group, updated_at
+                    FROM site_settings
+                UNION ALL
+                SELECT s.setting_key, s.setting_value, s.setting_group, s.updated_at
+                    FROM settings s
+                    WHERE NOT EXISTS (SELECT 1 FROM site_settings ss WHERE ss.setting_key = s.setting_key)
+                ORDER BY setting_key ASC")->fetchAll(PDO::FETCH_ASSOC);
         }
         if ($tab === 'logs') {
             $logsList = $pdo->query('SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 200')->fetchAll(PDO::FETCH_ASSOC);
@@ -89,8 +108,7 @@ if ($pdo) {
             $tasksDue = $pdo->query("SELECT t.*, CONCAT(COALESCE(u.first_name,''),' ',COALESCE(u.last_name,'')) AS assigned_name FROM tasks t LEFT JOIN users u ON t.assigned_to=u.id WHERE t.due_date IS NOT NULL AND t.status NOT IN ('Completed','Cancelled') ORDER BY t.due_date ASC LIMIT 50")->fetchAll(PDO::FETCH_ASSOC);
         }
         if ($tab === 'mpesa') {
-            $rows = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'mpesa_%'")->fetchAll(PDO::FETCH_KEY_PAIR);
-            $mpesaSettings = $rows;
+            $mpesaSettings = busiaMpesaSettings($pdo);
         }
     } catch (Exception $e) { /* non-fatal */ }
 }

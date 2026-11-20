@@ -26,9 +26,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    // ── Load M-Pesa credentials from settings table ─────────────────────
+    // ── Load M-Pesa credentials (site settings win, legacy table falls back) ──
     $pdo = getDatabaseConnection();
-    $settingsRows = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'mpesa_%'")->fetchAll(PDO::FETCH_KEY_PAIR);
+    require_once __DIR__ . '/../config/site_settings.php';
+    $settingsRows = busiaMpesaSettings($pdo);
 
     $consumerKey    = $settingsRows['mpesa_consumer_key']    ?? '';
     $consumerSecret = $settingsRows['mpesa_consumer_secret'] ?? '';

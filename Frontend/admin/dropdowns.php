@@ -36,6 +36,15 @@ foreach ($groups as $g) {
     }
 }
 
+// A category holding protected system options cannot be deleted.
+$hasSystemOptions = false;
+foreach ($options as $optRow) {
+    if (!empty($optRow['is_system'])) {
+        $hasSystemOptions = true;
+        break;
+    }
+}
+
 // Calculate stats
 $pdo = getDatabaseConnection();
 $totalGroups = count($groups);
@@ -68,11 +77,11 @@ require_once __DIR__ . '/includes/admin_header.php';
         <div style="display: flex; gap: 12px;">
             <button onclick="openAddGroupModal()" class="btn btn-outline" style="display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="folder-plus" style="width: 18px; height: 18px;"></i>
-                <span>New Category Group</span>
+                <span>Add Category</span>
             </button>
             <button onclick="openAddOptionModal()" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px; background: var(--primary, #d97706); color: white; padding: 10px 18px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer;">
                 <i data-lucide="plus-circle" style="width: 18px; height: 18px;"></i>
-                <span>Add New Option</span>
+                <span>Add Option</span>
             </button>
         </div>
     </div>
@@ -150,6 +159,16 @@ require_once __DIR__ . '/includes/admin_header.php';
                     </span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px;">
+                    <button type="button" onclick="openEditGroupModal()" title="Rename this category"
+                            style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: #ffffff; color: #334155; font-size: 0.82rem; font-weight: 600; cursor: pointer;">
+                        <i data-lucide="pencil" style="width: 14px; height: 14px;"></i> Rename Category
+                    </button>
+                    <?php if (!$hasSystemOptions): ?>
+                    <button type="button" onclick="deleteGroup()" title="Delete this category"
+                            style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px solid #fca5a5; border-radius: 6px; background: #fff5f5; color: #b91c1c; font-size: 0.82rem; font-weight: 600; cursor: pointer;">
+                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Delete Category
+                    </button>
+                    <?php endif; ?>
                     <div style="position: relative;">
                         <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #64748b;"></i>
                         <input type="text" id="searchInput" onkeyup="filterOptionsTable()" placeholder="Search options..." 
@@ -364,7 +383,37 @@ require_once __DIR__ . '/includes/admin_header.php';
     </div>
 </div>
 
+<!-- Modal: Rename Group -->
+<div id="editGroupModal" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 999; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; width: 100%; max-width: 440px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
+            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #0f172a;">Rename Dropdown Category</h3>
+            <button onclick="closeModal('editGroupModal')" style="border: none; background: transparent; cursor: pointer; color: #64748b;">
+                <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+            </button>
+        </div>
+        <form id="editGroupForm" onsubmit="submitEditGroup(event)">
+            <input type="hidden" name="group_key" value="<?php echo htmlspecialchars($selectedGroup, ENT_QUOTES, 'UTF-8'); ?>">
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 6px;">Category Display Title</label>
+                <input type="text" name="group_label" id="edit_group_label" required
+                       value="<?php echo htmlspecialchars($currentGroupLabel, ENT_QUOTES, 'UTF-8'); ?>"
+                       style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;">
+            </div>
+            <p style="margin: 0 0 12px; font-size: 0.8rem; color: #64748b;">
+                Group key <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;"><?php echo htmlspecialchars($selectedGroup); ?></code> stays the same so existing forms keep working.
+            </p>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" onclick="closeModal('editGroupModal')" style="padding: 10px 18px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; font-weight: 600; cursor: pointer;">Cancel</button>
+                <button type="submit" style="padding: 10px 18px; border: none; border-radius: 6px; background: #0284c7; color: white; font-weight: 600; cursor: pointer;">Save Category</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+const currentGroupKey = <?php echo json_encode($selectedGroup); ?>;
+
 function showAlert(message, isSuccess = true) {
     const banner = document.getElementById('apiAlert');
     banner.style.display = 'block';
@@ -464,6 +513,51 @@ async function submitAddGroup(e) {
         }
     } catch (err) {
         alert('Network error creating group.');
+    }
+}
+
+function openEditGroupModal() {
+    document.getElementById('editGroupModal').style.display = 'flex';
+}
+
+async function submitEditGroup(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    formData.append('action', 'update_group');
+
+    try {
+        const res = await fetch('/Backend/api/dropdowns.php', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success) {
+            closeModal('editGroupModal');
+            showAlert(data.message, true);
+            setTimeout(() => window.location.reload(), 600);
+        } else {
+            alert(data.message || 'Failed to rename category.');
+        }
+    } catch (err) {
+        alert('Network error renaming category.');
+    }
+}
+
+async function deleteGroup() {
+    if (!confirm('Delete this dropdown category and all of its custom options?')) return;
+
+    const formData = new FormData();
+    formData.append('action', 'delete_group');
+    formData.append('group_key', currentGroupKey);
+
+    try {
+        const res = await fetch('/Backend/api/dropdowns.php', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success) {
+            showAlert(data.message, true);
+            setTimeout(() => { window.location.href = '/Frontend/admin/dropdowns.php'; }, 700);
+        } else {
+            alert(data.message || 'Could not delete category.');
+        }
+    } catch (err) {
+        alert('Network error.');
     }
 }
 

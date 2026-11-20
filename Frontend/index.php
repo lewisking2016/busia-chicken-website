@@ -171,7 +171,7 @@ $farmPhone = (string)getSetting('farm_phone', '+254 727 585 599');
                             <h4 class="product-name"><?php echo htmlspecialchars($product['name'], ENT_QUOTES, 'UTF-8'); ?></h4>
                             <p class="product-description"><?php echo htmlspecialchars($product['description'] ?? 'Premium quality poultry product.'); ?></p>
                             <div class="product-meta" style="display:flex;justify-content:space-between;align-items:center;">
-                                <span class="product-price">KES <?php echo number_format((float)$product['price'], 0); ?></span>
+                                <span class="product-price"><?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format((float)$product['price'], 0); ?></span>
                                 <span class="tag-red"><i data-lucide="check" style="width:11px;height:11px;"></i> In Stock</span>
                             </div>
                             <button class="add-to-cart-btn btn btn-primary" data-id="<?php echo $product['id']; ?>" data-qty="1" style="width:100%;justify-content:center;">

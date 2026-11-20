@@ -121,7 +121,7 @@ $products = loadDisplayProducts($pdo);
                             </h4>
                             <p class="product-description"><?php echo htmlspecialchars(substr($product['description'] ?? '', 0, 80) . '...', ENT_QUOTES, 'UTF-8'); ?></p>
                             <div class="product-meta" style="display:flex;justify-content:space-between;align-items:center;">
-                                <span class="product-price">KES <?php echo number_format((float)$product['price'], 0); ?></span>
+                                <span class="product-price"><?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format((float)$product['price'], 0); ?></span>
                                 <?php if ($inStock): ?>
                                     <span class="tag-red"><i data-lucide="check" style="width:11px;height:11px;"></i> Fresh Batch</span>
                                 <?php endif; ?>

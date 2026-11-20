@@ -289,7 +289,7 @@ if ($pdo) {
         <div class="user-kpi-card">
             <div>
                 <small>Amount Spent</small>
-                <strong>KES <?php echo number_format($total_spent); ?></strong>
+                <strong><?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format($total_spent); ?></strong>
             </div>
             <div class="user-kpi-icon" style="background: rgba(27, 94, 32, 0.08); color: #1B5E20;">
                 <i data-lucide="wallet" style="width: 22px; height: 22px;"></i>
@@ -337,7 +337,7 @@ if ($pdo) {
                         </div>
                         <div style="text-align: right; flex-shrink: 0;">
                             <div style="font-weight: 600; color: var(--dark); font-size: 0.9rem;">
-                                KES <?php echo number_format((float)$order['total_amount']); ?>
+                                <?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format((float)$order['total_amount']); ?>
                             </div>
                             <span class="user-badge <?php echo $badge; ?>" style="margin-top: 4px; display: inline-block;">
                                 <?php echo ucfirst($order['status']); ?>

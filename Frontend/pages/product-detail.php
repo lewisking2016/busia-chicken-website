@@ -95,7 +95,7 @@ $inStock = ($product['stock_quantity'] ?? 0) > 0;
             </h1>
 
             <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 24px;">
-                KES <?php echo number_format((float)$product['price'], 2); ?>
+                <?php echo htmlspecialchars(currency_label()); ?> <?php echo number_format((float)$product['price'], 2); ?>
             </div>
 
             <p style="color: var(--gray-600); line-height: 1.75; font-size: 1rem; margin-bottom: var(--space-2xl);">
