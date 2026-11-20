@@ -7,15 +7,30 @@ $temp_dir = sys_get_temp_dir();
 if (is_writable($temp_dir)) session_save_path($temp_dir);
 session_start();
 $page_title = 'Settings - Admin';
+
+$tab = $_GET['tab'] ?? 'calendar';
+$validTabs = ['calendar','dropdowns','settings','logs','mpesa'];
+if (!in_array($tab, $validTabs, true)) $tab = 'calendar';
+
+/* The dropdown manager is a complete page. Embedding it here produced two
+   nested <html> documents, session warnings, and — the visible bug — its
+   category links are plain "?group=…", which replaced the whole query string
+   and dropped ?tab, so the hub fell back to Calendar and the category never
+   opened. Send the tab to the real page instead. */
+if ($tab === 'dropdowns') {
+    $dropdownTarget = '/Frontend/admin/dropdowns.php';
+    if (!empty($_GET['group'])) {
+        $dropdownTarget .= '?group=' . urlencode((string)$_GET['group']);
+    }
+    header('Location: ' . $dropdownTarget, true, 302);
+    exit;
+}
+
 include __DIR__ . '/includes/admin_header.php';
 
 if (empty($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'super_admin') {
     // farm_manager can access most settings, restrict only DB setup
 }
-
-$tab = $_GET['tab'] ?? 'calendar';
-$validTabs = ['calendar','dropdowns','settings','logs','mpesa'];
-if (!in_array($tab, $validTabs, true)) $tab = 'calendar';
 
 $pdo = getDB();
 $message = ''; $error_message = '';
@@ -147,8 +162,11 @@ $tabs = [
 
 <!-- Tab Bar -->
 <div style="display:flex;gap:4px;background:#f1f5f9;padding:5px;border-radius:10px;margin-bottom:24px;overflow-x:auto;scrollbar-width:none;">
-<?php foreach ($tabs as $key => $info): ?>
-    <a href="?tab=<?php echo $key; ?>"
+<?php foreach ($tabs as $key => $info):
+    // Dropdowns is its own page; linking straight to it keeps the URL clean.
+    $tabHref = $key === 'dropdowns' ? '/Frontend/admin/dropdowns.php' : '?tab=' . $key;
+?>
+    <a href="<?php echo $tabHref; ?>"
        style="display:flex;align-items:center;gap:7px;padding:9px 18px;border-radius:7px;text-decoration:none;white-space:nowrap;font-weight:600;font-size:0.86rem;transition:all 0.2s;
               <?php echo $tab === $key ? 'background:#fff;color:var(--admin-primary);box-shadow:0 1px 6px rgba(15,23,42,0.08);' : 'color:#64748b;'; ?>">
         <i data-lucide="<?php echo $info['icon']; ?>" style="width:15px;height:15px;"></i>
@@ -202,9 +220,6 @@ $tabs = [
 </div>
 
 <!-- ══════ DROPDOWNS ══════ -->
-<?php elseif ($tab === 'dropdowns'): ?>
-<?php include __DIR__ . '/dropdowns.php'; ?>
-
 <!-- ══════ APP SETTINGS ══════ -->
 <?php elseif ($tab === 'settings'): ?>
 <div class="admin-card">

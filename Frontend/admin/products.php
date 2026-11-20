@@ -278,9 +278,39 @@ if ($pdo) {
         $products = [];
     }
 }
-?>
 
-<?php
+// Product types come from the dropdown, but a product can already use a value
+// the list does not contain (legacy rows such as "chicks"). Without those the
+// select falls back to its first option and simply saving rewrites the type, so
+// every type that exists in the table is offered as well.
+$type_options = [];
+foreach (getSystemDropdownOptions('product_types', false) as $typeOpt) {
+    $type_options[(string)$typeOpt['option_value']] = (string)$typeOpt['option_label'];
+}
+if ($pdo) {
+    foreach (safeQueryAll($pdo, "SELECT DISTINCT product_type FROM products WHERE product_type IS NOT NULL AND product_type <> ''") as $typeRow) {
+        $typeValue = (string)$typeRow['product_type'];
+        if ($typeValue !== '' && !isset($type_options[$typeValue])) {
+            $type_options[$typeValue] = ucwords(str_replace('_', ' ', $typeValue));
+        }
+    }
+}
+$renderTypeOptions = static function (?string $selected, string $placeholder = '') use ($type_options): string {
+    $html = $placeholder !== ''
+        ? '<option value="">' . htmlspecialchars($placeholder, ENT_QUOTES, 'UTF-8') . '</option>'
+        : '';
+    foreach ($type_options as $value => $label) {
+        $isSelected = $selected !== null && (string)$selected === (string)$value ? ' selected' : '';
+        $html .= sprintf(
+            '<option value="%s"%s>%s</option>',
+            htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'),
+            $isSelected,
+            htmlspecialchars((string)$label, ENT_QUOTES, 'UTF-8')
+        );
+    }
+    return $html;
+};
+
 // --- Render (header last, so POST handlers can still redirect) ---
 if (!empty($_SESSION['products_flash'])) {
     $products_flash = $_SESSION['products_flash'];
@@ -332,7 +362,7 @@ include __DIR__ . '/includes/admin_header.php';
         </div>
         <div style="display: flex; gap: 8px;">
             <select name="type" style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; outline: none; background: #ffffff;">
-                <?php echo renderDropdownOptions('product_types', $type_filter, 'All Types'); ?>
+                <?php echo $renderTypeOptions($type_filter !== '' ? $type_filter : null, 'All Types'); ?>
             </select>
             <button type="submit" class="btn btn-outline" style="border-radius: 4px; padding: 6px 16px; font-size: 0.85rem;">Filter</button>
             <?php if ($search || $type_filter || !empty($_GET['archived'])): ?>
@@ -553,7 +583,7 @@ include __DIR__ . '/includes/admin_header.php';
                 <div class="admin-form-group">
                     <label class="admin-form-label">Product Type *</label>
                     <select name="product_type" required class="admin-form-control">
-                        <?php echo renderDropdownOptions('product_types', null, '-- Select Type --'); ?>
+                        <?php echo $renderTypeOptions(null, '-- Select Type --'); ?>
                     </select>
                 </div>
                 <div class="admin-form-group">
@@ -627,7 +657,7 @@ include __DIR__ . '/includes/admin_header.php';
                 <div class="admin-form-group">
                     <label class="admin-form-label">Product Type *</label>
                     <select name="product_type" id="edit-type" required class="admin-form-control">
-                        <?php echo renderDropdownOptions('product_types', null, '-- Select Type --'); ?>
+                        <?php echo $renderTypeOptions(null, '-- Select Type --'); ?>
                     </select>
                 </div>
                 <div class="admin-form-group">
